@@ -167,3 +167,4 @@ buildNumber.properties
 #   • OWASP Dependency Check/.env — copy from .env.example (NVD_API_KEY)
 **/.env
 
+.idea/
