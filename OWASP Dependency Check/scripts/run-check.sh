@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # run-check.sh — Run OWASP Dependency Check against the vulnerable demo project.
 #
-# Expected result: BUILD FAILURE — 2+ HIGH/CRITICAL CVEs found.
+# Expected result: CVEs are found and reported (HTML/JSON/SARIF).
+# If <failBuildOnCVSS>7</failBuildOnCVSS> is uncommented in pom.xml, the build will FAIL.
 #
 # Usage:
 #   bash scripts/run-check.sh           # normal scan

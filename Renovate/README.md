@@ -19,7 +19,7 @@ in Docker, fully automated by five numbered scripts.
 ## Quick Start
 
 ```bash
-# From the project root (HelloConference/):
+# From the project root:
 bash Renovate/scripts/demo.sh
 ```
 

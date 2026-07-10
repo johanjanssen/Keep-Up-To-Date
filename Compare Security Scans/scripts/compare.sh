@@ -13,7 +13,7 @@ ROOT_DIR="$(cd "$PROJECT_DIR/.." && pwd)"
 # shellcheck source=../../images.conf
 source "$ROOT_DIR/images.conf"
 
-OWASP_JSON="$ROOT_DIR/OWASP Dependency Check/target/dependency-check-report.json"
+OWASP_JSON="$ROOT_DIR/Vulnerable Application/target/dependency-check-report.json"
 
 for TOOL in jq; do
     command -v "$TOOL" &>/dev/null || { echo "❌  '$TOOL' not found."; exit 1; }
@@ -182,6 +182,7 @@ echo "Legend: Tot=Total  C=Critical  H=High  M=Medium  L=Low  U=Unknown"
 echo "        All counts are unique CVEs (deduplicated by CVE ID)"
 echo "        '-' = scan not run, or no unique findings"
 echo "        Unique Trivy = Number of CVEs found by Trivy but NOT by Grype"
+echo "        ⚠ Trivy may show 0 for Oracle Linux 10 images (e.g. GraalVM) — its vuln DB lacks OL10 coverage"
 
 # ══════════════════════════════════════════════════════════════════
 # VIEW 2: OS-level vs Application-level Breakdown

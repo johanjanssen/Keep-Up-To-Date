@@ -146,4 +146,3 @@ JaCoCo is the right choice for open source projects and teams getting started.
 Azul Code Inventory is the right choice for large fleets where zero overhead and
 continuous data matter.
 
-See the `Azul Code Inventory/` directory for the agent-based demo.

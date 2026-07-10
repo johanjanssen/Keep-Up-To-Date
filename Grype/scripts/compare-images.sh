@@ -47,27 +47,44 @@ scan_image() {
     local IMG="$1"
 
     if ! docker image inspect "$IMG" &>/dev/null; then
+        echo "  [DEBUG] docker image inspect failed for: $IMG" >&2
         printf "$ROW_FMT" "$IMG" "NOT BUILT" "" "" "" "" ""
         return
     fi
 
-    local JSON
-    if ! JSON=$(docker run --rm \
+    # Write JSON to a temp file to avoid bash variable size limits on large images
+    local JSON_TMP SCAN_ERR
+    JSON_TMP=$(mktemp)
+    SCAN_ERR=$(mktemp)
+    if ! docker run --rm \
             -v "$DOCKER_SOCK:$DOCKER_SOCK" \
             -v "$GRYPE_CACHE_VOL:/.cache/grype" \
-            "$GRYPE_IMAGE" "$IMG" -o json 2>/dev/null); then
+            "$GRYPE_IMAGE" "$IMG" -o json \
+            >"$JSON_TMP" 2>"$SCAN_ERR"; then
+        echo "  [DEBUG] Grype scan failed for: $IMG (exit $?)" >&2
+        echo "  [DEBUG] stderr: $(cat "$SCAN_ERR")" >&2
+        rm -f "$JSON_TMP" "$SCAN_ERR"
         printf "$ROW_FMT" "$IMG" "SCAN ERR" "" "" "" "" ""
+        return
+    fi
+    [[ -s "$SCAN_ERR" ]] && echo "  [DEBUG] Grype warnings for $IMG: $(head -5 "$SCAN_ERR")" >&2
+    rm -f "$SCAN_ERR"
+
+    if [[ ! -s "$JSON_TMP" ]]; then
+        echo "  [DEBUG] Grype returned empty JSON for: $IMG" >&2
+        rm -f "$JSON_TMP"
+        printf "$ROW_FMT" "$IMG" "EMPTY" "" "" "" "" ""
         return
     fi
 
     if [[ -n "$JSON_OUT" ]]; then
         local FNAME
         FNAME=$(image_to_filename "$IMG")
-        printf '%s' "$JSON" > "$JSON_OUT/${FNAME}.json"
+        cp "$JSON_TMP" "$JSON_OUT/${FNAME}.json"
     fi
 
     local COUNTS
-    COUNTS=$(printf '%s' "$JSON" | jq -r '
+    COUNTS=$(cat "$JSON_TMP" | jq -r '
         [.matches[]?] |
         [
             (length                                                              | tostring),
@@ -77,7 +94,9 @@ scan_image() {
             (map(select(.vulnerability.severity == "Low"))      | length | tostring),
             (map(select(.vulnerability.severity | IN("Critical","High","Medium","Low") | not)) | length | tostring)
         ] | join(" ")
-    ') || { printf "$ROW_FMT" "$IMG" "PARSE ERR" "" "" "" "" ""; return; }
+    ') || { rm -f "$JSON_TMP"; printf "$ROW_FMT" "$IMG" "PARSE ERR" "" "" "" "" ""; return; }
+
+    rm -f "$JSON_TMP"
 
     # shellcheck disable=SC2162
     read -r TOTAL CRITICAL HIGH MEDIUM LOW UNKNOWN <<< "$COUNTS"

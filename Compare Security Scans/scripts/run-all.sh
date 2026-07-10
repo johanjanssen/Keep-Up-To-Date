@@ -13,6 +13,9 @@ echo "║  Scanning all images with Grype, Trivy, and OWASP          ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
+echo "═══════════════════════ Step 0: Pull base images ══════════════"
+bash "$ROOT_DIR/Build Docker Images/pull-base-images.sh"
+
 echo "═══════════════════════ Step 1/4: Grype ═══════════════════════"
 bash "$SCRIPT_DIR/scan-grype.sh"
 

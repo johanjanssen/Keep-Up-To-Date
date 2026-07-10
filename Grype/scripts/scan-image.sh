@@ -13,5 +13,5 @@ DOCKER_SOCK="/var/run/docker.sock"
 echo "Scanning: $IMAGE"
 docker run --rm \
     -v "$DOCKER_SOCK:$DOCKER_SOCK" \
-    -v "$GRYPE_CACHE_VOL:/root/.cache/grype" \
+    -v "$GRYPE_CACHE_VOL:/.cache/grype" \
     "$GRYPE_IMAGE" "$IMAGE" -o table
