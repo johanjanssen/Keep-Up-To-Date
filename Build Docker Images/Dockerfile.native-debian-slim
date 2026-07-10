@@ -1,0 +1,22 @@
+# Runtime base: debian:12-slim  (Debian 12 Bookworm)
+# Native binary is dynamically linked against glibc + libz.so.1 (zlib).
+# distroless/base-debian12 lacks zlib; distroless/static lacks glibc entirely.
+FROM ghcr.io/graalvm/native-image-community:25@sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0 AS builder
+WORKDIR /workspace
+
+RUN microdnf install -y findutils --setopt=install_weak_deps=0 && \
+    microdnf clean all
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw -Pnative native:compile -DskipTests --no-transfer-progress
+
+FROM debian:12-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
+WORKDIR /app
+COPY --from=builder /workspace/target/HelloConference .
+EXPOSE 8080
+ENTRYPOINT ["/app/HelloConference"]

@@ -1,0 +1,81 @@
+# Runtime base: scratch (zero OS overhead)
+# Key improvement over native-scratch: Spring WebFlux (Netty) replaces Spring MVC (Tomcat).
+# Image tag: hello-conference:native-netty-scratch
+#
+#   Tomcat  – servlet engine, thread pools, request/response buffering, temp-file I/O
+#   Netty   – event-loop NIO server; much less compiled code, no threads per request
+#
+# Expected gains vs native-scratch:
+#   Image size   – 30-50% smaller  (no Tomcat native code in the binary)
+#   Startup      – 3-5× faster     (Netty initialises in ~10-20 ms)
+#   Memory       – 30-50% lower    (no Tomcat thread pool, no servlet context)
+#
+# The swap is done entirely inside the builder – pom.xml on the host is unchanged.
+# ⚠  First build: ~20-25 min.  Subsequent source-only rebuilds use cached layers.
+
+# ── Stage 1: toolchain (musl libc + static zlib) ─────────────
+FROM ghcr.io/graalvm/native-image-community:25@sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0 AS toolchain
+
+RUN microdnf install -y \
+        gcc binutils make tar gzip curl findutils \
+        --setopt=install_weak_deps=0 && \
+    microdnf clean all
+
+# musl libc – static only
+RUN curl -fsSL https://musl.libc.org/releases/musl-1.2.5.tar.gz | tar -xz && \
+    cd musl-1.2.5 && \
+    ./configure --prefix=/usr/local/musl --disable-shared && \
+    make -j$(nproc) install && \
+    ln -s /usr/local/musl/bin/musl-gcc /usr/local/musl/bin/x86_64-linux-musl-gcc && \
+    cd .. && rm -rf musl-1.2.5
+
+ENV PATH="/usr/local/musl/bin:${PATH}"
+
+# zlib – static build against musl
+RUN curl -fsSL https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz | tar -xz && \
+    cd zlib-1.3.1 && \
+    CC=musl-gcc ./configure --prefix=/usr/local/musl && \
+    make -j$(nproc) libz.a && \
+    cp libz.a /usr/local/musl/lib/ && \
+    cp zlib.h zconf.h /usr/local/musl/include/ && \
+    cd .. && rm -rf zlib-1.3.1
+
+# ── Stage 2: application build ────────────────────────────────
+FROM toolchain AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+
+# Swap WebMVC (Tomcat) → WebFlux (Netty) before downloading dependencies.
+# The precise pattern avoids matching spring-boot-starter-webmvc-test.
+RUN sed -i \
+    's|<artifactId>spring-boot-starter-webmvc</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
+    pom.xml
+
+RUN chmod +x mvnw && \
+    ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+
+# Tell Spring Boot AOT to wire the reactive (Netty) web server, not Tomcat.
+RUN printf '\nspring.main.web-application-type=reactive\n' \
+    >> src/main/resources/application.properties
+
+# Compile native: static musl + size optimisation
+RUN NATIVE_IMAGE_OPTIONS="--static --libc=musl -Os" \
+    ./mvnw -Pnative native:compile -DskipTests --no-transfer-progress
+
+# Strip ELF symbol tables and debug sections
+RUN strip --strip-all target/HelloConference && \
+    echo "Binary size after strip: $(du -sh target/HelloConference | cut -f1)"
+
+# ── Stage 3: zero OS overhead ─────────────────────────────────
+FROM scratch
+WORKDIR /tmp
+WORKDIR /app
+COPY --from=builder /workspace/target/HelloConference .
+EXPOSE 8080
+ENTRYPOINT ["/app/HelloConference"]
+

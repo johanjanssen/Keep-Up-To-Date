@@ -1,0 +1,119 @@
+version: "3.8"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HelloConference demo infrastructure
+#
+#   Gitea    — self-hosted Git forge  →  http://localhost:3000
+#   Jenkins  — CI build server        →  http://localhost:8080
+#
+# Usage (via the scripts — do not call docker compose directly):
+#   bash Renovate/scripts/demo.sh             full demo
+#   bash Renovate/scripts/01-start-gitea.sh   start only Gitea
+#   bash Renovate/scripts/04-start-jenkins.sh start + configure Jenkins
+#
+# Cleanup:
+#   docker compose -f Renovate/docker/docker-compose.yml down      keep data
+#   docker compose -f Renovate/docker/docker-compose.yml down -v   wipe everything
+# ─────────────────────────────────────────────────────────────────────────────
+
+networks:
+  # Explicit name so all containers and the Renovate one-shot runner
+  # can join the same network regardless of compose project name.
+  dev-net:
+    name: helloconference-dev-net
+    driver: bridge
+
+volumes:
+  gitea_data:
+    name: helloconference-gitea-data
+  jenkins_data:
+    name: helloconference-jenkins-data
+
+services:
+
+  # ── Gitea ──────────────────────────────────────────────────────────────────
+  # Pinned to a specific version — Renovate will detect newer releases and
+  # open a PR automatically, demonstrating the "Container Base Images" section.
+  gitea:
+    image: gitea/gitea:1.22.3
+    container_name: gitea
+    restart: unless-stopped
+    networks:
+      - dev-net
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__DOMAIN=localhost
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__ROOT_URL=http://localhost:3000/
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__server__SSH_LISTEN_PORT=22
+      # Skip the first-run installation wizard so the API is usable immediately.
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__service__DISABLE_REGISTRATION=false
+      - GITEA__repository__DEFAULT_BRANCH=main
+      - GITEA__log__LEVEL=warn
+      # Allow webhook delivery to Docker-internal hostnames (private IP ranges).
+      # Without this, Gitea blocks the webhook to http://jenkins:8080/ because
+      # the Jenkins container's bridge IP is an RFC-1918 private address.
+      - GITEA__webhook__ALLOWED_HOST_LIST=*
+    volumes:
+      - gitea_data:/data
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # ── Jenkins ────────────────────────────────────────────────────────────────
+  # Custom image (Renovate/docker/jenkins/Dockerfile) — Jenkins LTS with:
+  #   • Gitea SCM plugin   → discovers branches + PRs, manages webhooks
+  #   • Docker CLI         → Pipeline runs build stages in eclipse-temurin:25-jdk
+  #   • JCasC              → zero-click configuration from jenkins/casc/jenkins.yaml
+  #
+  # user: "0:0" — runs the Jenkins process as root so it can access
+  # /var/run/docker.sock regardless of the host docker group GID.
+  # This is intentional for a local demo; do not copy to production.
+  #
+  # The Gitea credential (gitea-token) is set explicitly via the Jenkins REST API
+  # in 04-start-jenkins.sh, which is more reliable than JCasC env-var substitution
+  # when docker compose is called with an absolute -f path.
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    image: helloconference-jenkins:latest
+    container_name: jenkins
+    restart: unless-stopped
+    user: "0:0"
+    networks:
+      - dev-net
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      # JCasC config — mounted read-only; changes apply after container restart.
+      - ./jenkins/casc:/var/jenkins_home/casc_configs:ro
+      # Docker socket — allows Pipeline to spin up eclipse-temurin:25-jdk build agents.
+      # On Docker Desktop (Windows/Mac) this is handled transparently.
+      # On Linux: ensure the jenkins user's GID matches the docker socket GID.
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+      - "50000:50000"   # JNLP inbound agent port
+    depends_on:
+      gitea:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/login"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+

@@ -1,0 +1,114 @@
+# Image tag:  hello-conference:jlink-tuned-distroless-base
+# Base:       gcr.io/distroless/base-debian12
+#
+# All optimisations from jlink-cds-distroless-base EXCEPT AppCDS.
+# Use this variant when you cannot afford the ~1-2 min training run in CI,
+# when the image must be portable across JVM versions without regenerating
+# an archive, or simply as a baseline to quantify CDS's startup/memory gains.
+#
+# 1. Tighter jlink module set
+#    jdeps detects the actual JDK modules the app bytecode touches.  Only
+#    genuinely required extras are appended (crypto providers, management,
+#    naming); heavyweight "safety" modules from other recipes (java.sql,
+#    java.xml, java.security.jgss, java.instrument, jdk.net) are omitted
+#    because this app does not use databases, Kerberos, or Java agents.
+#    Fewer modules → smaller JRE image layer.
+#    Also adds --strip-java-debug-attributes on top of --strip-debug.
+#
+# 2. Serial GC + container-aware heap sizing
+#    -XX:+UseSerialGC   eliminates G1's background threads and region-table
+#                       overhead – appropriate for heap sizes < ~256 MiB.
+#    -XX:+UseContainerSupport + -XX:MaxRAMPercentage=75.0
+#                       the JVM reads the cgroup memory limit set by Docker /
+#                       Kubernetes and sizes the heap as 75% of that limit.
+#                       No hard-coded -Xmx → the same image works in every
+#                       environment; just set --memory on docker run or
+#                       resources.limits.memory in Kubernetes.
+#
+# -Djava.security.egd=file:/dev/./urandom
+#    Avoids blocking on /dev/random during TLS initialisation in low-entropy
+#    container environments (common in Kubernetes).  Standard practice.
+
+# ── Stage 1: Maven build ──────────────────────────────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+# ── Stage 2: jlink – tightly scoped minimal JRE ───────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS jre-builder
+WORKDIR /jlink-workspace
+
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
+
+# jdeps detects the real JDK module footprint of the fat JAR.
+# Extra modules appended:
+#   java.management     – Spring metrics, JVM health checks
+#   java.naming         – Spring JNDI lookups, log context naming
+#   jdk.management      – JVM management MBeans
+#   jdk.crypto.ec       – ECDHE cipher suites for TLS
+#   jdk.crypto.cryptoki – PKCS#11 cryptographic provider
+#   jdk.unsupported     – sun.misc.Unsafe (required by cglib, Reactor, etc.)
+# Intentionally excluded (not used by this app):
+#   java.sql            – JDBC / database drivers
+#   java.security.jgss  – Kerberos / GSSAPI
+#   java.instrument     – Java agents
+#   jdk.net             – extended socket options
+RUN set -eux; \
+    jar xf app.jar; \
+    DETECTED=$(jdeps \
+        --ignore-missing-deps \
+        --print-module-deps \
+        --multi-release 25 \
+        --recursive \
+        --class-path 'BOOT-INF/lib/*' \
+        BOOT-INF/classes \
+        $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
+        2>/dev/null | tail -1); \
+    echo "jdeps detected modules: ${DETECTED}"; \
+    EXTRA="java.management,java.naming,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported"; \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    echo "jlink modules: ${UNIQUE}"; \
+    jlink \
+        --add-modules "${UNIQUE}" \
+        --strip-debug \
+        --strip-java-debug-attributes \
+        --compress=zip-6 \
+        --no-header-files \
+        --no-man-pages \
+        --output /jre-minimal
+
+# ── Stage 3: distroless runtime ───────────────────────────────
+FROM gcr.io/distroless/base-debian12@sha256:e7e678c88c59e70e105a46549bb3fbfb3d732ee3b4afd3a19fdab2e15afaa6b3
+
+ENV JAVA_HOME=/jre
+ENV PATH="/jre/bin:${PATH}"
+
+COPY --from=jre-builder /jre-minimal /jre
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
+
+WORKDIR /app
+EXPOSE 8080
+
+# JVM flag rationale:
+#   -XX:+UseSerialGC        single-threaded GC; right choice for heap < ~256 MiB;
+#                           eliminates G1 background threads and region metadata
+#   -XX:+UseContainerSupport  honour cgroup memory limit (default since JDK 10,
+#                           explicit here for documentation)
+#   -XX:MaxRAMPercentage    size the heap as 75% of the container's memory limit;
+#                           set --memory / resources.limits.memory at deploy time
+#   -Djava.security.egd     use non-blocking urandom; prevents startup stall in
+#                           low-entropy container environments
+ENTRYPOINT ["/jre/bin/java", \
+    "-XX:+UseSerialGC", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]
+

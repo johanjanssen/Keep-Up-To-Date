@@ -1,0 +1,63 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<!--
+  Jenkins Multibranch Pipeline job — hello-conference
+  Created via the Jenkins REST API by Renovate/scripts/04-start-jenkins.sh.
+
+  This job:
+    • Discovers all branches in gitadmin/hello-conference on Gitea
+    • Discovers all pull requests (including those created by Renovate)
+    • Builds each using the Jenkinsfile at the repository root
+    • Reports pass/fail status back to each Gitea PR as a required check
+    • Rescans every 5 minutes AND on Gitea webhook push/PR events
+      (webhook URL registered automatically when manageHooks:true in JCasC)
+-->
+<org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch">
+  <description>Builds every branch and pull request in hello-conference — including Renovate dependency-update PRs</description>
+
+  <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api">
+    <data>
+      <jenkins.branch.BranchSource>
+        <source class="org.jenkinsci.plugin.gitea.GiteaSCMSource" plugin="gitea">
+          <id>gitea-hello-conference</id>
+          <serverUrl>http://gitea:3000</serverUrl>
+          <repoOwner>gitadmin</repoOwner>
+          <repository>hello-conference</repository>
+          <credentialsId>gitea-token</credentialsId>
+          <traits>
+            <!-- Discover all branches (strategy 1 = all branches) -->
+            <org.jenkinsci.plugin.gitea.BranchDiscoveryTrait>
+              <strategyId>1</strategyId>
+            </org.jenkinsci.plugin.gitea.BranchDiscoveryTrait>
+            <!-- Discover PRs opened from the same repo.
+                 strategyId=1: build the PR branch HEAD as-is and post the
+                 commit status to that exact commit. Gitea then shows the
+                 status directly on the PR page.
+                 strategyId=2 would build a synthetic merge commit — the status
+                 is posted to that commit, not the PR HEAD, so Gitea cannot
+                 display it in the PR UI. -->
+            <org.jenkinsci.plugin.gitea.OriginPullRequestDiscoveryTrait>
+              <strategyId>1</strategyId>
+            </org.jenkinsci.plugin.gitea.OriginPullRequestDiscoveryTrait>
+          </traits>
+        </source>
+        <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+          <properties class="empty-list"/>
+        </strategy>
+      </jenkins.branch.BranchSource>
+    </data>
+  </sources>
+
+  <!-- Run the Jenkinsfile from the repository root -->
+  <factory class="org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory">
+    <scriptPath>Jenkinsfile</scriptPath>
+  </factory>
+
+  <!-- Periodic rescan every 5 minutes as a safety net if webhooks are missed -->
+  <triggers>
+    <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder">
+      <spec>H/5 * * * *</spec>
+      <interval>300000</interval>
+    </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+  </triggers>
+</org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject>
+

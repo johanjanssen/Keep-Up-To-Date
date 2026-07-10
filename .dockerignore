@@ -1,0 +1,18 @@
+# Docker build context excludes – keep the context lean
+.git/
+.idea/
+.gitignore
+.gitattributes
+
+# Build output (Docker builds its own inside the multi-stage layers)
+target/
+
+# Build scripts and Dockerfiles – not needed inside the image
+build/
+
+# IDE and OS noise
+*.md
+*.iml
+**/.DS_Store
+**/Thumbs.db
+

@@ -1,0 +1,3 @@
+# Runtime NVD cache — populated by scripts/start-cache.sh, not committed to git.
+nvd-cache/
+

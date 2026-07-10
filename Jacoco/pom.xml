@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>jacoco-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>jacoco-demo</name>
+    <description>JaCoCo production agent demo — measure coverage on a running application</description>
+
+    <properties>
+        <java.version>25</java.version>
+        <jacoco.version>0.8.15</jacoco.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+                JaCoCo Maven Plugin
+                ───────────────────
+                Primary use in this demo: extract the agent JAR for production-mode usage.
+
+                In the production agent pattern, JaCoCo is NOT run as part of mvn test.
+                Instead:
+                  1. mvn jacoco:prepare-agent  → downloads jacocoagent.jar to target/
+                  2. scripts/start-with-agent.sh  → attaches the agent to the running JVM
+                  3. scripts/dump-coverage.sh    → dumps exec data from the live JVM
+                  4. scripts/generate-report.sh  → produces HTML report from exec file
+
+                See scripts/ for the full workflow.
+
+                The org.jacoco.cli artifact (used by dump/report scripts) is not pulled
+                automatically by the plugin; the dependency:get execution below ensures
+                it is downloaded on the first build.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <!-- Binds to test phase — generates target/site/jacoco/ for unit tests -->
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Ensures org.jacoco.cli (used by dump/report scripts) is in ~/.m2 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-jacoco-cli</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>get</goal></goals>
+                        <configuration>
+                            <artifact>org.jacoco:org.jacoco.cli:${jacoco.version}:jar:nodeps</artifact>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+

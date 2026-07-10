@@ -1,0 +1,59 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": false,
+  "ignorePresets": [":dependencyDashboard", "group:allNonMajor"],
+  "timezone": "Europe/Amsterdam",
+  "labels": ["renovate"],
+  "prHourlyLimit": 10,
+  "branchConcurrentLimit": 20,
+  "packageRules": [
+    {
+      "description": "Group all Spring Boot / Spring Framework updates into one PR — bump the BOM once and 300+ managed versions update together.",
+      "matchPackagePrefixes": [
+        "org.springframework",
+        "org.springframework.boot"
+      ],
+      "groupName": "Spring Boot & Framework",
+      "labels": ["renovate", "spring"]
+    },
+    {
+      "description": "Auto-merge patch updates for test-scoped dependencies when CI is green.",
+      "matchDepTypes": ["test"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "description": "Stability window: wait 3 days before creating patch PRs.",
+      "matchUpdateTypes": ["patch"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Require manual review for major JDK and base image upgrades.",
+      "matchPackageNames": [
+        "eclipse-temurin",
+        "azul/zulu-openjdk-debian",
+        "gcr.io/distroless/base-debian12",
+        "gcr.io/distroless/static-debian12",
+        "gitea/gitea"
+      ],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["renovate", "review-required", "major-upgrade"]
+    },
+    {
+      "description": "Pin all Docker base image digests and auto-update them.",
+      "matchDatasources": ["docker"],
+      "pinDigests": true,
+      "automerge": true,
+      "labels": ["renovate", "docker"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "description": "Security PRs created immediately, auto-merged when CI passes.",
+    "labels": ["renovate", "security", "priority:high"],
+    "schedule": ["at any time"],
+    "automerge": true
+  }
+}

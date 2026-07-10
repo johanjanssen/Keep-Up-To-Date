@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--
+    OWASP Dependency Check Demo
+    ───────────────────────────
+    This pom.xml intentionally includes VULNERABLE dependencies to demonstrate
+    the OWASP Dependency Check plugin finding real CVEs.
+
+    Known vulnerabilities in this pom:
+      • log4j-core 2.0       — CVE-2021-44228 (Log4Shell, CVSS 10.0), CVE-2021-45046
+      • jackson-databind 2.9.10 — multiple CVEs (deserialization, 2019–2020)
+      • spring-security-core 5.2.0 — CVE-2022-22978 and others
+
+    DO NOT use these versions in a real project.
+	-->
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.0</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>HelloConference</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>HelloConference</name>
+	<description>Hello Conference — intentionally includes vulnerable dependencies for security scanning demos</description>
+
+	<properties>
+		<java.version>25</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!--
+			⚠️  Log4Shell — CVE-2021-44228 (CVSS 10.0)
+			Any application that logs user-controlled input is vulnerable to RCE.
+			Do not remove or upgrade. Used for demo.
+		-->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<!-- Intentionally old for demo purpose -->
+			<version>2.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!--
+			⚠️  Jackson Databind — multiple deserialization CVEs (2019-2021)
+			CVE-2019-14379, CVE-2019-14439, CVE-2020-24616, CVE-2020-24750, etc.
+			Do not remove or upgrade. Used for demo.
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<!-- Intentionally old for demo purpose -->
+			<version>2.9.10</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!--
+				OWASP Dependency Check
+				Run:  ../mvnw dependency-check:check   (or OWASP Dependency Check/scripts/run-check.sh)
+				failBuildOnCVSS=7 → fail on HIGH+ severity CVEs
+			-->
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>12.1.1</version>
+				<configuration>
+					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<formats>
+						<format>HTML</format>
+						<format>JSON</format>
+						<format>SARIF</format>
+					</formats>
+					<skipTestScope>true</skipTestScope>
+					<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+				</configuration>
+				<executions>
+					<execution>
+						<goals><goal>check</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--
+			Native Image profile
+			Activate with: ./mvnw -Pnative native:compile -DskipTests
+			Requires GraalVM 25 (or the Dockerfile.native multi-stage build).
+		-->
+		<profile>
+			<id>native</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>process-aot</id>
+								<goals>
+									<goal>process-aot</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.graalvm.buildtools</groupId>
+						<artifactId>native-maven-plugin</artifactId>
+						<configuration>
+							<imageName>${project.artifactId}</imageName>
+							<buildArgs>
+								<buildArg>--no-fallback</buildArg>
+								<buildArg>-H:+ReportExceptionStackTraces</buildArg>
+								<buildArg>-march=compatibility</buildArg>
+							</buildArgs>
+							<metadataRepository>
+								<enabled>true</enabled>
+							</metadataRepository>
+						</configuration>
+						<executions>
+							<execution>
+								<id>add-reachability-metadata</id>
+								<goals>
+									<goal>add-reachability-metadata</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>build-native</id>
+								<goals>
+									<goal>compile-no-fork</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>
+

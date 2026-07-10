@@ -1,0 +1,42 @@
+# Runtime base: gcr.io/distroless/base-debian12  (Debian 12 Bookworm)
+# jlink JRE is glibc-linked (Temurin) → needs glibc → distroless/base, not static
+
+# ── Stage 1: Maven build ──────────────────────────────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+# ── Stage 2: jlink – full JRE (all modules except jlink/jpackage) ─
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS jre-builder
+
+RUN MODULES=$(java --list-modules | sed 's/@.*//' | \
+        grep -vE '^jdk\.(jlink|jpackage)$' | \
+        paste -sd ',') && \
+    echo "Modules: ${MODULES}" && \
+    jlink \
+        --add-modules "${MODULES}" \
+        --strip-debug \
+        --compress=zip-6 \
+        --no-header-files \
+        --no-man-pages \
+        --output /jre-full
+
+# ── Stage 3: distroless runtime ───────────────────────────────
+FROM gcr.io/distroless/base-debian12@sha256:e7e678c88c59e70e105a46549bb3fbfb3d732ee3b4afd3a19fdab2e15afaa6b3
+
+ENV JAVA_HOME=/jre
+ENV PATH="/jre/bin:${PATH}"
+
+COPY --from=jre-builder /jre-full /jre
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
+
+WORKDIR /app
+EXPOSE 8080
+ENTRYPOINT ["/jre/bin/java", "-jar", "app.jar"]

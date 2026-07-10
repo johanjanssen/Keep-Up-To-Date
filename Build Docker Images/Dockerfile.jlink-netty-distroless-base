@@ -1,0 +1,79 @@
+# Runtime base: gcr.io/distroless/base-debian12  (Debian 12 Bookworm)
+# Key improvement over jlink-distroless-base: Spring WebFlux (Netty) replaces Spring MVC (Tomcat).
+#
+#   Tomcat  – servlet engine, thread pools, request/response buffering, temp-file I/O
+#   Netty   – event-loop NIO server; fewer compiled classes → fewer modules → smaller JRE
+#
+# Expected gains vs jlink-distroless-base:
+#   JRE size  – smaller  (Tomcat modules dropped from jlink output)
+#   Memory    – lower    (no Tomcat thread pool, no servlet context)
+#   Startup   – faster   (Netty initialises in ~10-20 ms vs Tomcat ~100-200 ms)
+#
+# The swap is done entirely inside the builder – pom.xml on the host is unchanged.
+
+# ── Stage 1: Maven build ──────────────────────────────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+
+# Swap WebMVC (Tomcat) → WebFlux (Netty) before downloading dependencies.
+# The precise pattern avoids matching spring-boot-starter-webmvc-test.
+RUN sed -i \
+    's|<artifactId>spring-boot-starter-webmvc</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
+    pom.xml
+
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+
+# Tell Spring Boot to wire the reactive (Netty) web server, not Tomcat.
+RUN printf '\nspring.main.web-application-type=reactive\n' \
+    >> src/main/resources/application.properties
+
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+# ── Stage 2: jlink – minimal JRE scoped to Netty/WebFlux deps ─
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS jre-builder
+WORKDIR /jlink-workspace
+
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
+
+RUN set -eux; \
+    jar xf app.jar; \
+    DETECTED=$(jdeps \
+        --ignore-missing-deps \
+        --print-module-deps \
+        --multi-release 25 \
+        --recursive \
+        --class-path 'BOOT-INF/lib/*' \
+        BOOT-INF/classes \
+        $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
+        2>/dev/null | tail -1); \
+    echo "jdeps detected modules: ${DETECTED}"; \
+    EXTRA="java.management,java.naming,java.security.jgss,java.instrument,java.sql,java.xml,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.net"; \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    echo "jlink modules: ${UNIQUE}"; \
+    jlink \
+        --add-modules "${UNIQUE}" \
+        --strip-debug \
+        --compress=zip-6 \
+        --no-header-files \
+        --no-man-pages \
+        --output /jre-minimal
+
+# ── Stage 3: distroless runtime ───────────────────────────────
+FROM gcr.io/distroless/base-debian12@sha256:e7e678c88c59e70e105a46549bb3fbfb3d732ee3b4afd3a19fdab2e15afaa6b3
+
+ENV JAVA_HOME=/jre
+ENV PATH="/jre/bin:${PATH}"
+
+COPY --from=jre-builder /jre-minimal /jre
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
+
+WORKDIR /app
+EXPOSE 8080
+ENTRYPOINT ["/jre/bin/java", "-jar", "app.jar"]
+

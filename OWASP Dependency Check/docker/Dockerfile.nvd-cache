@@ -1,0 +1,72 @@
+# Dockerfile.nvd-cache
+# ─────────────────────────────────────────────────────────────────────────────
+# Builds a self-contained NVD data-feed cache image using the vulnz CLI.
+# vulnz is the official NVD mirroring tool from the dependency-check author and
+# produces the exact format that dependency-check 9.0+ (incl. 12.x) expects:
+#   nvdcve-YYYY.json.gz  (no "1.1-" prefix)
+#   nvdcve-modified.json.gz
+#   cache.properties
+#
+# Build (NVD API key strongly recommended — without one downloads take hours):
+#   docker build \
+#     --build-arg NVD_API_KEY=your-key \
+#     --tag nvd-cache \
+#     --file docker/Dockerfile.nvd-cache .
+#
+# For a quicker first-time setup (no build required) use start-cache.sh, which
+# pulls the official jeremylong/open-vulnerability-data-mirror image directly.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: download NVD data with vulnz ────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine AS downloader
+
+ARG VULNZ_VERSION=9.0.4
+ARG NVD_API_KEY=""
+
+RUN apk add --no-cache curl ca-certificates
+
+# Fetch the vulnz CLI JAR from the Open Vulnerability Project releases
+RUN curl -sSfL \
+    "https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v${VULNZ_VERSION}/vulnz-${VULNZ_VERSION}.jar" \
+    -o /vulnz.jar
+
+WORKDIR /nvd-cache
+
+# Create the NVD mirror.
+# • With NVD_API_KEY  → fast (seconds per page, ~5-10 min total)
+# • Without           → rate-limited to one request per 10 s (hours)
+# Get a free key at: https://nvd.nist.gov/developers/request-an-api-key
+RUN set -e; \
+    if [ -n "$NVD_API_KEY" ]; then \
+        echo "Using NVD API key — downloading cache ..."; \
+        java -Xmx2g -jar /vulnz.jar cve \
+             --cache --directory /nvd-cache \
+             --apiKey="$NVD_API_KEY"; \
+    else \
+        echo "WARNING: no NVD_API_KEY — rate limiting in effect (very slow)."; \
+        echo "  Pass --build-arg NVD_API_KEY=your-key for a ~5-10 min build."; \
+        java -Xmx2g -jar /vulnz.jar cve \
+             --cache --directory /nvd-cache; \
+    fi
+
+# ── Stage 2: serve with nginx ─────────────────────────────────────────────────
+FROM nginx:alpine
+
+COPY --from=downloader /nvd-cache /usr/share/nginx/html
+
+# Enable directory listing so dependency-check can discover the feed files.
+RUN printf 'server {\n\
+    listen       80;\n\
+    root         /usr/share/nginx/html;\n\
+    autoindex    on;\n\
+    location / {\n\
+        try_files $uri $uri/ =404;\n\
+    }\n\
+}\n' > /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+LABEL org.opencontainers.image.title="OWASP NVD cache (vulnz)" \
+      org.opencontainers.image.description="Self-contained NVD data-feed cache for offline OWASP Dependency-Check demos"
+
+

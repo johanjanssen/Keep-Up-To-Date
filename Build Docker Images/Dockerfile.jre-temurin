@@ -1,0 +1,17 @@
+# Runtime base: eclipse-temurin:25-jre  (Temurin 25.0.3+9 / Ubuntu 26.04)
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+FROM eclipse-temurin:25-jre@sha256:7ea65de6187ad8fbcc0ad155950c38664a7371148bb3ccf1ec1e1b286b44ad08
+WORKDIR /app
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

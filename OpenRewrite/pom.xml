@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        OpenRewrite Demo
+        ────────────────
+        Starting state (intentionally old):
+          • Spring Boot  2.7.18   ← last 2.x release
+          • Java         17
+          • JUnit        4.13.2
+
+        After running scripts/run-openrewrite.sh:
+          • Spring Boot  4.1.0    (javax → jakarta, Security / Actuator updates, …)
+          • Java         25       (text blocks, pattern matching, sequenced collections, …)
+          • JUnit        5        (@RunWith removed, @Before→@BeforeEach, Assert.*→Assertions.*)
+          • Code reformatted (AutoFormat) + null-safe equals (EqualsAvoidsNull)
+
+        OpenRewrite is NOT configured here — recipes run entirely from the command line.
+        See scripts/run-openrewrite.sh.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- ⬇ Intentionally old — OpenRewrite will upgrade this to 4.1.0 -->
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>openrewrite-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>openrewrite-demo</name>
+    <description>OpenRewrite demo: Spring Boot 2→4, Java 17→25, JUnit 4→5, AutoFormat, EqualsAvoidsNull</description>
+
+    <properties>
+        <!-- ⬇ Intentionally Java 17 — UpgradeToJava25 recipe bumps this to 25 -->
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            JUnit 4 is kept intentionally so the demo starts with old-style tests.
+            run-openrewrite.sh migrates them to JUnit 5 (Jupiter).
+            junit-vintage-engine lets them run before the migration.
+        -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+

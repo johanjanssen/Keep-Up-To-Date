@@ -1,0 +1,47 @@
+# Jenkins plugin list — installed at Docker image build time by jenkins-plugin-cli.
+# Pin versions here so Renovate can open PRs when newer plugin versions are released.
+#
+# Format: pluginId:version
+# Omit version to install latest compatible — useful during initial bootstrap,
+# but pin versions afterwards for reproducible builds.
+
+# ── Gitea SCM integration ─────────────────────────────────────────────────────
+# Discovers branches and PRs, manages Gitea webhooks, reports build status
+# back to each pull request (pass/fail check visible in the Gitea PR UI).
+gitea
+
+# ── Pipeline support ──────────────────────────────────────────────────────────
+# workflow-aggregator is a meta-plugin that pulls in all core Pipeline plugins
+# (pipeline-model-definition, workflow-cps, workflow-job, etc.)
+workflow-aggregator
+workflow-multibranch
+pipeline-stage-view
+
+# ── Git / SCM transport ───────────────────────────────────────────────────────
+git
+scm-api
+
+# ── Credentials ───────────────────────────────────────────────────────────────
+credentials
+credentials-binding
+plain-credentials
+ssh-credentials
+
+# ── Docker build agents ───────────────────────────────────────────────────────
+# Allows Pipeline to declare: agent { docker { image 'eclipse-temurin:25-jdk' } }
+# Each build stage runs inside a fresh container on the host Docker daemon.
+docker-workflow
+docker-plugin
+
+# ── Folder / Multibranch support ──────────────────────────────────────────────
+cloudbees-folder
+branch-api
+
+# ── Test result publishing ────────────────────────────────────────────────────
+junit
+
+# ── Jenkins Configuration as Code (JCasC) ────────────────────────────────────
+# Loads jenkins/casc/jenkins.yaml at startup — zero-click admin setup,
+# Gitea server connection, and credentials.
+configuration-as-code
+

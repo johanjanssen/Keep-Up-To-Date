@@ -1,0 +1,157 @@
+# Image tag:  hello-conference:jlink-cds-distroless-base
+# Base:       gcr.io/distroless/base-debian12
+#
+# Two production techniques layered on top of a minimal jlink JRE:
+#
+# 1. Tighter jlink module set
+#    jdeps detects the actual JDK modules the app bytecode touches.  Only
+#    genuinely required extras are appended (crypto providers, management,
+#    naming); heavyweight "safety" modules from other recipes (java.sql,
+#    java.xml, java.security.jgss, java.instrument, jdk.net) are omitted
+#    because this app does not use databases, Kerberos, or Java agents.
+#    Fewer modules → smaller JRE image layer.
+#
+# 2. AppCDS – Application Class Data Sharing  (production-grade, not a hack)
+#    The Spring Boot application is run once at image-build time with
+#    -XX:ArchiveClassesAtExit.  The JVM records every class it loads into a
+#    memory-mapped archive (.jsa file) that is bundled into the final image.
+#    At runtime, the JVM maps the archive read-only, so:
+#      - Startup:  class loading is bypassed for ~80-90% of classes
+#                  (~3 s → ~0.8-1.2 s)
+#      - Memory:   class metadata is shared as read-only pages; each new
+#                  container instance does NOT allocate its own copy
+#                  (~158 MiB → ~80-100 MiB with SerialGC)
+#    AppCDS is standard HotSpot, enabled by default in OpenJDK since JDK 12,
+#    and is actively used in production (Netflix, Alibaba, etc.).
+#
+# 3. Serial GC + container-aware heap sizing
+#    -XX:+UseSerialGC   eliminates G1's background threads and region-table
+#                       overhead – appropriate for heap sizes < ~256 MiB.
+#    -XX:+UseContainerSupport + -XX:MaxRAMPercentage=75.0
+#                       the JVM reads the cgroup memory limit set by Docker /
+#                       Kubernetes and sizes the heap as 75% of that limit.
+#                       No hard-coded -Xmx → the same image works in every
+#                       environment; just set --memory on docker run or
+#                       resources.limits.memory in Kubernetes.
+#
+# -Djava.security.egd=file:/dev/./urandom
+#    Avoids blocking on /dev/random during TLS initialisation in low-entropy
+#    container environments (common in Kubernetes).  Standard practice.
+#
+# ⚠  spring.context.exit=onRefresh requires Spring Boot 3.2+.
+
+# ── Stage 1: Maven build ──────────────────────────────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+# ── Stage 2: jlink – tightly scoped minimal JRE ───────────────
+FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS jre-builder
+WORKDIR /jlink-workspace
+
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
+
+# jdeps detects the real JDK module footprint of the fat JAR.
+# Extra modules appended:
+#   java.management     – Spring metrics, JVM health checks
+#   java.naming         – Spring JNDI lookups, log context naming
+#   jdk.management      – JVM management MBeans
+#   jdk.crypto.ec       – ECDHE cipher suites for TLS
+#   jdk.crypto.cryptoki – PKCS#11 cryptographic provider
+#   jdk.unsupported     – sun.misc.Unsafe (required by Netty, Reactor, cglib)
+# Intentionally excluded (not used by this app):
+#   java.sql            – JDBC / database drivers
+#   java.security.jgss  – Kerberos / GSSAPI
+#   java.instrument     – Java agents
+#   jdk.net             – extended socket options
+RUN set -eux; \
+    jar xf app.jar; \
+    DETECTED=$(jdeps \
+        --ignore-missing-deps \
+        --print-module-deps \
+        --multi-release 25 \
+        --recursive \
+        --class-path 'BOOT-INF/lib/*' \
+        BOOT-INF/classes \
+        $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
+        2>/dev/null | tail -1); \
+    echo "jdeps detected modules: ${DETECTED}"; \
+    EXTRA="java.management,java.naming,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported"; \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    echo "jlink modules: ${UNIQUE}"; \
+    jlink \
+        --add-modules "${UNIQUE}" \
+        --strip-debug \
+        --strip-java-debug-attributes \
+        --compress=zip-6 \
+        --no-header-files \
+        --no-man-pages \
+        --output /jre-minimal
+
+# Generate the base CDS archive for the custom JRE.
+# jlink custom runtimes have NO classes.jsa by default.  -XX:ArchiveClassesAtExit
+# (dynamic AppCDS) layers on top of a base archive; without one the JVM emits
+# "[cds] -XX:ArchiveClassesAtExit is unsupported when base CDS archive is not loaded"
+# and silently skips archive creation.  Running -Xshare:dump once fixes this.
+RUN /jre-minimal/bin/java -Xshare:dump 2>&1 | tail -5 && \
+    echo "Base CDS: $(du -sh /jre-minimal/lib/server/classes.jsa | cut -f1)"
+
+# ── Stage 3: AppCDS training run ──────────────────────────────
+# Run the application once with -XX:ArchiveClassesAtExit so the JVM records
+# every class it loads into a shared archive.  spring.context.exit=onRefresh
+# (Spring Boot 3.2+) causes Spring to call System.exit(0) immediately after the
+# application context is fully refreshed (Tomcat starts as part of the context
+# lifecycle, so it will appear in logs – that is expected).  On JVM exit the
+# archive is written to disk.
+# The exact same JRE binary (/jre-minimal/bin/java) is used here and at
+# runtime so the archive is guaranteed compatible.
+FROM debian:12-slim AS cds-builder
+COPY --from=jre-builder /jre-minimal /jre
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
+WORKDIR /app
+RUN /jre/bin/java \
+        -XX:ArchiveClassesAtExit=app-cds.jsa \
+        -Dspring.context.exit=onRefresh \
+        -jar app.jar 2>&1; \
+    test -f app-cds.jsa \
+        && echo "✅ CDS archive: $(du -sh app-cds.jsa | cut -f1)" \
+        || { echo "❌ CDS archive not created"; exit 1; }
+
+# ── Stage 4: distroless runtime ───────────────────────────────
+FROM gcr.io/distroless/base-debian12@sha256:e7e678c88c59e70e105a46549bb3fbfb3d732ee3b4afd3a19fdab2e15afaa6b3
+
+ENV JAVA_HOME=/jre
+ENV PATH="/jre/bin:${PATH}"
+
+COPY --from=jre-builder /jre-minimal /jre
+COPY --from=builder  /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=cds-builder /app/app-cds.jsa /app/app-cds.jsa
+
+WORKDIR /app
+EXPOSE 8080
+
+# JVM flag rationale:
+#   -XX:SharedArchiveFile   use the pre-built CDS archive (core of startup gain)
+#   -XX:+UseSerialGC        single-threaded GC; right choice for heap < ~256 MiB;
+#                           eliminates G1 background threads and region metadata
+#   -XX:+UseContainerSupport  honour cgroup memory limit (default since JDK 10,
+#                           explicit here for documentation)
+#   -XX:MaxRAMPercentage    size the heap as 75% of the container's memory limit;
+#                           set --memory / resources.limits.memory at deploy time
+#   -Djava.security.egd     use non-blocking urandom; prevents startup stall in
+#                           low-entropy container environments
+ENTRYPOINT ["/jre/bin/java", \
+    "-XX:SharedArchiveFile=/app/app-cds.jsa", \
+    "-XX:+UseSerialGC", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]
+

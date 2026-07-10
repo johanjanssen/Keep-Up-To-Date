@@ -1,0 +1,55 @@
+# Jenkins Configuration as Code (JCasC)
+# Loaded at container startup via the CASC_JENKINS_CONFIG env var.
+# All credentials are hardcoded here — this is a local demo only.
+
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          name: "Jenkins Admin"
+          properties:
+            - mailer:
+                emailAddress: "admin@example.com"
+          password: "Admin1234!"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  # Two executors on the built-in node.
+  # Actual Maven/Java build work runs in Docker agents (eclipse-temurin:25-jdk),
+  # so these executors only orchestrate Pipeline stages.
+  numExecutors: 5
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "gitea-token"
+              description: "Gitea admin credentials — git clone, API, and webhook management"
+              username: "gitadmin"
+              password: "Admin1234!"
+
+unclassified:
+  # location.url is used by Jenkins to build every URL it posts to Gitea
+  # (PR check links, build result links). Using localhost:8080 makes those
+  # links browser-clickable from the demo machine.
+  # The actual webhook delivery URL (Gitea → Jenkins) is registered manually
+  # in 04-start-jenkins.sh using the Docker-internal http://jenkins:8080/
+  # address, which Gitea can reach over the helloconference-dev-net bridge.
+  location:
+    url: "http://localhost:8080/"
+
+  giteaServers:
+    servers:
+      - displayName: "Local Gitea"
+        serverUrl: "http://gitea:3000"
+        # manageHooks:false — webhook is registered manually in 04-start-jenkins.sh.
+        # If set to true, Jenkins would register the webhook using location.url
+        # (http://localhost:8080/), which is unreachable from inside the Gitea container.
+        manageHooks: false
+        credentialsId: "gitea-token"
