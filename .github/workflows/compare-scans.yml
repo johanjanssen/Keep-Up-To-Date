@@ -1,0 +1,36 @@
+name: Compare Security Scans
+
+on:
+  push:
+    branches: [main]
+    paths: ['Compare Security Scans/**']
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Build Vulnerable App
+        run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
+
+      - name: Pull base images
+        run: bash "Build Docker Images/pull-base-images.sh"
+
+      - name: Run all scans and compare
+        run: bash "Compare Security Scans/scripts/run-all.sh" || true
+
+      - name: Upload comparison results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scan-comparison
+          path: Compare Security Scans/target/results/
+

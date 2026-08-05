@@ -1,0 +1,40 @@
+name: OWASP Dependency Check
+
+on:
+  push:
+    branches: [main]
+    paths: ['OWASP Dependency Check/**', 'Vulnerable Application/**']
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Build Vulnerable App
+        run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
+
+      - name: Start NVD cache
+        run: bash "OWASP Dependency Check/scripts/start-cache.sh"
+
+      - name: Update NVD cache
+        run: bash "OWASP Dependency Check/scripts/update-cache.sh"
+
+      - name: Run dependency check
+        run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-reports
+          path: |
+            Vulnerable Application/target/dependency-check-report.*
+

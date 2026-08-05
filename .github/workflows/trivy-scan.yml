@@ -1,0 +1,23 @@
+name: Trivy Scan
+
+on:
+  push:
+    branches: [main]
+    paths: ['Trivy/**']
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull base images
+        run: bash "Build Docker Images/pull-base-images.sh"
+
+      - name: Update Trivy DB
+        run: bash Trivy/scripts/update-db.sh
+
+      - name: Compare all images
+        run: bash Trivy/scripts/compare-images.sh
+
