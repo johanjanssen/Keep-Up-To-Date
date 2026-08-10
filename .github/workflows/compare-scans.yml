@@ -27,6 +27,17 @@ jobs:
       - name: Run all scans and compare
         run: bash "Compare Security Scans/scripts/run-all.sh" || true
 
+      - name: Generate presentation charts
+        run: |
+          pip install matplotlib numpy -q
+          # Base images chart
+          python3 "Compare Security Scans/scripts/generate-charts.py" \
+            "Compare Security Scans/target/results/trivy" \
+            "Compare Security Scans/target/results/charts" \
+            --title "Base Image CVE Comparison — Trivy" \
+            --prefix scan
+        continue-on-error: true
+
       - name: Upload comparison results
         uses: actions/upload-artifact@v4
         if: always()

@@ -45,6 +45,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Key:** Lower ms = faster. Java 25 benefits from improved JIT, compact headers, virtual threads, and ZGC." >> $GITHUB_STEP_SUMMARY
 
+      - name: "🖼️ Generate presentation charts"
+        run: |
+          pip install matplotlib numpy -q
+          python3 scripts/generate-charts.py \
+            results/java17.json "Java 17" \
+            results/java25.json "Java 25" \
+            results/charts java17-vs-java25
+
       - name: "📦 Upload results"
         uses: actions/upload-artifact@v4
         with:
@@ -99,6 +107,14 @@ jobs:
           echo "| Array layout | Pointers to heap objects | Contiguous flat data |" >> $GITHUB_STEP_SUMMARY
           echo "| Cache behavior | Pointer-chasing (misses) | Sequential access (fast) |" >> $GITHUB_STEP_SUMMARY
           echo "| GC pressure | Millions of small objects | Zero allocations |" >> $GITHUB_STEP_SUMMARY
+
+      - name: "🖼️ Generate presentation charts"
+        run: |
+          pip install matplotlib numpy -q
+          python3 scripts/generate-charts.py \
+            results/java25-valhalla.json "Java 25" \
+            results/java28-valhalla.json "Java 28 EA (Valhalla)" \
+            results/charts java25-vs-java28-valhalla
 
       - name: "📦 Upload results"
         uses: actions/upload-artifact@v4

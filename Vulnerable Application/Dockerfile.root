@@ -9,13 +9,13 @@
 #
 # Compare Trivy scans:  trivy image vuln-app:root  vs  trivy image vuln-app:safe
 
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /build
 COPY mvnw mvnw.cmd ./
 COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
-RUN chmod +x mvnw && ./mvnw package -DskipTests -q
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q -Djava.version=17
 
 # ⚠️ Old runtime image — Ubuntu 22.04 with hundreds of known CVEs
 FROM eclipse-temurin:17-jre-jammy

@@ -23,13 +23,12 @@ RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/false --create-home appuser && \
-    chown -R appuser:appuser /app
+# eclipse-temurin:25-jre already ships an 'ubuntu' user (uid=1000, gid=1000)
+# — reuse it instead of creating a duplicate group which causes "GID already exists"
+RUN chown -R ubuntu:ubuntu /app
 
-COPY --from=build --chown=appuser:appuser /build/target/*.jar app.jar
+COPY --from=build --chown=ubuntu:ubuntu /build/target/*.jar app.jar
 
-USER appuser
+USER ubuntu
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
