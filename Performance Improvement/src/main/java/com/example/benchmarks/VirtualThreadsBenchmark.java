@@ -75,9 +75,11 @@ public class VirtualThreadsBenchmark {
     public long virtualThreads() throws Exception {
         ExecutorService executor;
         try {
-            // Java 21+: use virtual threads
-            executor = Executors.newVirtualThreadPerTaskExecutor();
-        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            // Java 21+: use virtual threads via reflection so code compiles on Java 17
+            executor = (ExecutorService) Executors.class
+                    .getMethod("newVirtualThreadPerTaskExecutor")
+                    .invoke(null);
+        } catch (ReflectiveOperationException e) {
             // Java 17 fallback: cached thread pool (closest equivalent)
             executor = Executors.newCachedThreadPool();
         }

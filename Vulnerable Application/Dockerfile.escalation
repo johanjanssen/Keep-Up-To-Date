@@ -19,7 +19,7 @@ COPY src src
 RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 
 # ⚠️ Old image with vulnerable packages
-FROM eclipse-temurin:17.0.9-jre-jammy
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # ⚠️ policykit-1 includes pkexec (SUID root) vulnerable to CVE-2021-4034

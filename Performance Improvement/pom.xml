@@ -52,6 +52,12 @@
                                     <mainClass>org.openjdk.jmh.Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/BenchmarkList</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/CompilerHints</resource>
+                                </transformer>
                             </transformers>
                             <filters>
                                 <filter>
