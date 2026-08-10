@@ -1,0 +1,35 @@
+# 🔒  SECURE — modern minimal image, non-root, no extra packages
+#
+# The Java library vulnerabilities (Log4j, Jackson) still exist in the JAR,
+# but the IMPACT is severely limited:
+#   • Modern OS — patched glibc, no known CVEs
+#   • Non-root user — cannot access /etc/shadow, cannot install packages
+#   • No shell tools — no curl, no wget, no netcat, no gcc
+#   • No SUID binaries — no privilege escalation path
+#   • Minimal attack surface — nothing to exploit post-RCE
+#
+# This demonstrates: even if an attacker gets RCE via Log4Shell,
+# they can barely do anything in this container.
+
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /build
+COPY mvnw mvnw.cmd ./
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q
+
+# ✅ Modern minimal image — no extra packages
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid appuser --shell /bin/false --create-home appuser && \
+    chown -R appuser:appuser /app
+
+COPY --from=build --chown=appuser:appuser /build/target/*.jar app.jar
+
+USER appuser
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

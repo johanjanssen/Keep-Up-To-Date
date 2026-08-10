@@ -1,0 +1,41 @@
+# ⚠️  INTENTIONALLY INSECURE — old base image, runs as ROOT, bloated with packages
+#
+# Demonstrates the WORST CASE:
+#   • Old OS (Ubuntu 22.04 / glibc 2.35) — hundreds of known CVEs
+#   • Runs as root — any RCE gives full system access
+#   • Has policykit-1 installed — vulnerable to PwnKit (CVE-2021-4034)
+#   • Has curl, wget, netcat — attacker can exfiltrate data, open reverse shells
+#   • Has gcc — attacker can compile exploits on the spot
+#
+# Compare Trivy scans:  trivy image vuln-app:root  vs  trivy image vuln-app:safe
+
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /build
+COPY mvnw mvnw.cmd ./
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q
+
+# ⚠️ Old runtime image — Ubuntu 22.04 with hundreds of known CVEs
+FROM eclipse-temurin:17.0.5-jre
+WORKDIR /app
+
+# ⚠️ Install a dangerous mix of packages:
+#   • policykit-1: contains pkexec with SUID bit — CVE-2021-4034 (PwnKit)
+#     allows ANY local user to escalate to root
+#   • gcc + libc-dev: lets attacker compile exploits inside the container
+#   • curl, wget, netcat: exfiltration and reverse shell tools
+#   • sudo: often misconfigured, CVE-2021-3156 (Baron Samedit)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    policykit-1 \
+    gcc libc6-dev \
+    curl wget netcat-openbsd \
+    sudo iproute2 procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the fat jar — running as ROOT
+COPY --from=build /build/target/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

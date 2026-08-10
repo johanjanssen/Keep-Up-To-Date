@@ -1,0 +1,107 @@
+name: "🚀 Performance — Java 17 vs 25 vs 28 EA (Valhalla)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  benchmark-17-vs-25:
+    name: "📊 Java 17 vs Java 25"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Performance Improvement"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build images"
+        run: |
+          docker build -f Dockerfile.java17 -t bench:java17 .
+          docker build -f Dockerfile.java25 -t bench:java25 .
+
+      - name: "📊 Run Java 17 benchmarks"
+        run: |
+          mkdir -p results
+          docker run --rm -v "$(pwd)/results:/results" bench:java17 \
+            -f 1 -wi 2 -i 3 -p size=1000000 -p taskCount=10000 \
+            "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
+            2>&1 | tee results/java17-output.txt
+          cp results/results.json results/java17.json
+
+      - name: "📊 Run Java 25 benchmarks"
+        run: |
+          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
+            -f 1 -wi 2 -i 3 -p size=1000000 -p taskCount=10000 \
+            "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
+            2>&1 | tee results/java25-output.txt
+          cp results/results.json results/java25.json
+
+      - name: "📈 Compare Java 17 vs 25"
+        run: |
+          echo "## 🚀 Java 17 vs Java 25 — Performance Comparison" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python3 scripts/compare-results.py results/java17.json results/java25.json >> $GITHUB_STEP_SUMMARY 2>&1
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Key:** Lower ms = faster. Java 25 benefits from improved JIT, compact headers, virtual threads, and ZGC." >> $GITHUB_STEP_SUMMARY
+
+      - name: "📦 Upload results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-17-vs-25
+          path: "Performance Improvement/results/"
+
+  benchmark-25-vs-28:
+    name: "📊 Java 25 vs Java 28 EA (Valhalla)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Performance Improvement"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build images"
+        run: |
+          docker build -f Dockerfile.java25 -t bench:java25 .
+          docker build -f Dockerfile.java28 -t bench:java28 .
+
+      - name: "📊 Run Java 25 Valhalla benchmarks"
+        run: |
+          mkdir -p results
+          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
+            -f 1 -wi 2 -i 3 -p size=1000000 ".*Valhalla.*" \
+            2>&1 | tee results/java25-valhalla-output.txt
+          cp results/results.json results/java25-valhalla.json
+
+      - name: "📊 Run Java 28 EA Valhalla benchmarks"
+        run: |
+          docker run --rm -v "$(pwd)/results:/results" bench:java28 \
+            -f 1 -wi 2 -i 3 -p size=1000000 ".*Valhalla.*" \
+            2>&1 | tee results/java28-valhalla-output.txt
+          cp results/results.json results/java28-valhalla.json
+
+      - name: "📈 Compare Java 25 vs 28 EA (Valhalla)"
+        run: |
+          echo "## 🔮 Java 25 vs Java 28 EA — Valhalla Value Types" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Project Valhalla introduces **value classes** that eliminate object headers" >> $GITHUB_STEP_SUMMARY
+          echo "and enable flat array layouts — dramatically reducing memory and improving cache locality." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python3 scripts/compare-results.py results/java25-valhalla.json results/java28-valhalla.json >> $GITHUB_STEP_SUMMARY 2>&1
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### What Valhalla changes" >> $GITHUB_STEP_SUMMARY
+          echo "| Aspect | Java 25 (records) | Java 28 EA (value classes) |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------------------|---------------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Point object size | ~24 bytes (header + data) | ~8 bytes (flattened) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Array layout | Pointers to heap objects | Contiguous flat data |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cache behavior | Pointer-chasing (misses) | Sequential access (fast) |" >> $GITHUB_STEP_SUMMARY
+          echo "| GC pressure | Millions of small objects | Zero allocations |" >> $GITHUB_STEP_SUMMARY
+
+      - name: "📦 Upload results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-25-vs-28-valhalla
+          path: "Performance Improvement/results/"

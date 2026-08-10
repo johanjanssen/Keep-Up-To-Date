@@ -1,0 +1,14 @@
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /build
+COPY pom.xml .
+COPY src src
+RUN apt-get update && apt-get install -y maven && \
+    mvn package -DskipTests -q -Dmaven.compiler.source=25 -Dmaven.compiler.target=25
+
+FROM eclipse-temurin:25-jdk
+WORKDIR /app
+COPY --from=build /build/target/benchmarks.jar benchmarks.jar
+# Java 25 flags: compact headers (JEP 450), Generational ZGC, preview features
+ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", "-XX:+UseZGC", \
+    "-jar", "benchmarks.jar", "-rf", "json", "-rff", "/results/results.json"]
+

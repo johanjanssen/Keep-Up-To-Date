@@ -1,0 +1,16 @@
+FROM openjdk:28-ea-trixie AS build
+WORKDIR /build
+COPY pom.xml .
+COPY src src
+RUN apt-get update && apt-get install -y maven && \
+    mvn package -DskipTests -q \
+      -Dmaven.compiler.source=28 -Dmaven.compiler.target=28 \
+      -Dmaven.compiler.compilerArgs="--enable-preview"
+
+FROM openjdk:28-ea-trixie
+WORKDIR /app
+COPY --from=build /build/target/benchmarks.jar benchmarks.jar
+# Java 28 EA with Valhalla value types enabled
+ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", "-XX:+UseZGC", \
+    "-jar", "benchmarks.jar", "-rf", "json", "-rff", "/results/results.json"]
+

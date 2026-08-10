@@ -1,0 +1,11 @@
+FROM eclipse-temurin:17-jdk AS build
+WORKDIR /build
+COPY pom.xml .
+COPY src src
+RUN apt-get update && apt-get install -y maven && mvn package -DskipTests -q
+
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=build /build/target/benchmarks.jar benchmarks.jar
+ENTRYPOINT ["java", "-jar", "benchmarks.jar", "-rf", "json", "-rff", "/results/results.json"]
+
