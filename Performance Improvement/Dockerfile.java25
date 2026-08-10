@@ -1,9 +1,8 @@
-FROM eclipse-temurin:25-jdk AS build
+FROM maven:3-eclipse-temurin-25 AS build
 WORKDIR /build
 COPY pom.xml .
 COPY src src
-RUN apt-get update && apt-get install -y maven && \
-    mvn package -DskipTests -q -Dmaven.compiler.source=25 -Dmaven.compiler.target=25
+RUN mvn package -DskipTests -q -Dmaven.compiler.source=25 -Dmaven.compiler.target=25
 
 FROM eclipse-temurin:25-jdk
 WORKDIR /app

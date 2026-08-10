@@ -18,7 +18,7 @@ COPY src src
 RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 
 # ⚠️ Old runtime image — Ubuntu 22.04 with hundreds of known CVEs
-FROM eclipse-temurin:17.0.5-jre
+FROM eclipse-temurin:17.0.9-jre-jammy
 WORKDIR /app
 
 # ⚠️ Install a dangerous mix of packages:
