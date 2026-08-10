@@ -36,16 +36,33 @@ jobs:
             2>&1 | tee results/java25-output.txt
           cp results/results.json results/java25.json
 
-      - name: "📈 Compare Java 17 vs 25"
+      - name: "🧠 Run memory benchmarks (GC profiler)"
+        run: |
+          docker run --rm -v "$(pwd)/results:/results" bench:java17 \
+            -f 1 -wi 2 -i 3 -prof gc \
+            -p size=1000000 -p taskCount=10000 \
+            "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
+            2>&1 | tee results/java17-gc-output.txt
+          cp results/results.json results/java17-gc.json
+          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
+            -f 1 -wi 2 -i 3 -prof gc \
+            -p size=1000000 -p taskCount=10000 \
+            "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
+            2>&1 | tee results/java25-gc-output.txt
+          cp results/results.json results/java25-gc.json
+
+      - name: "📈 Compare Java 17 vs 25 + investigate"
         run: |
           echo "## 🚀 Java 17 vs Java 25 — Performance Comparison" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          python3 scripts/compare-results.py results/java17.json results/java25.json >> $GITHUB_STEP_SUMMARY 2>&1
+          python3 scripts/compare-results.py \
+            results/java17.json "Java 17" \
+            results/java25.json "Java 25" >> $GITHUB_STEP_SUMMARY 2>&1
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Key:** Lower ms = faster. Java 25 benefits from improved JIT, compact headers, virtual threads, and ZGC." >> $GITHUB_STEP_SUMMARY
+          echo "**Key:** Lower ms/op = faster. Java 25 benefits from improved JIT, compact headers, virtual threads, and ZGC." >> $GITHUB_STEP_SUMMARY
 
-      - name: "🖼️ Generate presentation charts"
+      - name: "🖼️ Generate speed charts"
         run: |
           pip install matplotlib numpy -q
           python3 scripts/generate-charts.py \
@@ -53,11 +70,45 @@ jobs:
             results/java25.json "Java 25" \
             results/charts java17-vs-java25
 
-      - name: "📦 Upload results"
+      - name: "🖼️ Generate memory charts"
+        run: |
+          python3 scripts/generate-charts.py --memory \
+            results/java17-gc.json "Java 17" \
+            results/java25-gc.json "Java 25" \
+            results/charts java17-vs-java25-memory
+        continue-on-error: true
+
+      - name: "📦 Upload raw results"
         uses: actions/upload-artifact@v4
         with:
           name: results-17-vs-25
           path: "Performance Improvement/results/"
+
+      - name: "📤 Upload chart — speed table"
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-17vs25-speed-table
+          path: "Performance Improvement/results/charts/java17-vs-java25-table.png"
+
+      - name: "📤 Upload chart — speed barplot"
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-17vs25-speed-barplot
+          path: "Performance Improvement/results/charts/java17-vs-java25-barplot.png"
+
+      - name: "📤 Upload chart — memory table"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-17vs25-memory-table
+          path: "Performance Improvement/results/charts/java17-vs-java25-memory-table.png"
+
+      - name: "📤 Upload chart — memory barplot"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-17vs25-memory-barplot
+          path: "Performance Improvement/results/charts/java17-vs-java25-memory-barplot.png"
 
   benchmark-25-vs-28:
     name: "📊 Java 25 vs Java 28 EA (Valhalla)"
@@ -89,7 +140,18 @@ jobs:
             2>&1 | tee results/java28-valhalla-output.txt
           cp results/results.json results/java28-valhalla.json
 
-      - name: "📈 Compare Java 25 vs 28 EA (Valhalla)"
+      - name: "🧠 Run Valhalla memory benchmarks (GC profiler)"
+        run: |
+          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
+            -f 1 -wi 2 -i 3 -prof gc -p size=1000000 ".*Valhalla.*" \
+            2>&1 | tee results/java25-valhalla-gc-output.txt
+          cp results/results.json results/java25-valhalla-gc.json
+          docker run --rm -v "$(pwd)/results:/results" bench:java28 \
+            -f 1 -wi 2 -i 3 -prof gc -p size=1000000 ".*Valhalla.*" \
+            2>&1 | tee results/java28-valhalla-gc-output.txt
+          cp results/results.json results/java28-valhalla-gc.json
+
+      - name: "📈 Compare Java 25 vs 28 EA (Valhalla) + investigate"
         run: |
           echo "## 🔮 Java 25 vs Java 28 EA — Valhalla Value Types" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -97,7 +159,9 @@ jobs:
           echo "and enable flat array layouts — dramatically reducing memory and improving cache locality." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          python3 scripts/compare-results.py results/java25-valhalla.json results/java28-valhalla.json >> $GITHUB_STEP_SUMMARY 2>&1
+          python3 scripts/compare-results.py \
+            results/java25-valhalla.json "Java 25" \
+            results/java28-valhalla.json "Java 28 EA (Valhalla)" >> $GITHUB_STEP_SUMMARY 2>&1
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### What Valhalla changes" >> $GITHUB_STEP_SUMMARY
@@ -108,7 +172,7 @@ jobs:
           echo "| Cache behavior | Pointer-chasing (misses) | Sequential access (fast) |" >> $GITHUB_STEP_SUMMARY
           echo "| GC pressure | Millions of small objects | Zero allocations |" >> $GITHUB_STEP_SUMMARY
 
-      - name: "🖼️ Generate presentation charts"
+      - name: "🖼️ Generate speed charts"
         run: |
           pip install matplotlib numpy -q
           python3 scripts/generate-charts.py \
@@ -116,8 +180,43 @@ jobs:
             results/java28-valhalla.json "Java 28 EA (Valhalla)" \
             results/charts java25-vs-java28-valhalla
 
-      - name: "📦 Upload results"
+      - name: "🖼️ Generate memory charts"
+        run: |
+          python3 scripts/generate-charts.py --memory \
+            results/java25-valhalla-gc.json "Java 25" \
+            results/java28-valhalla-gc.json "Java 28 EA (Valhalla)" \
+            results/charts java25-vs-java28-valhalla-memory
+        continue-on-error: true
+
+      - name: "📦 Upload raw results"
         uses: actions/upload-artifact@v4
         with:
           name: results-25-vs-28-valhalla
           path: "Performance Improvement/results/"
+
+      - name: "📤 Upload chart — speed table"
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-25vs28-speed-table
+          path: "Performance Improvement/results/charts/java25-vs-java28-valhalla-table.png"
+
+      - name: "📤 Upload chart — speed barplot"
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-25vs28-speed-barplot
+          path: "Performance Improvement/results/charts/java25-vs-java28-valhalla-barplot.png"
+
+      - name: "📤 Upload chart — memory table"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-25vs28-memory-table
+          path: "Performance Improvement/results/charts/java25-vs-java28-valhalla-memory-table.png"
+
+      - name: "📤 Upload chart — memory barplot"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-25vs28-memory-barplot
+          path: "Performance Improvement/results/charts/java25-vs-java28-valhalla-memory-barplot.png"
+

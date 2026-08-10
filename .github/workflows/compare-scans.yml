@@ -18,30 +18,63 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Build Vulnerable App
-        run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
+      - name: Build hello-conference app
+        run: ./mvnw package -DskipTests -q
 
-      - name: Pull base images
-        run: bash "Build Docker Images/pull-base-images.sh"
+      - name: Pull & tag base images
+        run: |
+          bash "Build Docker Images/pull-base-images.sh"
+          # Ensure tag-based lookup works after digest-pinned pulls
+          source images.conf
+          for IMG in "${BASE_IMAGES[@]}"; do
+            docker image inspect "$IMG" >/dev/null 2>&1 || docker pull "$IMG" || true
+          done
 
-      - name: Run all scans and compare
-        run: bash "Compare Security Scans/scripts/run-all.sh" || true
+      - name: Build all hello-conference Docker images
+        run: bash "Build Docker Images/build-all-images.sh"
+
+      - name: Scan with Grype
+        run: bash "Compare Security Scans/scripts/scan-grype.sh"
+
+      - name: Scan with Trivy
+        run: bash "Compare Security Scans/scripts/scan-trivy.sh"
+
+      - name: Compare results (plain text)
+        run: |
+          bash "Compare Security Scans/scripts/compare.sh" 2>&1 | tee /tmp/compare-output.txt
+          echo "## 📊 Security Scan Comparison — Trivy vs Grype" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/compare-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Generate presentation charts
         run: |
           pip install matplotlib numpy -q
-          # Base images chart
           python3 "Compare Security Scans/scripts/generate-charts.py" \
             "Compare Security Scans/target/results/trivy" \
+            "Compare Security Scans/target/results/grype" \
             "Compare Security Scans/target/results/charts" \
-            --title "Base Image CVE Comparison — Trivy" \
+            --title "Container Image CVE Comparison — Trivy vs Grype" \
             --prefix scan
         continue-on-error: true
 
-      - name: Upload comparison results
+      - name: Upload comparison data
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: scan-comparison
+          name: scan-comparison-data
           path: Compare Security Scans/target/results/
 
+      - name: Upload chart — comparison table
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-scan-table
+          path: Compare Security Scans/target/results/charts/scan-table.png
+
+      - name: Upload chart — comparison barplot
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chart-scan-barplot
+          path: Compare Security Scans/target/results/charts/scan-barplot.png
