@@ -101,6 +101,7 @@ docker run \
     --name "${CONTAINER_NAME}" \
     --publish "${HOST_PORT}:80" \
     --volume "${DOCKER_DATA_DIR}:/usr/local/apache2/htdocs" \
+    --user root \
     "${ENV_ARGS[@]}" \
     "${MIRROR_IMAGE}"
 
