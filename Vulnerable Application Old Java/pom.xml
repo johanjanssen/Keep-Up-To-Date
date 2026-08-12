@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--
+    INTENTIONALLY VULNERABLE — Old Java Demo App
+    ─────────────────────────────────────────────
+    This app uses Spring Boot 2.7.18 + Java 11 + log4j-core 2.14.1 to
+    demonstrate WORKING exploits: Log4Shell, Jackson deserialization, PwnKit.
+
+    It is separate from the main "Vulnerable Application" (Spring Boot 4.1.0 +
+    Java 25) which is used by the Build Docker Images for CVE scanning demos.
+
+    Known vulnerabilities:
+      • log4j-core 2.14.1    — CVE-2021-44228 (Log4Shell, CVSS 10.0)
+      • jackson-databind 2.13.4.1 — CVE-2022-42003, CVE-2022-42004
+	-->
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<!--
+		    ⚠️  Pinned to 2.7.18 (last Spring Boot 2.x) so the app runs on Java 11.
+		    log4j-core 2.14.1 has binary incompatibilities with Java 17+ that prevent
+		    startup; Java 11 is the highest JVM where 2.14.1 runs without crashes.
+		-->
+		<version>2.7.18</version>
+		<relativePath/>
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>HelloConference</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>HelloConference</name>
+	<description>Intentionally vulnerable demo app — Old Java version for live exploit demos</description>
+
+	<properties>
+		<java.version>11</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<!-- Remove log4j-to-slf4j bridge so Log4Shell is active -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- log4j-api must match log4j-core exactly -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.14.1</version>
+		</dependency>
+
+		<!-- ⚠️ Log4Shell — CVE-2021-44228 (CVSS 10.0) -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.14.1</version>
+		</dependency>
+
+		<!-- ⚠️ Jackson Databind — CVE-2022-42003, CVE-2022-42004 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.4.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+

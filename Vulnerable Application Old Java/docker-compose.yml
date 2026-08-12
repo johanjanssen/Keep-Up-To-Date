@@ -1,0 +1,73 @@
+version: '3.8'
+
+# Docker Compose for running the vulnerable app demos locally.
+# Usage:
+#   docker compose up                       # Run everything
+#   docker compose up vuln-root callback    # Root image + callback
+#   docker compose up vuln-escalation callback  # Privilege escalation demo
+
+services:
+  # ──────────────────────────────────────────────────────────────
+  # Local callback server (Spring Boot) — catches JNDI/SSRF callbacks
+  # Live dashboard: http://localhost:9999/dashboard/live
+  # ──────────────────────────────────────────────────────────────
+  callback:
+    build:
+      context: "../Callback Server"
+      dockerfile: Dockerfile
+    container_name: callback-server
+    ports:
+      - "9999:9999"
+      - "1389:1389"
+    networks:
+      - vuln-net
+
+  # ──────────────────────────────────────────────────────────────
+  # ROOT + old image + bloated packages (worst case)
+  # ──────────────────────────────────────────────────────────────
+  vuln-root:
+    build:
+      context: .
+      dockerfile: Dockerfile.root
+    container_name: vuln-app-root
+    ports:
+      - "8080:8080"
+    depends_on:
+      - callback
+    networks:
+      - vuln-net
+
+  # ──────────────────────────────────────────────────────────────
+  # Non-root BUT old image with vulnerable pkexec (PwnKit demo)
+  # ──────────────────────────────────────────────────────────────
+  vuln-escalation:
+    build:
+      context: .
+      dockerfile: Dockerfile.escalation
+    container_name: vuln-app-escalation
+    ports:
+      - "8081:8080"
+    depends_on:
+      - callback
+    networks:
+      - vuln-net
+
+  # ──────────────────────────────────────────────────────────────
+  # Non-root + modern minimal image (secure)
+  # ──────────────────────────────────────────────────────────────
+  vuln-safe:
+    build:
+      context: .
+      dockerfile: Dockerfile.nonroot
+    container_name: vuln-app-safe
+    ports:
+      - "8082:8080"
+    depends_on:
+      - callback
+    networks:
+      - vuln-net
+
+networks:
+  vuln-net:
+    driver: bridge
+

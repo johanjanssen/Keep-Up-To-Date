@@ -1,0 +1,50 @@
+# ⚠️  Non-root user BUT old base image with vulnerable OS packages
+#
+# Demonstrates that running as non-root is NOT enough if OS packages
+# have privilege escalation vulnerabilities:
+#   • Runs as appuser (uid=1000) — not root
+#   • BUT has policykit-1 with CVE-2021-4034 (PwnKit)
+#   • pkexec is SUID root → any user can escalate to root!
+#   • Has gcc to compile the exploit
+#
+# This is the "false sense of security" scenario:
+# "We run as non-root, we're safe!" — WRONG if packages are vulnerable.
+
+FROM maven:3-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY pom.xml .
+COPY src src
+RUN mvn package -DskipTests -q
+
+# ⚠️ Old image with vulnerable packages
+# Uses Java 11 JRE so log4j-core 2.14.1 starts without JVM binary-compat crashes
+FROM eclipse-temurin:11-jre-jammy
+WORKDIR /app
+
+# ⚠️ policykit-1 includes pkexec (SUID root) vulnerable to CVE-2021-4034
+# gcc allows compiling the exploit inside the container
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    policykit-1 \
+    gcc libc6-dev \
+    curl netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser && \
+    chown -R appuser:appuser /app
+
+COPY --from=build --chown=appuser:appuser /build/target/*.jar app.jar
+
+USER appuser
+EXPOSE 8080
+
+# ⚠️ -Dcom.sun.jndi.ldap.object.trustURLCodebase=true re-enables remote class
+# loading via JNDI. This was the default before Java 8u191 and is still found in
+# many real-world deployments (older JVMs, misconfigured containers, legacy apps).
+# With this flag, Log4Shell achieves FULL RCE via a single HTTP request.
+ENTRYPOINT ["java", \
+    "-Dlog4j2.formatMsgNoLookups=false", \
+    "-Dcom.sun.jndi.ldap.object.trustURLCodebase=true", \
+    "-Dcom.sun.jndi.rmi.object.trustURLCodebase=true", \
+    "-jar", "app.jar"]
