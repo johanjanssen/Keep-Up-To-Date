@@ -29,7 +29,7 @@ jobs:
         run: |
           mv Jacoco JacocoComplete
           mkdir -p Jacoco
-          cp -r Jacoco/target/coverage-report/* Jacoco/
+          cp -r JacocoComplete/target/coverage-report Jacoco
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
