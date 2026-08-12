@@ -94,10 +94,11 @@ RUN set -eux; \
         --class-path 'BOOT-INF/lib/*' \
         BOOT-INF/classes \
         $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
-        2>/dev/null | tail -1); \
+        2>/dev/null | tail -1) || true; \
+    [ -z "${DETECTED}" ] && DETECTED="java.base"; \
     echo "jdeps detected modules: ${DETECTED}"; \
     EXTRA="java.management,java.naming,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.crac"; \
-    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | grep -v '^$' | paste -sd ','); \
     echo "jlink modules: ${UNIQUE}"; \
     jlink \
         --add-modules "${UNIQUE}" \
@@ -141,3 +142,4 @@ EXPOSE 8080
 # step done by build-crac-azul-distroless-base.sh.  Can also be used to test a
 # cold (non-CRaC) start: docker run hello-conference:crac-azul-pre
 ENTRYPOINT ["/jre/bin/java", "-jar", "app.jar"]
+ | paste -sd ','); \

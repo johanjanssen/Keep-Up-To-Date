@@ -29,10 +29,11 @@ RUN set -eux; \
         --class-path 'BOOT-INF/lib/*' \
         BOOT-INF/classes \
         $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
-        2>/dev/null | tail -1); \
+        2>/dev/null | tail -1) || true; \
+    [ -z "${DETECTED}" ] && DETECTED="java.base"; \
     echo "jdeps detected modules: ${DETECTED}"; \
     EXTRA="java.management,java.naming,java.security.jgss,java.instrument,java.sql,java.xml,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.net"; \
-    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | grep -v '^$' | paste -sd ','); \
     echo "jlink modules: ${UNIQUE}"; \
     jlink \
         --add-modules "${UNIQUE}" \

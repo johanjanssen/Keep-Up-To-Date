@@ -48,10 +48,10 @@ COPY mvnw mvnw
 COPY .mvn .mvn
 COPY pom.xml pom.xml
 
-# Swap WebMVC (Tomcat) → WebFlux (Netty) before downloading dependencies.
-# The precise pattern avoids matching spring-boot-starter-webmvc-test.
+# Swap Web (Tomcat) → WebFlux (Netty) before downloading dependencies.
+# Spring Boot 4.x uses starter-web (which includes webmvc transitively).
 RUN sed -i \
-    's|<artifactId>spring-boot-starter-webmvc</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
+    's|<artifactId>spring-boot-starter-web</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
     pom.xml
 
 RUN chmod +x mvnw && \

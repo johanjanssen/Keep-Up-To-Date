@@ -19,10 +19,10 @@ COPY mvnw mvnw
 COPY .mvn .mvn
 COPY pom.xml pom.xml
 
-# Swap WebMVC (Tomcat) → WebFlux (Netty) before downloading dependencies.
-# The precise pattern avoids matching spring-boot-starter-webmvc-test.
+# Swap Web (Tomcat) → WebFlux (Netty) before downloading dependencies.
+# Spring Boot 4.x uses starter-web (which includes webmvc transitively).
 RUN sed -i \
-    's|<artifactId>spring-boot-starter-webmvc</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
+    's|<artifactId>spring-boot-starter-web</artifactId>|<artifactId>spring-boot-starter-webflux</artifactId>|g' \
     pom.xml
 
 RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
@@ -51,10 +51,11 @@ RUN set -eux; \
         --class-path 'BOOT-INF/lib/*' \
         BOOT-INF/classes \
         $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
-        2>/dev/null | tail -1); \
+        2>/dev/null | tail -1) || true; \
+    [ -z "${DETECTED}" ] && DETECTED="java.base"; \
     echo "jdeps detected modules: ${DETECTED}"; \
     EXTRA="java.management,java.naming,java.security.jgss,java.instrument,java.sql,java.xml,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.net"; \
-    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | grep -v '^$' | paste -sd ','); \
     echo "jlink modules: ${UNIQUE}"; \
     jlink \
         --add-modules "${UNIQUE}" \

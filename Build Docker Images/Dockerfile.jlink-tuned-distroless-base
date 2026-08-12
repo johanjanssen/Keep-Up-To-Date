@@ -70,10 +70,11 @@ RUN set -eux; \
         --class-path 'BOOT-INF/lib/*' \
         BOOT-INF/classes \
         $(find BOOT-INF/lib -name '*.jar' | tr '\n' ' ') \
-        2>/dev/null | tail -1); \
+        2>/dev/null | tail -1) || true; \
+    [ -z "${DETECTED}" ] && DETECTED="java.base"; \
     echo "jdeps detected modules: ${DETECTED}"; \
     EXTRA="java.management,java.naming,jdk.management,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported"; \
-    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | paste -sd ','); \
+    UNIQUE=$(echo "${DETECTED},${EXTRA}" | tr ',' '\n' | sort -u | grep -v '^$' | paste -sd ','); \
     echo "jlink modules: ${UNIQUE}"; \
     jlink \
         --add-modules "${UNIQUE}" \
@@ -111,4 +112,3 @@ ENTRYPOINT ["/jre/bin/java", \
     "-XX:MaxRAMPercentage=75.0", \
     "-Djava.security.egd=file:/dev/./urandom", \
     "-jar", "app.jar"]
-
