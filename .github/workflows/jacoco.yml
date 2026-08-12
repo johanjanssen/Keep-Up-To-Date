@@ -21,10 +21,10 @@ jobs:
       - name: Run JaCoCo port-based demo
         run: bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: jacoco-coverage-report
           path: Jacoco/target/coverage-report/
 
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

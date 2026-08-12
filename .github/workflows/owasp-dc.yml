@@ -22,19 +22,24 @@ jobs:
         run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
 
       - name: Start NVD cache
+        env:
+          # This maps your GitHub secret to an environment variable the tool can read
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: bash "OWASP Dependency Check/scripts/start-cache.sh"
 
       - name: Update NVD cache
+        env:
+          # This maps your GitHub secret to an environment variable the tool can read
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: bash "OWASP Dependency Check/scripts/update-cache.sh"
 
       - name: Run dependency check
         run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
 
-      - name: Upload reports
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: owasp-reports
-          path: |
-            Vulnerable Application/target/dependency-check-report.*
+          path: Vulnerable Application/target/dependency-check-report.*
 
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

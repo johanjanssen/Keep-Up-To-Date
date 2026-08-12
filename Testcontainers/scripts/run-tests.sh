@@ -27,12 +27,6 @@ echo "============================================================"
 echo "  Testcontainers Demo — Integration Tests"
 echo "============================================================"
 echo ""
-echo "  Tests:"
-echo "    UserRepositoryIntegrationTest  — PostgreSQL (postgres:16-alpine)"
-echo ""
-echo "  Testcontainers pulls the Docker image on first run (~10s)."
-echo "  Subsequent runs use the Docker layer cache."
-echo ""
 
 # Check Docker is running
 if ! docker info >/dev/null 2>&1; then
@@ -40,25 +34,4 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "-> Docker OK"
-echo ""
-echo "-> Running tests..."
-echo "------------------------------------------------------------"
-echo ""
-
 "$MVNW" -f "$PROJECT_DIR/pom.xml" test
-
-echo ""
-echo "------------------------------------------------------------"
-echo "OK  All tests passed."
-echo ""
-echo "  To run the app with real containers (DevMode):"
-echo "    ../mvnw -f pom.xml spring-boot:run"
-echo ""
-echo "  REST endpoints:"
-echo "    curl http://localhost:8080/users"
-echo "    curl -X POST http://localhost:8080/users \\"
-echo "         -H 'Content-Type: application/json' \\"
-echo "         -d '{\"name\":\"Alice\",\"email\":\"alice@example.com\"}'"
-echo "------------------------------------------------------------"
-echo ""

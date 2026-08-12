@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration test that spins up a real PostgreSQL database using Testcontainers.
  *
- * @ServiceConnection (Spring Boot 3.1+) automatically wires the container's
- * host/port/credentials into the DataSource — no @DynamicPropertySource needed.
- *
  * The static @Container field is shared across all tests in this class:
  * the container starts once and is reused for every @Test method.
  */
