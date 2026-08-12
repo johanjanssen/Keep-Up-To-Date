@@ -27,6 +27,7 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
+          mkdir -p tmp/coverage-report/Jacoco
           mv JaCoCo/target/coverage-report tmp/coverage-report/Jacoco
 
       - name: Upload Pages Artifact
