@@ -43,7 +43,11 @@ public class HelloConferenceController {
     // ─────────────────────────────────────────────────────────────────
     @GetMapping("/api/products/search")
     public ResponseEntity<Map<String, Object>> searchProducts(@RequestParam String q) {
-        log.info("Product search query: {}", q);
+        // ⚠️  String concatenation puts the payload directly in the Log4j format string —
+        // this guarantees the JNDI substitution fires regardless of API/core version details.
+        // In real production code developers write log.info("... {}", q) thinking it's safe;
+        // Log4j 2.14.1 is vulnerable in BOTH forms.
+        log.info("Product search query: " + q);
 
         List<Map<String, String>> results = List.of(
                 Map.of("id", "1", "name", "Conference T-Shirt", "price", "25.00"),

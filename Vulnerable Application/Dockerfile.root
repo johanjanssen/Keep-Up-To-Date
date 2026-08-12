@@ -15,10 +15,12 @@ COPY mvnw mvnw.cmd ./
 COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
-RUN chmod +x mvnw && ./mvnw package -DskipTests -q -Djava.version=17
+# pom.xml sets java.version=11 — Java 17 JDK compiles to Java 11 bytecode
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 
 # ⚠️ Old runtime image — Ubuntu 22.04 with hundreds of known CVEs
-FROM eclipse-temurin:17-jre-jammy
+# Uses Java 11 JRE so log4j-core 2.14.1 starts without JVM binary-compat crashes
+FROM eclipse-temurin:11-jre-jammy
 WORKDIR /app
 
 # ⚠️ Install a dangerous mix of packages:
@@ -38,4 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /build/target/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+    "-Dlog4j2.formatMsgNoLookups=false", \
+    "-Dcom.sun.jndi.ldap.object.trustURLCodebase=true", \
+    "-Dcom.sun.jndi.rmi.object.trustURLCodebase=true", \
+    "-jar", "app.jar"]

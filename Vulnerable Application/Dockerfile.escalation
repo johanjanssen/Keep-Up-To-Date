@@ -16,10 +16,12 @@ COPY mvnw mvnw.cmd ./
 COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
-RUN chmod +x mvnw && ./mvnw package -DskipTests -q -Djava.version=17
+# pom.xml sets java.version=11 — Java 17 JDK compiles to Java 11 bytecode
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 
 # ⚠️ Old image with vulnerable packages
-FROM eclipse-temurin:17-jre-jammy
+# Uses Java 11 JRE so log4j-core 2.14.1 starts without JVM binary-compat crashes
+FROM eclipse-temurin:11-jre-jammy
 WORKDIR /app
 
 # ⚠️ policykit-1 includes pkexec (SUID root) vulnerable to CVE-2021-4034
@@ -45,9 +47,7 @@ EXPOSE 8080
 # many real-world deployments (older JVMs, misconfigured containers, legacy apps).
 # With this flag, Log4Shell achieves FULL RCE via a single HTTP request.
 ENTRYPOINT ["java", \
+    "-Dlog4j2.formatMsgNoLookups=false", \
     "-Dcom.sun.jndi.ldap.object.trustURLCodebase=true", \
     "-Dcom.sun.jndi.rmi.object.trustURLCodebase=true", \
     "-jar", "app.jar"]
-
-
-
