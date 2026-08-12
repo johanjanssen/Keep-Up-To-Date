@@ -27,14 +27,15 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mv Jacoco JacocoComplete
-          mkdir -p Jacoco
-          cp -r JacocoComplete/target/coverage-report Jacoco
+          mv JaCoCo/target/coverage-report JaCoCo/target/coverage-report/Jacoco
+          ls JaCoCo/target/coverage-report
+          echo "bla"
+          ls JaCoCo/target/coverage-report/Jacoco
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: Jacoco
+          path: JaCoCo/target/coverage-report
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
