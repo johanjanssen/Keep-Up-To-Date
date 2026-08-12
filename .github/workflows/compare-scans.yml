@@ -18,8 +18,8 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Build hello-conference app
-        run: ./mvnw package -DskipTests -q
+      # Note: Docker multi-stage builds compile the app internally.
+      # No separate Maven build needed here.
 
       - name: Pull & tag base images
         run: |

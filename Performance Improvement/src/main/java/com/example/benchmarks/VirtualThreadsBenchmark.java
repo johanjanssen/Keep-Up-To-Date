@@ -35,7 +35,7 @@ public class VirtualThreadsBenchmark {
     @Param({"10000", "50000"})
     private int taskCount;
 
-    private static final int SIMULATED_IO_MS = 1; // simulates brief I/O
+    private static final int SIMULATED_IO_MS = 5; // simulates brief I/O (DB call, HTTP request)
 
     /**
      * Platform threads with a fixed thread pool (Java 17 approach).
@@ -80,8 +80,11 @@ public class VirtualThreadsBenchmark {
                     .getMethod("newVirtualThreadPerTaskExecutor")
                     .invoke(null);
         } catch (ReflectiveOperationException e) {
-            // Java 17 fallback: cached thread pool (closest equivalent)
-            executor = Executors.newCachedThreadPool();
+            // Java 17 fallback: same fixed pool as platformThreadPool()
+            // This makes the comparison fair — virtual threads vs. same pool size.
+            executor = Executors.newFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors() * 2
+            );
         }
 
         AtomicLong counter = new AtomicLong();

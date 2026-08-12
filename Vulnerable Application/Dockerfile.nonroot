@@ -11,7 +11,7 @@
 # This demonstrates: even if an attacker gets RCE via Log4Shell,
 # they can barely do anything in this container.
 
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /build
 COPY mvnw mvnw.cmd ./
 COPY .mvn .mvn

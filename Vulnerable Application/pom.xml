@@ -11,7 +11,7 @@
 
     Known vulnerabilities in this pom:
       • log4j-core 2.14.1    — CVE-2021-44228 (Log4Shell, CVSS 10.0), CVE-2021-45046
-      • jackson-databind 2.9.10 — multiple CVEs (deserialization, 2019–2020)
+      • jackson-databind 2.13.4.1 — CVE-2022-42003, CVE-2022-42004 (deserialization)
 
     DO NOT use these versions in a real project.
 	-->
@@ -94,32 +94,18 @@
 		    With enableDefaultTyping(), an attacker can instantiate arbitrary classes
 		    via crafted JSON payloads.
 		-->
+		<!--
+		    ⚠️  Jackson Databind — CVE-2022-42003, CVE-2022-42004 (CVSS 7.5)
+		    Version 2.13.4.1 is old enough to have CVEs and demonstrates unsafe
+		    deserialization with enableDefaultTyping(), yet new enough to be
+		    compatible with Spring Boot 2.7.x's Jackson auto-configuration.
+		    (2.9.10 was too old — Spring Boot 2.7.x's JavaTimeModule needs classes
+		    added in 2.12+, causing NoClassDefFoundError at startup.)
+		-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<!-- Intentionally old for demo purpose -->
-			<version>2.9.10</version>
-		</dependency>
-		<!--
-		    ⚠️  Pin jackson-datatype-jsr310 to match jackson-databind 2.9.10.
-		    Spring Boot 2.7.x would otherwise pull in jsr310:2.14.x which uses
-		    ToStringSerializerBase — a class that does not exist in databind 2.9.10,
-		    causing a NoClassDefFoundError at startup.
-		-->
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.9.10</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>2.9.10</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.9.10</version>
+			<version>2.13.4.1</version>
 		</dependency>
 	</dependencies>
 

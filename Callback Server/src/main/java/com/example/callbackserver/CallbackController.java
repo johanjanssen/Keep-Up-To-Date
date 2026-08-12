@@ -33,8 +33,9 @@ public class CallbackController {
                                            @RequestBody(required = false) String body) throws IOException {
         String path = request.getRequestURI();
 
-        // Don't log requests to our own dashboard
-        if (path.startsWith("/dashboard") || path.equals("/favicon.ico")) {
+        // Don't intercept internal paths
+        if (path.startsWith("/dashboard") || path.equals("/favicon.ico")
+                || path.startsWith("/exploit") || path.startsWith("/exploits")) {
             return ResponseEntity.ok("OK");
         }
 
