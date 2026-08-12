@@ -25,10 +25,16 @@ jobs:
       - name: Run JaCoCo port-based demo
         run: bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"
 
+      - name: Prepare Pages directory
+        run: |
+          mv Jacoco JacocoComplete
+          mkdir -p Jacoco
+          cp -r Jacoco/target/coverage-report/* Jacoco/
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: Jacoco/target/coverage-report/
+          path: Jacoco
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
