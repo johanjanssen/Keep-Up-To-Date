@@ -142,4 +142,3 @@ EXPOSE 8080
 # step done by build-crac-azul-distroless-base.sh.  Can also be used to test a
 # cold (non-CRaC) start: docker run hello-conference:crac-azul-pre
 ENTRYPOINT ["/jre/bin/java", "-jar", "app.jar"]
- | paste -sd ','); \
