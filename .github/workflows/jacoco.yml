@@ -3,7 +3,7 @@ name: JaCoCo Demo
 on:
   push:
     branches: [main]
-    paths: ['Jacoco/**']
+    paths: ['JaCoCo/**']
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           java-version: '25'
 
       - name: Run JaCoCo port-based demo
-        run: bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"
+        run: bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"
 
       - name: Prepare Pages directory
         run: |
