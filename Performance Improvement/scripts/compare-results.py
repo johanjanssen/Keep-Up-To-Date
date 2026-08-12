@@ -8,20 +8,6 @@ Usage:
 """
 import json, sys
 
-REGRESSION_HINTS = {
-    'platformThreadPool': (
-        "Platform-thread pool is intentionally capped — this measures queueing overhead, "
-        "not raw throughput. Improvement shows with larger taskCounts."),
-    'virtualThreads': (
-        "On Java 17 this falls back to a cached thread pool; on Java 21+ real virtual "
-        "threads are used. With small taskCounts overhead dominates; try taskCount=100000."),
-    'allocateSmallObjects': (
-        "GC improvements in Java 21+ (ZGC/G1 tuning) may reduce allocation throughput "
-        "slightly while improving pause times — a different trade-off, not a regression."),
-    'recordStyleAllocation': (
-        "Record allocation cost is similar across versions; improvement appears at scale."),
-}
-
 def load_results(path):
     with open(path, encoding='utf-8-sig') as f:
         data = json.load(f)
@@ -68,10 +54,12 @@ def main():
 
     all_benchmarks = sorted(set(r_a) | set(r_b))
     col_w = max(len(b) for b in all_benchmarks) + 2
+    # Truncate labels if too wide for table
+    la = label_a[:12]
+    lb = label_b[:12]
 
     # ── Plain-text table ──────────────────────────────────────────────────────
-    header = (f"\n{'Benchmark':<{col_w}} {label_a:>12} {label_b:>12} "
-              f"{'Improvement':>13}  Unit")
+    header = f"\n{'Benchmark':<{col_w}} {la:>12} {lb:>12} {'Δ':>8}  Unit"
     print(header)
     print('─' * len(header))
 
@@ -82,7 +70,7 @@ def main():
         sa_str   = f'{sa:.2f}' if sa is not None else 'N/A'
         sb_str   = f'{sb:.2f}' if sb is not None else 'N/A'
         imp      = improvement(sa, sb, unit)
-        print(f'{name:<{col_w}} {sa_str:>12} {sb_str:>12} {imp:>13}  {unit}')
+        print(f'{name:<{col_w}} {sa_str:>12} {sb_str:>12} {imp:>8}  {unit}')
 
         # Flag regressions
         if sa and sb and sa > 0:
@@ -95,29 +83,11 @@ def main():
 
     # ── Investigation ─────────────────────────────────────────────────────────
     if regressions:
-        print('─' * 72)
-        print(f'INVESTIGATION  {label_b} appears slower in {len(regressions)} benchmark(s):')
-        print('─' * 72)
+        print('─' * 60)
+        print(f'NOTE: {label_b} appears slower in {len(regressions)} benchmark(s):')
+        print('─' * 60)
         for name, pct, unit in regressions:
-            print(f'\n  ⚠  {name}  ({pct:.1f}%)')
-            hint = next((v for k, v in REGRESSION_HINTS.items()
-                         if k.lower() in name.lower()), None)
-            if hint:
-                # wrap hint at 70 chars
-                words, line = hint.split(), ''
-                for w in words:
-                    if len(line) + len(w) + 1 > 70:
-                        print(f'     {line}'); line = w
-                    else:
-                        line = f'{line} {w}' if line else w
-                if line:
-                    print(f'     {line}')
-            else:
-                print(f'     Possible causes: measurement noise (few iterations),')
-                print(f'     JVM startup differences, or genuine trade-off in this JVM version.')
-        print()
-        print('  TIP: increase iterations (-wi 5 -i 5) and forks (-f 3) for stable numbers.')
-        print('  TIP: add -prof gc to also compare memory allocation per operation.')
+            print(f'  ⚠  {name}  ({pct:.1f}%)')
         print()
     else:
         print(f'  ✓  {label_b} is equal or faster in all measured benchmarks.')

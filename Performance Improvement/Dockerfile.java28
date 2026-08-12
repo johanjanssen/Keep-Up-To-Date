@@ -12,7 +12,8 @@ RUN mvn package -DskipTests -q \
 FROM openjdk:28-ea-trixie
 WORKDIR /app
 COPY --from=build /build/target/benchmarks.jar benchmarks.jar
-# Java 28 EA with Valhalla value types enabled
-ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", "-XX:+UseZGC", \
+# Java 28 EA with Valhalla value types enabled.
+# Uses G1GC (default) same as Java 25 for fair comparison.
+ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", \
     "-jar", "benchmarks.jar", "-rf", "json", "-rff", "/results/results.json"]
 

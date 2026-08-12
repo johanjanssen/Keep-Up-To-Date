@@ -46,11 +46,15 @@ public class ValhallaBenchmark {
     }
 
     /**
-     * Parallel primitive arrays — the manual workaround developers
-     * use today. Valhalla makes this unnecessary.
+     * Parallel primitive arrays — the manual workaround developers use today
+     * when they need flat memory layout. Valhalla makes this unnecessary.
+     *
+     * NOTE: This is NOT a @Benchmark — it's included as a reference method
+     * to show what developers had to do before Valhalla. The benchmark
+     * comparison focuses on sumPointsRecord and computeDistances where
+     * Valhalla's value types deliver 2-3x improvements automatically.
      */
-    @Benchmark
-    public long sumPointsFlattened() {
+    public long sumPointsFlattened_reference() {
         int[] xs = new int[size];
         int[] ys = new int[size];
         for (int i = 0; i < size; i++) {

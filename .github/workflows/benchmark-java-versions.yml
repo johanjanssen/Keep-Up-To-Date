@@ -57,7 +57,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java17.json "Java 17" \
-            results/java25.json "Java 25" 2>&1 | tee results/comparison-17vs25.txt
+            results/java25.json "Java 25" > results/comparison-17vs25.txt 2>&1
           cat results/comparison-17vs25.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -65,7 +65,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java17-gc.json "Java 17" \
-            results/java25-gc.json "Java 25" 2>&1 | tee results/comparison-17vs25-memory.txt
+            results/java25-gc.json "Java 25" > results/comparison-17vs25-memory.txt 2>&1
           cat results/comparison-17vs25-memory.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -144,7 +144,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28.txt
+            results/java28-valhalla.json "Java 28 EA" > results/comparison-25vs28.txt 2>&1
           cat results/comparison-25vs28.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -152,7 +152,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java25-valhalla-gc.json "Java 25" \
-            results/java28-valhalla-gc.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28-memory.txt
+            results/java28-valhalla-gc.json "Java 28 EA" > results/comparison-25vs28-memory.txt 2>&1
           cat results/comparison-25vs28-memory.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -170,11 +170,11 @@ jobs:
           mkdir -p results/charts
           python3 scripts/generate-charts.py \
             results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla.json "Java 28 EA (Valhalla)" \
+            results/java28-valhalla.json "Java 28 EA" \
             results/charts java25-vs-java28-valhalla
           python3 scripts/generate-charts.py --memory \
             results/java25-valhalla-gc.json "Java 25" \
-            results/java28-valhalla-gc.json "Java 28 EA (Valhalla)" \
+            results/java28-valhalla-gc.json "Java 28 EA" \
             results/charts java25-vs-java28-valhalla-memory
         continue-on-error: true
 
