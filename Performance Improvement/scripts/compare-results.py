@@ -113,7 +113,7 @@ def main():
                 if line:
                     print(f'     {line}')
             else:
-                print(f'     Possible causes: measurement noise (only {{}}-3 iterations),')
+                print(f'     Possible causes: measurement noise (few iterations),')
                 print(f'     JVM startup differences, or genuine trade-off in this JVM version.')
         print()
         print('  TIP: increase iterations (-wi 5 -i 5) and forks (-f 3) for stable numbers.')

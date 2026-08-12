@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir -p results
           docker run --rm -v "$(pwd)/results:/results" bench:java17 \
-            -f 1 -wi 2 -i 3 -p size=1000000 -p taskCount=10000 \
+            -f 3 -wi 5 -i 5 -p size=1000000 -p taskCount=10000 \
             "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
             2>&1 | tee results/java17-output.txt
           cp results/results.json results/java17.json
@@ -31,7 +31,7 @@ jobs:
       - name: "📊 Run Java 25 benchmarks"
         run: |
           docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 1 -wi 2 -i 3 -p size=1000000 -p taskCount=10000 \
+            -f 3 -wi 5 -i 5 -p size=1000000 -p taskCount=10000 \
             "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
             2>&1 | tee results/java25-output.txt
           cp results/results.json results/java25.json
@@ -39,13 +39,13 @@ jobs:
       - name: "🧠 Run memory benchmarks (GC profiler)"
         run: |
           docker run --rm -v "$(pwd)/results:/results" bench:java17 \
-            -f 1 -wi 2 -i 3 -prof gc \
+            -f 3 -wi 5 -i 5 -prof gc \
             -p size=1000000 -p taskCount=10000 \
             "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
             2>&1 | tee results/java17-gc-output.txt
           cp results/results.json results/java17-gc.json
           docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 1 -wi 2 -i 3 -prof gc \
+            -f 3 -wi 5 -i 5 -prof gc \
             -p size=1000000 -p taskCount=10000 \
             "BoxingOverhead|ObjectAllocation|StreamPerformance|VirtualThreads" \
             2>&1 | tee results/java25-gc-output.txt
@@ -57,17 +57,19 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java17.json "Java 17" \
-            results/java25.json "Java 25" 2>&1 | tee results/comparison-17vs25.txt | tee -a $GITHUB_STEP_SUMMARY
+            results/java25.json "Java 25" 2>&1 | tee results/comparison-17vs25.txt
+          cat results/comparison-17vs25.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧠 Memory Comparison (GC allocation rate)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java17-gc.json "Java 17" \
-            results/java25-gc.json "Java 25" 2>&1 | tee results/comparison-17vs25-memory.txt | tee -a $GITHUB_STEP_SUMMARY
+            results/java25-gc.json "Java 25" 2>&1 | tee results/comparison-17vs25-memory.txt
+          cat results/comparison-17vs25-memory.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Key:** Lower ms/op = faster. Java 25 benefits from improved JIT, compact headers, virtual threads, and ZGC." >> $GITHUB_STEP_SUMMARY
+          echo "**Key:** Lower ms/op = faster. Java 25 benefits from improved JIT, compact headers, and virtual threads." >> $GITHUB_STEP_SUMMARY
 
       - name: "🖼️ Generate all charts"
         run: |
@@ -110,25 +112,25 @@ jobs:
         run: |
           mkdir -p results
           docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 1 -wi 2 -i 3 -p size=1000000 ".*Valhalla.*" \
+            -f 3 -wi 5 -i 5 -p size=1000000 ".*Valhalla.*" \
             2>&1 | tee results/java25-valhalla-output.txt
           cp results/results.json results/java25-valhalla.json
 
       - name: "📊 Run Java 28 EA Valhalla benchmarks"
         run: |
           docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-            -f 1 -wi 2 -i 3 -p size=1000000 ".*Valhalla.*" \
+            -f 3 -wi 5 -i 5 -p size=1000000 ".*Valhalla.*" \
             2>&1 | tee results/java28-valhalla-output.txt
           cp results/results.json results/java28-valhalla.json
 
       - name: "🧠 Run Valhalla memory benchmarks (GC profiler)"
         run: |
           docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 1 -wi 2 -i 3 -prof gc -p size=1000000 ".*Valhalla.*" \
+            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 ".*Valhalla.*" \
             2>&1 | tee results/java25-valhalla-gc-output.txt
           cp results/results.json results/java25-valhalla-gc.json
           docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-            -f 1 -wi 2 -i 3 -prof gc -p size=1000000 ".*Valhalla.*" \
+            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 ".*Valhalla.*" \
             2>&1 | tee results/java28-valhalla-gc-output.txt
           cp results/results.json results/java28-valhalla-gc.json
 
@@ -142,14 +144,16 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28.txt | tee -a $GITHUB_STEP_SUMMARY
+            results/java28-valhalla.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28.txt
+          cat results/comparison-25vs28.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧠 Memory Comparison" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java25-valhalla-gc.json "Java 25" \
-            results/java28-valhalla-gc.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28-memory.txt | tee -a $GITHUB_STEP_SUMMARY
+            results/java28-valhalla-gc.json "Java 28 EA (Valhalla)" 2>&1 | tee results/comparison-25vs28-memory.txt
+          cat results/comparison-25vs28-memory.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### What Valhalla changes" >> $GITHUB_STEP_SUMMARY

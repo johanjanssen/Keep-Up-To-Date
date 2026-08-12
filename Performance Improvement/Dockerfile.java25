@@ -7,7 +7,9 @@ RUN mvn package -DskipTests -q -Dmaven.compiler.source=25 -Dmaven.compiler.targe
 FROM eclipse-temurin:25-jdk
 WORKDIR /app
 COPY --from=build /build/target/benchmarks.jar benchmarks.jar
-# Java 25 flags: compact headers (JEP 450), Generational ZGC, preview features
-ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", "-XX:+UseZGC", \
+# Java 25 flags: compact headers (JEP 450) reduce per-object memory, preview features.
+# Both Java 17 and 25 use G1GC (default) for fair memory comparison.
+# Compact headers reduce each object header from 12→8 bytes (20-30% less heap for small objects).
+ENTRYPOINT ["java", "--enable-preview", "-XX:+UseCompactObjectHeaders", \
     "-jar", "benchmarks.jar", "-rf", "json", "-rff", "/results/results.json"]
 

