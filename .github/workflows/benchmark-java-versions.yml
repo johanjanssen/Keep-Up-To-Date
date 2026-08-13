@@ -72,7 +72,7 @@ jobs:
           cat results/comparison-17vs25-memory.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Key:** Lower ms/op = faster. Java 25 benefits from improved JIT, compact headers, and virtual threads." >> $GITHUB_STEP_SUMMARY
+          echo "**Key:** Lower ms/op = faster. Full HTML report (with a data-driven improved/flat/regressed breakdown) is published after both jobs finish — see the workflow summary for the Pages link." >> $GITHUB_STEP_SUMMARY
 
       - name: "🖼️ Generate all charts"
         run: |
@@ -96,6 +96,16 @@ jobs:
             Performance Improvement/results/charts/
             Performance Improvement/results/comparison-*.txt
 
+      - name: "📤 Upload raw JSON (for the combined HTML report)"
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-json-17-vs-25
+          path: |
+            Performance Improvement/results/java17.json
+            Performance Improvement/results/java25.json
+            Performance Improvement/results/java17-gc.json
+            Performance Improvement/results/java25-gc.json
+
   benchmark-25-vs-28:
     name: "📊 Java 25 vs Java 28 EA (Valhalla)"
     runs-on: ubuntu-latest
@@ -109,76 +119,74 @@ jobs:
       - name: "🏗️ Build images"
         run: |
           docker build -f Dockerfile.java25 -t bench:java25 .
+          # -Pvalhalla (inside Dockerfile.java28) adds ValhallaValueBenchmark
+          # (src/valhalla/java, "value record" preview syntax) to the jar —
+          # it only compiles on a Valhalla-enabled Java 28 javac.
           docker build -f Dockerfile.java28 -t bench:java28 .
 
-      - name: "📊 Run Java 25 Valhalla benchmarks"
+      - name: "📊 Run Valhalla benchmarks (record vs record vs value record)"
         run: |
           mkdir -p results
+
+          # 1) Baseline: Java 25 running plain `record Point` (ValhallaBenchmark).
           docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 3 -wi 5 -i 5 -p size=1000000 ".*Valhalla.*" \
+            -f 3 -wi 5 -i 5 -p size=1000000 "\.ValhallaBenchmark\." \
             2>&1 | tee results/java25-valhalla-output.txt
           cp results/results.json results/java25-valhalla.json
 
-      - name: "📊 Run Java 28 EA Valhalla benchmarks"
-        run: |
+          # 2) Myth-check: Java 28 EA running the SAME plain `record Point` class,
+          #    unchanged. No `value` keyword — this should show ~0% difference,
+          #    proving that upgrading the JVM alone does not flatten records.
           docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-            -f 3 -wi 5 -i 5 -p size=1000000 ".*Valhalla.*" \
-            2>&1 | tee results/java28-valhalla-output.txt
-          cp results/results.json results/java28-valhalla.json
+            -f 3 -wi 5 -i 5 -p size=1000000 "\.ValhallaBenchmark\." \
+            2>&1 | tee results/java28-valhalla-samecode-output.txt
+          cp results/results.json results/java28-valhalla-samecode.json
 
-      - name: "🧠 Run Valhalla memory benchmarks (GC profiler)"
-        run: |
-          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
-            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 ".*Valhalla.*" \
-            2>&1 | tee results/java25-valhalla-gc-output.txt
-          cp results/results.json results/java25-valhalla-gc.json
+          # 3) The real Valhalla comparison: Java 28 EA running `value record Point`
+          #    (ValhallaValueBenchmark — only present in the -Pvalhalla build).
           docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 ".*Valhalla.*" \
-            2>&1 | tee results/java28-valhalla-gc-output.txt
-          cp results/results.json results/java28-valhalla-gc.json
+            -f 3 -wi 5 -i 5 -p size=1000000 "\.ValhallaValueBenchmark\." \
+            2>&1 | tee results/java28-valhalla-value-output.txt
+          cp results/results.json results/java28-valhalla-value.json
 
       - name: "📈 Compare & print plain text table"
         run: |
           echo "## 🔮 Java 25 vs Java 28 EA — Valhalla Value Types" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Project Valhalla introduces **value classes** that eliminate object headers" >> $GITHUB_STEP_SUMMARY
-          echo "and enable flat array layouts — dramatically reducing memory and improving cache locality." >> $GITHUB_STEP_SUMMARY
+          echo "Project Valhalla introduces **value classes/records** that can eliminate object" >> $GITHUB_STEP_SUMMARY
+          echo "headers and flatten arrays — but only for types explicitly declared \`value\`." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Myth-check — same \`record\`, just a newer JVM" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
             results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla.json "Java 28 EA" > results/comparison-25vs28.txt 2>&1
-          cat results/comparison-25vs28.txt >> $GITHUB_STEP_SUMMARY
+            results/java28-valhalla-samecode.json "Java 28 EA" > results/comparison-25vs28-samecode.txt 2>&1
+          cat results/comparison-25vs28-samecode.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "_Expected: ~0% change — a plain record never flattens, on any JDK version._" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🧠 Memory Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "### The real comparison — \`record\` → \`value record\`" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           python3 scripts/compare-results.py \
-            results/java25-valhalla-gc.json "Java 25" \
-            results/java28-valhalla-gc.json "Java 28 EA" > results/comparison-25vs28-memory.txt 2>&1
-          cat results/comparison-25vs28-memory.txt >> $GITHUB_STEP_SUMMARY
+            results/java25-valhalla.json "Java 25" \
+            results/java28-valhalla-value.json "Java 28 EA (value)" > results/comparison-25vs28-value.txt 2>&1
+          cat results/comparison-25vs28-value.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### What Valhalla changes" >> $GITHUB_STEP_SUMMARY
-          echo "| Aspect | Java 25 (records) | Java 28 EA (value classes) |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------------------|---------------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Point object size | ~24 bytes (header + data) | ~8 bytes (flattened) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Array layout | Pointers to heap objects | Contiguous flat data |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cache behavior | Pointer-chasing (misses) | Sequential access (fast) |" >> $GITHUB_STEP_SUMMARY
-          echo "| GC pressure | Millions of small objects | Zero allocations |" >> $GITHUB_STEP_SUMMARY
+          echo "**Reality check:** this is a *preview* feature on an *early-access* JDK. In our own testing" >> $GITHUB_STEP_SUMMARY
+          echo "across two independent Valhalla-enabled builds, array flattening did not consistently engage yet —" >> $GITHUB_STEP_SUMMARY
+          echo "value records sometimes used MORE memory and ran SLOWER than plain records. The language feature" >> $GITHUB_STEP_SUMMARY
+          echo "is real and correctly demonstrated here; the runtime optimization from JEP 401 is still catching up." >> $GITHUB_STEP_SUMMARY
+          echo "Whatever this run measured is reported as-is below, not adjusted to match the expectation." >> $GITHUB_STEP_SUMMARY
 
-      - name: "🖼️ Generate all charts"
+      - name: "🖼️ Generate chart (record vs value record)"
         run: |
           pip install matplotlib numpy -q
           mkdir -p results/charts
           python3 scripts/generate-charts.py \
             results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla.json "Java 28 EA" \
+            results/java28-valhalla-value.json "Java 28 EA (value)" \
             results/charts java25-vs-java28-valhalla
-          python3 scripts/generate-charts.py --memory \
-            results/java25-valhalla-gc.json "Java 25" \
-            results/java28-valhalla-gc.json "Java 28 EA" \
-            results/charts java25-vs-java28-valhalla-memory
         continue-on-error: true
 
       - name: "📦 Upload results + charts (single zip)"
@@ -188,3 +196,62 @@ jobs:
           path: |
             Performance Improvement/results/charts/
             Performance Improvement/results/comparison-*.txt
+
+      - name: "📤 Upload raw JSON (for the combined HTML report)"
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-json-25-vs-28
+          path: |
+            Performance Improvement/results/java25-valhalla.json
+            Performance Improvement/results/java28-valhalla-samecode.json
+            Performance Improvement/results/java28-valhalla-value.json
+
+  publish-report:
+    name: "🌐 Publish HTML report to GitHub Pages"
+    needs: [benchmark-17-vs-25, benchmark-25-vs-28]
+    if: always() && (needs.benchmark-17-vs-25.result == 'success' || needs.benchmark-25-vs-28.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "📥 Download all raw JSON results"
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-json-*
+          path: /tmp/benchmark-json
+          merge-multiple: true
+
+      - name: "🖨️ Generate HTML overview tables"
+        run: |
+          mkdir -p "Performance Improvement/results/html"
+          python3 "Performance Improvement/scripts/generate-html-report.py" \
+            /tmp/benchmark-json \
+            "Performance Improvement/results/html/index.html" \
+            --title "Java Performance — 17 vs 25 vs 28 EA (Valhalla)"
+
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages, because this repo has MULTIPLE workflows publishing
+      # to the same Pages site (static.yml → Presentation/, jacoco.yml → JaCoCo/,
+      # compare-scans.yml → Scans/). actions/deploy-pages replaces the ENTIRE site
+      # on every run, so those workflows were silently wiping each other's content
+      # out — that's why the JaCoCo report kept "disappearing". Publishing to a
+      # gh-pages branch with destination_dir scopes each workflow to its own
+      # subfolder and keep_files stops it from touching the others.
+      - name: "🌐 Publish to GitHub Pages (Benchmarks/ subfolder)"
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: "Performance Improvement/results/html"
+          destination_dir: Benchmarks
+          keep_files: true
+
+      - name: "📝 Link in step summary"
+        run: |
+          echo "## 🌐 Published report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "(First-time setup: this needs the repo's Pages source set to **Deploy from a branch → gh-pages**" >> $GITHUB_STEP_SUMMARY
+          echo "under Settings → Pages — see the other Pages-publishing workflows for the same requirement.)" >> $GITHUB_STEP_SUMMARY
