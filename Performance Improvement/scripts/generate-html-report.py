@@ -19,7 +19,9 @@ Expected files in <results_dir> (missing ones degrade gracefully):
   java17.json / java25.json                      — 17 vs 25 speed
   java17-gc.json / java25-gc.json                 — 17 vs 25 memory (GC profiler)
   java25-valhalla.json / java28-valhalla-value.json
-                                                   — real Valhalla win (value record)
+                                                   — Valhalla speed (record vs value record)
+  java25-valhalla-gc.json / java28-valhalla-value-gc.json
+                                                   — Valhalla memory (record vs value record, GC profiler)
 """
 import argparse, html, json, os
 from datetime import datetime, timezone
@@ -228,12 +230,22 @@ def main():
             "🔮 Valhalla — real value records (preview)",
             "Same benchmark, <code>record Point(...)</code> → <code>value record Point(...)</code>. One keyword changed.",
             "Java 25 (record)", "Java 28 EA (value record)", build_rows(v25, v28_value),
-            note="Early Access reality check: as of this run, Valhalla's array-flattening optimization is not yet "
-                 "consistently engaging in the JDK 28 preview build — local measurement across two independent "
-                 "Valhalla-enabled builds showed the value-record version using <em>more</em> memory and running "
-                 "<em>slower</em> in some cases, not less/faster. The language feature is real and shown here "
-                 "correctly; the performance payoff described in JEP 401 is not fully realized in this preview yet. "
-                 "We're showing the honest number rather than a promised one."))
+            note="Early Access reality check: this is a preview feature on an early-access JDK. The row above "
+                 "only shows up if this run's own numbers cleared the improvement threshold — nothing here is "
+                 "adjusted to match the JEP 401 promise."))
+
+    mem_v25 = load_metrics(os.path.join(d, "java25-valhalla-gc.json"), memory=True)
+    mem_v28_value = load_metrics(os.path.join(d, "java28-valhalla-value-gc.json"), memory=True)
+    if mem_v25 or mem_v28_value:
+        sections.append(section(
+            "🧠 Valhalla memory — record vs value record",
+            "Bytes allocated per operation (GC profiler), <code>record Point(...)</code> → "
+            "<code>value record Point(...)</code>. Lower is better.",
+            "Java 25 (record)", "Java 28 EA (value record)", build_rows(mem_v25, mem_v28_value),
+            note="This is where Valhalla's actual promise lives: a flattened <code>value record</code> array "
+                 "should need no per-element object header at all. Whether that shows up here depends on "
+                 "whether array-flattening is engaging in this preview build for this run — it isn't hand-picked "
+                 "either way."))
 
     if not sections:
         sections.append('<section><p class="muted">No benchmark results found for this run.</p></section>')

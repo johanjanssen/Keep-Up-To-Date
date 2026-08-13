@@ -34,8 +34,8 @@ at least 3% better; anything flat or regressed is left out rather than presented
 
 | Benchmark | What it measures | Status |
 |-----------|-----------------|--------|
-| **ValhallaBenchmark** | `record Point(...)` in an array — run on Java 25 as the baseline | Baseline for the value-record comparison below. |
-| **ValhallaValueBenchmark** *(Java 28 only, `-Pvalhalla` build)* | The exact same benchmark, `record` → `value record` | Real language feature, honestly-reported preview performance (see below). |
+| **ValhallaBenchmark** | `record Point(...)` in an array — run on Java 25 as the baseline | Baseline for the value-record comparison below, both speed and GC-profiled memory. |
+| **ValhallaValueBenchmark** *(Java 28 only, `-Pvalhalla` build)* | The exact same benchmark, `record` → `value record` | Real language feature, honestly-reported preview performance and memory (see below). |
 
 > Two benchmarks were removed after measurement didn't back up their claims — see
 > "What we cut, and why" below rather than a Java-version-improvement fairy tale.
@@ -50,15 +50,16 @@ That's the entire Valhalla story for application developers — same syntax, one
 
 The important thing this repo verified by actually running it, not by assuming the JEP text:
 
-**The `value` keyword alone doesn't guarantee a win yet, in this preview.** We measured
-`ValhallaValueBenchmark` against two independent Valhalla-enabled JDK builds (mainline `openjdk:28-ea`
-and the dedicated `jdk.java.net/valhalla` early-access build). In both, the array-flattening
-optimization did not consistently engage: the `value record` array sometimes used **more** memory
-(56 MB vs 40 MB per 2M-element array in one GC-profiled run) and ran **slower**, not less/faster.
-The language feature (JEP 401, Value Classes and Objects) works correctly here; the runtime
-optimization it depends on for the performance payoff is still catching up in this EA build.
-No memory comparison for Valhalla is wired into the automated report — only speed is benchmarked
-there; the memory figure above comes from a one-off local GC-profiled run.
+**The `value` keyword alone doesn't guarantee a win yet, in this preview.** Every workflow run measures
+`ValhallaValueBenchmark` against `ValhallaBenchmark` twice — once for speed, once with `-prof gc` for
+bytes allocated per operation — so the "does array-flattening actually kick in this time" question is
+answered from live data on every run, not a remembered anecdote. Earlier local testing across two
+independent Valhalla-enabled JDK builds (mainline `openjdk:28-ea` and the dedicated
+`jdk.java.net/valhalla` early-access build) found the array-flattening optimization did not consistently
+engage: the `value record` array sometimes used **more** memory and ran **slower**, not less/faster. The
+language feature (JEP 401, Value Classes and Objects) works correctly here; the runtime optimization it
+depends on for the performance payoff is still catching up in this EA build. The published report only
+calls this section a win if the *current* run's numbers back it up.
 
 The published report shows this run's real numbers, with that context attached, instead of a promised
 `3x less memory, 2-3x faster` figure that a curious audience member could disprove on their own laptop.
@@ -109,9 +110,9 @@ echo "=== Java 25 ==="
 docker run --rm -v "$(pwd)/results:/results" bench:java25 \
   -f 1 -wi 2 -i 3 ".*StreamPerformance.*"
 
-# Valhalla: same record, unchanged, on Java 28 EA (expect ~0% difference)
-echo "=== Java 28 EA, plain record ==="
-docker run --rm -v "$(pwd)/results:/results" bench:java28 \
+# Valhalla baseline: plain record, on Java 25
+echo "=== Java 25, plain record ==="
+docker run --rm -v "$(pwd)/results:/results" bench:java25 \
   -f 1 -wi 2 -i 3 "\.ValhallaBenchmark\."
 
 # Valhalla: value record, on Java 28 EA (the real comparison)
@@ -177,7 +178,8 @@ ceiling entirely — this is the largest, most reliable win in the whole suite.
 `.github/workflows/benchmark-java-versions.yml` runs three jobs:
 
 1. **`benchmark-17-vs-25`** — boxing, allocation, streams, virtual threads (speed + GC-profiled memory).
-2. **`benchmark-25-vs-28`** — the Valhalla `record` vs `value record` comparison described above.
+2. **`benchmark-25-vs-28`** — the Valhalla `record` vs `value record` comparison described above
+   (speed + GC-profiled memory).
 3. **`publish-report`** — downloads both jobs' raw JSON, builds the HTML overview tables, and publishes
    them to `https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/`.
 

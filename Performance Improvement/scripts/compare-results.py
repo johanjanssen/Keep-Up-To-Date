@@ -3,20 +3,32 @@
 Compares JMH JSON results from two Java versions and prints a formatted table.
 
 Usage:
-  python3 compare-results.py <a.json> <label_a> <b.json> <label_b>
+  python3 compare-results.py [--memory] <a.json> <label_a> <b.json> <label_b>
   python3 compare-results.py <a.json> <b.json>          # legacy: labels auto-derived
+
+--memory reads the GC profiler's bytes-allocated-per-op secondary metric
+instead of the primary (time/throughput) metric — use it for *-gc.json
+files produced with `-prof gc`, otherwise "memory" output is silently just
+the timing numbers again under a misleading header.
 """
 import json, sys
 
-def load_results(path):
+GC_METRIC_KEYS = ('·gc.alloc.rate.norm', 'gc.alloc.rate.norm')
+
+def load_results(path, memory=False):
     with open(path, encoding='utf-8-sig') as f:
         data = json.load(f)
     results = {}
     for entry in data:
-        name  = entry['benchmark'].split('.')[-1]
-        score = entry['primaryMetric']['score']
-        unit  = entry['primaryMetric']['scoreUnit']
-        results[name] = (score, unit)
+        name = entry['benchmark'].split('.')[-1]
+        if memory:
+            sec = entry.get('secondaryMetrics', {})
+            for key in GC_METRIC_KEYS:
+                if key in sec:
+                    results[name] = (sec[key]['score'], sec[key].get('scoreUnit', 'B/op'))
+                    break
+        else:
+            results[name] = (entry['primaryMetric']['score'], entry['primaryMetric']['scoreUnit'])
     return results
 
 def derive_label(path):
@@ -37,6 +49,11 @@ def improvement(s_a, s_b, unit):
 
 def main():
     args = sys.argv[1:]
+    memory = False
+    if args and args[0] == '--memory':
+        memory = True
+        args = args[1:]
+
     if len(args) == 4:
         file_a, label_a, file_b, label_b = args
     elif len(args) == 2:
@@ -47,8 +64,8 @@ def main():
         print(__doc__); sys.exit(1)
 
     try:
-        r_a = load_results(file_a)
-        r_b = load_results(file_b)
+        r_a = load_results(file_a, memory=memory)
+        r_b = load_results(file_b, memory=memory)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f'Error loading results: {e}'); sys.exit(1)
 
