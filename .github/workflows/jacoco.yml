@@ -25,28 +25,15 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mkdir -p tmp/coverage-report
-          mv JaCoCo/target/coverage-report/* tmp/coverage-report/
+          mkdir -p tmp/coverage-report/JaCoCo
+          mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
 
-      # Published as its own subfolder (destination_dir + keep_files) rather than
-      # actions/deploy-pages, because this repo has MULTIPLE workflows publishing
-      # to the same Pages site (static.yml → root, compare-scans.yml → Scans/,
-      # benchmark-java-versions.yml → Benchmarks/). actions/deploy-pages replaces
-      # the ENTIRE site on every run, so those workflows were silently wiping each
-      # other's content out. Publishing to a gh-pages branch with destination_dir
-      # scopes each workflow to its own subfolder and keep_files stops it from
-      # touching the others.
-      - name: Publish to GitHub Pages (JaCoCo/ subfolder)
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/coverage-report
-          destination_dir: JaCoCo
-          keep_files: true
+          path: tmp/coverage-report
 
-# Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/index.html
-#
-# First-time setup: this needs the repo's Pages source set to "Deploy from a
-# branch → gh-pages" under Settings → Pages (rather than "GitHub Actions") —
-# see benchmark-java-versions.yml / compare-scans.yml / static.yml, which all
-# publish to the same branch/subfolder scheme.
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+# Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo[/index.html]
