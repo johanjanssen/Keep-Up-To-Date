@@ -7,9 +7,15 @@ on:
   workflow_dispatch:
 
 # Several workflows publish their own subfolder to the same gh-pages branch.
-# They share this group so their deploys queue up instead of racing to push it.
+# Each workflow gets its OWN concurrency group (rather than sharing one) so this
+# run — including the integration tests above — is never cancelled while queued
+# behind an unrelated workflow's deploy: GitHub cancels *queued* runs within a
+# shared group even with cancel-in-progress: false. The deploy step below still
+# pushes to the shared gh-pages branch, so it's wrapped in Wandalen/wretry.action
+# to retry automatically on the rare occasion it collides with another
+# workflow's push.
 concurrency:
-  group: "gh-pages-deploy"
+  group: "gh-pages-deploy-testcontainers"
   cancel-in-progress: false
 
 jobs:
@@ -51,12 +57,16 @@ jobs:
       # is where "Missing environment" comes from) — peaceiris pushes to the
       # gh-pages branch and destination_dir scopes each workflow to its own folder.
       - name: Deploy to GitHub Pages (testcontainers/ subfolder)
-        uses: peaceiris/actions-gh-pages@v4
+        uses: Wandalen/wretry.action@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/pages
-          destination_dir: testcontainers
-          keep_files: true
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages
+            destination_dir: testcontainers
+            keep_files: true
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers[/index.html]
 

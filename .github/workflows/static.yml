@@ -14,10 +14,15 @@ permissions:
   contents: write
 
 # Several workflows (jacoco.yml, owasp-dc.yml, compare-scans.yml, this one) each
-# publish their own subfolder to the same gh-pages branch. They share this group
-# so their deploys queue up one after another instead of racing to push the branch.
+# publish their own subfolder to the same gh-pages branch. Each workflow gets its
+# OWN concurrency group (rather than sharing one) so this run is never cancelled
+# while queued behind an unrelated workflow's deploy — GitHub cancels *queued*
+# runs within a shared group even with cancel-in-progress: false. The deploy
+# steps below still push to the shared gh-pages branch, so they're wrapped in
+# Wandalen/wretry.action to retry automatically on the rare occasion they
+# collide with another workflow's push.
 concurrency:
-  group: "gh-pages-deploy"
+  group: "gh-pages-deploy-static"
   cancel-in-progress: false
 
 jobs:
@@ -53,19 +58,27 @@ jobs:
           HTML
 
       - name: Deploy root landing page
-        uses: peaceiris/actions-gh-pages@v4
+        uses: Wandalen/wretry.action@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/root
-          destination_dir: .
-          keep_files: true
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/root
+            destination_dir: .
+            keep_files: true
 
       - name: Deploy Presentation to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: Wandalen/wretry.action@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: Presentation
-          destination_dir: Presentation
-          keep_files: true
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: Presentation
+            destination_dir: Presentation
+            keep_files: true
 
       # Now the presentation is available under https://johanjanssen.github.io/Keep-Up-To-Date/Presentation[/]
