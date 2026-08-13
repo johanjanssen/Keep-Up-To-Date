@@ -4,16 +4,29 @@ import org.openjdk.jmh.annotations.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * VALHALLA BENCHMARK: Value Classes (Project Valhalla, Java 28 EA)
+ * VALHALLA BASELINE: plain identity records (Project Valhalla, Java 28 EA)
+ * ──────────────────────────────────────────────────────────────────────────
+ * This class is built and run UNCHANGED on every JDK (17, 25, 28 EA). It uses
+ * an ordinary `record Point(int x, int y)` — the same code you'd write today.
  *
- * Demonstrates performance gains from flattened value types.
- * On Java 17/25 this uses records (heap-allocated, with headers).
- * On Java 28 EA with --enable-preview, records can be value classes
- * and the JVM flattens them into arrays — no headers, no indirection.
+ * IMPORTANT — this is intentionally the "nothing happened" baseline:
+ * a plain record is an identity class. Merely running it on a JVM that
+ * *supports* value classes does NOT flatten it — the JVM only flattens types
+ * explicitly declared `value class` / `value record`. Comparing this class
+ * between Java 25 and Java 28 EA is expected to show ~0% difference, and the
+ * report calls that out rather than implying an upgrade-only win.
  *
- * Expected results:
- *   Java 17/25: Point[] = array of pointers to heap objects (~24 bytes/point)
- *   Java 28 Valhalla: Point[] = flat array of data (~8 bytes/point, 3x less, 2-3x faster)
+ * The actual Valhalla payoff — recompiling the *same shape* of code as
+ * `value record Point(...)` — lives in {@code ValhallaValueBenchmark}
+ * (src/valhalla/java), which only compiles under the Java 28 image via the
+ * "valhalla" Maven profile. That class uses the same benchmark method names
+ * (sumPointsRecord, computeDistances) on purpose, so the comparison scripts
+ * line the two up automatically: Java 25 (this class) vs Java 28
+ * (ValhallaValueBenchmark) is the real "what did Valhalla buy us" story.
+ *
+ * Expected results once you opt in with `value`:
+ *   record Point[]       = array of pointers to heap objects (~24 bytes/point)
+ *   value record Point[] = flat array of data (~8 bytes/point, no indirection)
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -29,8 +42,8 @@ public class ValhallaBenchmark {
     record Point(int x, int y) {}
 
     /**
-     * Array of Point records. On Java 28 with Valhalla, the JVM flattens
-     * these into contiguous memory (no object headers, no pointers).
+     * Array of Point records. Plain records are identity objects, so this
+     * array is really Point[] = pointers to 5M separately-headed heap objects.
      */
     @Benchmark
     public long sumPointsRecord() {
@@ -46,31 +59,8 @@ public class ValhallaBenchmark {
     }
 
     /**
-     * Parallel primitive arrays — the manual workaround developers use today
-     * when they need flat memory layout. Valhalla makes this unnecessary.
-     *
-     * NOTE: This is NOT a @Benchmark — it's included as a reference method
-     * to show what developers had to do before Valhalla. The benchmark
-     * comparison focuses on sumPointsRecord and computeDistances where
-     * Valhalla's value types deliver 2-3x improvements automatically.
-     */
-    public long sumPointsFlattened_reference() {
-        int[] xs = new int[size];
-        int[] ys = new int[size];
-        for (int i = 0; i < size; i++) {
-            xs[i] = i;
-            ys[i] = i * 2;
-        }
-        long sum = 0;
-        for (int i = 0; i < size; i++) {
-            sum += xs[i] + ys[i];
-        }
-        return sum;
-    }
-
-    /**
-     * Distance calculation — cache-friendly iteration.
-     * Flattened arrays (Valhalla) avoid cache misses from pointer-chasing.
+     * Distance calculation — cache-unfriendly iteration: each points[i]
+     * access is a pointer chase to a separately allocated object.
      */
     @Benchmark
     public double computeDistances() {
@@ -86,31 +76,4 @@ public class ValhallaBenchmark {
         }
         return totalDistance;
     }
-
-    /**
-     * Mandelbrot — intensive computation using complex number pairs.
-     * With Valhalla, complex numbers become zero-overhead value types.
-     */
-    @Benchmark
-    public double mandelbrotComputation() {
-        int width = (int) Math.sqrt(size);
-        double total = 0;
-        for (int py = 0; py < width; py++) {
-            for (int px = 0; px < width; px++) {
-                double x0 = (px - width * 0.75) / (width * 0.25);
-                double y0 = (py - width * 0.5) / (width * 0.25);
-                double x = 0, y = 0;
-                int iter = 0;
-                while (x * x + y * y <= 4.0 && iter < 50) {
-                    double xNew = x * x - y * y + x0;
-                    y = 2 * x * y + y0;
-                    x = xNew;
-                    iter++;
-                }
-                total += iter;
-            }
-        }
-        return total;
-    }
 }
-

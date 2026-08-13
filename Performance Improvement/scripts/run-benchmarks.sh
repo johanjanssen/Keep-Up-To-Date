@@ -4,9 +4,18 @@
 # then compares the results side by side.
 #
 # Usage:
-#   ./scripts/run-benchmarks.sh                  # all benchmarks, all versions
-#   ./scripts/run-benchmarks.sh ".*Valhalla.*"   # Valhalla only
-#   ./scripts/run-benchmarks.sh ".*Stream.*"     # Stream only
+#   ./scripts/run-benchmarks.sh                       # all benchmarks, all versions
+#   ./scripts/run-benchmarks.sh '\.ValhallaBenchmark\.'       # plain record only
+#   ./scripts/run-benchmarks.sh '\.ValhallaValueBenchmark\.'  # value record only (java28 image)
+#   ./scripts/run-benchmarks.sh ".*Stream.*"          # Stream only
+#
+# Note: ValhallaBenchmark and ValhallaValueBenchmark share method names
+# (sumPointsRecord, computeDistances) on purpose, so the CI workflow's
+# distinct regexes above produce separate JSON files that line up cleanly.
+# If you run this script with a filter that matches BOTH on the java28 image
+# (e.g. the default ".*" or ".*Valhalla.*"), compare-results.py keys rows by
+# method name only and will silently keep whichever one appears last in the
+# JSON — use the precise regexes above to compare them individually instead.
 # ─────────────────────────────────────────────────────────────────
 set -euo pipefail
 

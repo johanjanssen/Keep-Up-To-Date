@@ -6,6 +6,13 @@ on:
     paths: ['OWASP Dependency Check/**', 'Vulnerable Application/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, compare-scans.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -28,6 +35,24 @@ jobs:
       - name: Build Vulnerable App
         run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
 
+      - name: Get cache date
+        id: cache-date
+        # A new cache "generation" every day keeps the cache from growing forever
+        # while restore-keys below still lets each day start from yesterday's data,
+        # so update-cache.sh / dependency-check:check only ever process the delta.
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore NVD cache
+        id: restore-nvd-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: nvd-owasp-dc-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            nvd-owasp-dc-
+
       - name: Start NVD cache
         env:
           # This maps your GitHub secret to an environment variable the tool can read
@@ -43,6 +68,15 @@ jobs:
       - name: Run dependency check
         run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
 
+      - name: Save NVD cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ steps.restore-nvd-cache.outputs.cache-primary-key }}
+
       - name: Prepare Pages directory
         run: |
           mkdir -p tmp/pages/OWASP
@@ -51,11 +85,6 @@ jobs:
           cp "Vulnerable Application/target/dependency-check-report.html" tmp/pages/OWASP/index.html
           cp "Vulnerable Application/target/dependency-check-report.json" tmp/pages/OWASP/ 2>/dev/null || true
           cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/OWASP/ 2>/dev/null || true
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/pages
 
       - name: Deploy to GitHub Pages
         id: deployment

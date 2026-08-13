@@ -6,6 +6,13 @@ on:
     paths: ['JaCoCo/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, owasp-dc.yml, compare-scans.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   jacoco:
     runs-on: ubuntu-latest
@@ -32,11 +39,6 @@ jobs:
         run: |
           mkdir -p tmp/coverage-report/JaCoCo
           mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/coverage-report
 
       - name: Deploy to GitHub Pages
         id: deployment

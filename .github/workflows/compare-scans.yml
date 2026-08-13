@@ -6,6 +6,13 @@ on:
     paths: ['Compare Security Scans/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   compare:
     runs-on: ubuntu-latest
@@ -79,16 +86,11 @@ jobs:
           mkdir -p tmp/pages/Scans
           cp "Compare Security Scans/target/results/html/index.html" tmp/pages/Scans/
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/pages
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans[/index.html]
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans/index.html
 
       - name: Upload comparison data
         uses: actions/upload-artifact@v4
@@ -96,13 +98,6 @@ jobs:
         with:
           name: scan-comparison-data
           path: Compare Security Scans/target/results/
-
-      - name: Upload chart — comparison table
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: chart-scan-table
-          path: Compare Security Scans/target/results/charts/scan-table.png
 
       - name: Upload chart — comparison barplot
         uses: actions/upload-artifact@v4

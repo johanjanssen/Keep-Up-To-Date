@@ -5,9 +5,14 @@ ENV PATH="/usr/share/maven/bin:${PATH}"
 WORKDIR /build
 COPY pom.xml .
 COPY src src
-RUN mvn package -DskipTests -q \
-      -Dmaven.compiler.source=28 -Dmaven.compiler.target=28 \
-      -Dmaven.compiler.compilerArgs="--enable-preview"
+# -Pvalhalla adds src/valhalla/java (ValhallaValueBenchmark, which uses the
+# `value record` preview syntax) to the build. That profile also carries its
+# own maven-compiler-plugin <compilerArgs>--enable-preview</compilerArgs> —
+# passing "-Dmaven.compiler.compilerArgs=--enable-preview" here would NOT
+# work, since compilerArgs is a List<String> with no property expression to
+# bind a single -D value to; it silently does nothing.
+RUN mvn package -Pvalhalla -DskipTests -q \
+      -Dmaven.compiler.source=28 -Dmaven.compiler.target=28
 
 FROM openjdk:28-ea-trixie
 WORKDIR /app

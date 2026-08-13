@@ -122,5 +122,82 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+          "valhalla" profile — adds src/valhalla/java as an extra source root.
+
+          That directory contains benchmark classes that use the `value` modifier
+          (e.g. "value record Point(...)"), which only PARSES on a javac that has
+          Project Valhalla's JEP 401 (Value Classes and Objects) preview support.
+          Java 17/25 do not have this feature at all, so that source can only be
+          compiled with the "enable preview" javac flag on a Valhalla-enabled
+          Java 28 javac — activate this profile ONLY for the Java 28 build
+          (see Dockerfile.java28).
+
+          Without opting a class into `value class` / `value record`, the JVM
+          never flattens it — plain `record Point(...)` stays a normal identity
+          object on every JDK version, Valhalla included. Keeping the two variants
+          in separate source roots is what lets the same repo build (a) the
+          "just recompiled, nothing changed" baseline and (b) the real
+          value-type benchmark, without breaking compilation on Java 17/25.
+        -->
+        <profile>
+            <id>valhalla</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-valhalla-source</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/valhalla/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                      Full (not partial) override of maven-compiler-plugin's <configuration>
+                      for this profile: Maven does not append list-typed parameters like
+                      compilerArgs/annotationProcessorPaths across profile boundaries, it
+                      replaces the whole block, so both need to be repeated here rather than
+                      relying on "-Dmaven.compiler.compilerArgs=..." from the command line —
+                      that property is NOT read by maven-compiler-plugin's compilerArgs (a
+                      List<String> has no property expression to bind to), so passing the
+                      "enable preview" flag that way silently does nothing. This
+                      compilerArgs block is the only thing that actually enables
+                      preview-feature parsing for "value record".
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.15.0</version>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--enable-preview</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.openjdk.jmh</groupId>
+                                    <artifactId>jmh-generator-annprocess</artifactId>
+                                    <version>${jmh.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
 

