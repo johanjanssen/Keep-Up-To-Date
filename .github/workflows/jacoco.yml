@@ -17,12 +17,7 @@ jobs:
   jacoco:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -35,13 +30,18 @@ jobs:
       - name: Run JaCoCo port-based demo
         run: bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"
 
-      - name: Prepare Pages directory
-        run: |
-          mkdir -p tmp/coverage-report/JaCoCo
-          mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (JaCoCo/ subfolder)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: JaCoCo/target/coverage-report
+          destination_dir: JaCoCo
+          keep_files: true
 
 # Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo[/index.html]
