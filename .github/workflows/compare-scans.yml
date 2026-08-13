@@ -93,13 +93,6 @@ jobs:
           name: scan-comparison-data
           path: Compare Security Scans/target/results/
 
-      - name: Upload chart — comparison table
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: chart-scan-table
-          path: Compare Security Scans/target/results/charts/scan-table.png
-
       - name: Upload chart — comparison barplot
         uses: actions/upload-artifact@v4
         if: always()

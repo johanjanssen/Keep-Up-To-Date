@@ -31,8 +31,11 @@ def summary_rows_html(items):
     def sev_cell(count, sev_class):
         return f'<td class="num {sev_class}">{count if count else "–"}</td>' if count else '<td class="num muted">–</td>'
 
+    def unique_cell(count, tool_class):
+        return f'<td class="num total {tool_class}">{count}</td>' if count else '<td class="num muted">–</td>'
+
     rows = []
-    for img, g, t in items:
+    for img, g, t, unique_grype, unique_trivy in items:
         rows.append(f"""
         <tr>
           <td class="image-name">{html.escape(img)}</td>
@@ -46,6 +49,8 @@ def summary_rows_html(items):
           {sev_cell(t['HIGH'], 'high')}
           {sev_cell(t['MEDIUM'], 'med')}
           {sev_cell(t['LOW'], 'low')}
+          {unique_cell(unique_grype, 'grype')}
+          {unique_cell(unique_trivy, 'trivy')}
         </tr>""")
     return "\n".join(rows)
 
@@ -79,7 +84,7 @@ PAGE_TEMPLATE = """<!doctype html>
     margin: 0; background: var(--bg); color: var(--text);
     font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }}
-  main {{ max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }}
+  main {{ max-width: 1400px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }}
   h1 {{ font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }}
   .subtitle {{ color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }}
   .legend {{ color: var(--muted); font-size: 0.85rem; margin: 0.75rem 0 2rem; }}
@@ -88,16 +93,16 @@ PAGE_TEMPLATE = """<!doctype html>
   section {{ margin-bottom: 3rem; }}
   h2 {{ font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
   .charts {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; }}
-  @media (min-width: 980px) {{ .charts {{ grid-template-columns: 1fr 1fr; }} }}
   .charts img {{ display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }}
   .table-scroll {{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }}
-  table {{ border-collapse: collapse; width: 100%; min-width: 760px; background: var(--surface); font-variant-numeric: tabular-nums; }}
+  table {{ border-collapse: collapse; width: 100%; min-width: 920px; background: var(--surface); font-variant-numeric: tabular-nums; }}
   th, td {{ padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   th.image-col, td.image-name {{ text-align: left; white-space: normal; font-variant-numeric: normal; }}
   thead th {{ position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }}
   thead tr.group th {{ font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }}
   th.grype-hdr {{ background: #BF360C; color: #fff; }}
   th.trivy-hdr {{ background: #0D47A1; color: #fff; }}
+  th.unique-hdr {{ background: #37474F; color: #fff; }}
   tbody tr:nth-child(even) {{ background: var(--alt-row); }}
   td.total.grype {{ font-weight: 700; color: var(--grype); }}
   td.total.trivy {{ font-weight: 700; color: var(--trivy); }}
@@ -125,7 +130,6 @@ PAGE_TEMPLATE = """<!doctype html>
   <section>
     <h2>Charts</h2>
     <div class="charts">
-      {chart_table_img}
       {chart_barplot_img}
     </div>
   </section>
@@ -145,11 +149,13 @@ PAGE_TEMPLATE = """<!doctype html>
             <th class="image-col"></th>
             <th colspan="5" class="grype-hdr">Grype</th>
             <th colspan="5" class="trivy-hdr">Trivy</th>
+            <th colspan="2" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in Grype</th><th>Unique in Trivy</th>
           </tr>
         </thead>
         <tbody>
@@ -188,9 +194,7 @@ def main():
     if not items:
         print("  No JSON results found — writing a placeholder page.")
 
-    table_b64 = b64_file(os.path.join(args.charts_dir, "scan-table.png"))
     barplot_b64 = b64_file(os.path.join(args.charts_dir, "scan-barplot.png"))
-    chart_table_img = f'<img src="data:image/png;base64,{table_b64}" alt="Severity comparison table chart">' if table_b64 else "<p><em>Table chart not available.</em></p>"
     chart_barplot_img = f'<img src="data:image/png;base64,{barplot_b64}" alt="Grype vs Trivy total CVEs barplot">' if barplot_b64 else "<p><em>Barplot not available.</em></p>"
 
     compare_text = ""
@@ -202,9 +206,8 @@ def main():
     out = PAGE_TEMPLATE.format(
         title=html.escape(args.title),
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        chart_table_img=chart_table_img,
         chart_barplot_img=chart_barplot_img,
-        rows=summary_rows_html(items) if items else '<tr><td colspan="11">No results.</td></tr>',
+        rows=summary_rows_html(items) if items else '<tr><td colspan="13">No results.</td></tr>',
         compare_text=html.escape(compare_text),
         open_attr="open",
     )
