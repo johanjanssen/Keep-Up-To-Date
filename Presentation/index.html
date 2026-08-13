@@ -431,10 +431,35 @@
         <h2>Two Scanners, Different Results</h2>
         <p class="subtitle">Different databases → different findings — use both for complete coverage</p>
         <div class="chart-wrap"><canvas id="chartScanners" height="300"></canvas></div>
-        <p class="small" style="margin-top:0.4em;">
+        <p class="small" style="margin-top:0.4em;">Live data — <code>bash "Compare Security Scans/scripts/compare.sh"</code></p>
+        <p class="small" style="margin-top:0.2em;">
             <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶ Compare Workflow</a>
             <img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt="" style="vertical-align:middle;">
         </p>
+    </section>
+
+    <section>
+        <h2>📊 Compare-Scans — Live Results</h2>
+        <p class="subtitle">Unique CVEs (deduplicated by ID) — Grype vs Trivy, Tot/C/H/M/L/U</p>
+        <div class="small">
+            <table>
+                <thead><tr><th>Image</th><th>Grype</th><th>Trivy</th><th>Unique in Trivy</th></tr></thead>
+                <tbody>
+                    <tr><td>eclipse-temurin:25-jre</td><td>96 / 0 / 2 / 87 / 7 / 0</td><td>60 / 0 / 8 / 47 / 4 / 1</td><td>16</td></tr>
+                    <tr><td>debian:12-slim</td><td>79 / 6 / 13 / 24 / 5 / 31</td><td>84 / 5 / 8 / 30 / 38 / 3</td><td>5</td></tr>
+                    <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td></tr>
+                    <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td></tr>
+                    <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>30</td></tr>
+                    <tr><td>hello-conference:jlink-distroless-base</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>14</td></tr>
+                    <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="fragment box box-blue small" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
+            Trivy found <strong>30 CVEs Grype missed</strong> on jre-temurin alone — neither tool is a superset of the other.
+        </div>
     </section>
 
     <section>
@@ -475,21 +500,23 @@
         <div class="box box-blue medium fragment" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java image hierarchy</span>
             <table style="margin-top:0.4em;">
-                <thead><tr><th>Strategy</th><th>Base</th><th>CVEs</th><th>~Size</th></tr></thead>
+                <thead><tr><th>Strategy</th><th>Base</th><th>CVEs (Grype)</th><th>Size</th></tr></thead>
                 <tbody>
-                    <tr><td>Full JRE</td><td>eclipse-temurin:25-jre</td><td class="tag-bad">~95</td><td>~250 MB</td></tr>
-                    <tr><td>jlink minimal</td><td>distroless/base-debian12</td><td class="tag-warn">~13</td><td>~80 MB</td></tr>
-                    <tr><td>GraalVM native</td><td>debian:12-slim</td><td class="tag-warn">~67</td><td>~95 MB</td></tr>
-                    <tr><td>GraalVM native minimal</td><td>distroless/static-debian12</td><td class="tag-good">0</td><td>~45 MB</td></tr>
-                    <tr><td>GraalVM native scratch</td><td>scratch</td><td class="tag-good">0</td><td>~30 MB</td></tr>
+                    <tr><td>Full JRE</td><td>eclipse-temurin:25-jre</td><td class="tag-bad">96</td><td>477 MB</td></tr>
+                    <tr><td>jlink minimal</td><td>distroless/base-debian12</td><td class="tag-warn">15</td><td>33 MB</td></tr>
+                    <tr><td>GraalVM native</td><td>debian:12-slim</td><td class="tag-warn">79</td><td>116 MB</td></tr>
+                    <tr><td>GraalVM native minimal</td><td>distroless/static-debian12</td><td class="tag-good">0</td><td>6 MB</td></tr>
+                    <tr><td>GraalVM native scratch</td><td>scratch</td><td class="tag-good">0</td><td>0 MB</td></tr>
                 </tbody>
             </table>
+            <p class="small" style="margin-top:0.3em;color:#8be9fd;">Live scan + <code>docker images</code> data — base images, not the app image.</p>
         </div>
         <p class="small fragment" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
     </section>
 
     <section>
         <h2>Image Size vs CVE Count</h2>
+        <p class="subtitle">hello-conference app — same code, 9 base images</p>
         <div class="chart-wrap"><canvas id="chartImageSize" height="320"></canvas></div>
     </section>
 
@@ -655,6 +682,8 @@ static PostgreSQLContainer&lt;?&gt; db
         <p class="small">
             <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml" target="_blank">▶ Run Tests</a>
             <img src="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">📄 Full Test Source</a>
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">📊 Latest Maven Result</a>
         </p>
     </section>
 
@@ -668,16 +697,40 @@ static PostgreSQLContainer&lt;?&gt; db
             Attach the agent to the running JVM. After a representative period, generate a report.
             <table style="margin-top:0.4em;">
                 <tbody>
-                    <tr><td><code>hello()</code>, <code>users()</code>, <code>create()</code></td><td class="tag-good">🟢 Called — keep</td></tr>
-                    <tr><td><code>diagnostics()</code></td><td class="tag-bad">🔴 Never called — remove candidate</td></tr>
+                    <tr><td><code>hello()</code>, <code>users()</code>, <code>user()</code>, <code>create()</code></td><td class="tag-good">🟢 Called — keep</td></tr>
+                    <tr><td><code>HelloController.diagnostics()</code></td><td class="tag-bad">🔴 Endpoint exists, never hit — remove candidate</td></tr>
+                    <tr><td><code>UserService.delete()</code></td><td class="tag-bad">🔴 No endpoint wired at all — dead from day one</td></tr>
                 </tbody>
             </table>
-            <pre><code class="language-bash">bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
+            <pre><code class="language-bash">bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
         </div>
         <p class="small">
             <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml" target="_blank">▶ Run Demo</a>
             <img src="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">📊 View Live Report</a>
         </p>
+    </section>
+
+    <section>
+        <h2>🧪 JaCoCo — Demo Results</h2>
+        <p class="subtitle"><code>run-demo.sh</code>: build → start → exercise → dump → report → stop</p>
+        <div class="medium">
+            <p><code>exercise-endpoints.sh</code> deliberately calls every endpoint <strong>except</strong> <code>/admin/diagnostics</code> — simulating real traffic that never touches an unused code path.</p>
+        </div>
+        <pre><code class="language-text">── /hello ──────────────────────────────────────────────────
+  GET   /hello                       200
+  GET   /hello?name=Alice            200
+── /users ──────────────────────────────────────────────────
+  POST  /users  x3                   200 (Alice, Bob, Carol)
+  GET   /users                       200
+  GET   /users/1, /users/2           200
+  GET   /users/999                   404  ← orElse() branch covered
+── /admin/diagnostics — intentionally SKIPPED ───────────────
+   Will appear RED / 0% in the coverage report</code></pre>
+        <div class="fragment box box-red medium" style="margin-top:0.6em;">
+            <strong>Result:</strong> 3 of 10 methods across <code>HelloController</code> + <code>UserService</code> — <strong>30%</strong> — never execute under this traffic pattern.
+            Report opens at <code>target/coverage-report/index.html</code>.
+        </div>
     </section>
 
     <section>
@@ -893,20 +946,20 @@ function axis(extra) {
 // ─── Chart definitions ────────────────────────────────────────────────────────
 function buildCharts() {
 
-    // Grype vs Trivy grouped bar
+    // Grype vs Trivy grouped bar — live data from Compare Security Scans/scripts/compare.sh
     makeChart('chartScanners', {
         type: 'bar',
         data: {
             labels: ['temurin:25-jre','distroless/base','distroless/static','debian:12-slim','native-scratch'],
             datasets: [
-                { label: 'Grype', data: [95,13,0,67,0], backgroundColor: C.cyan,   borderRadius: 4 },
-                { label: 'Trivy', data: [54,13,0,72,0], backgroundColor: C.purple, borderRadius: 4 }
+                { label: 'Grype', data: [96,15,0,79,0], backgroundColor: C.cyan,   borderRadius: 4 },
+                { label: 'Trivy', data: [60,15,0,84,0], backgroundColor: C.purple, borderRadius: 4 }
             ]
         },
         options: {
             plugins: {
                 legend: { display: true, labels: { color: C.fg, font: { size: 13 } } },
-                title:  { display: true, text: 'Total CVEs per base image — update with latest scan results', color: C.fg, font: { size: 13 } }
+                title:  { display: true, text: 'Total CVEs per base image — live scan data', color: C.fg, font: { size: 13 } }
             },
             scales: {
                 x: axis({ font: { size: 11 } }),
@@ -915,27 +968,40 @@ function buildCharts() {
         }
     });
 
-    // Image size horizontal bar
+    // Image size vs CVE count — live data: docker images (size) + compare.sh (Grype CVEs)
     makeChart('chartImageSize', {
         type: 'bar',
         data: {
             labels: ['jre-temurin','jlink-full','jlink-minimal','jlink-cds','jlink-tuned','crac-azul','native-debian','native-distroless','native-scratch'],
-            datasets: [{
-                label: 'Image Size (MB)',
-                data: [250,130,95,100,100,90,95,45,30],
-                backgroundColor: [C.red,C.orange,C.yellow,C.yellow,C.yellow,C.cyan,C.purple,C.green,C.green],
-                borderRadius: 4
-            }]
+            datasets: [
+                {
+                    label: 'Image Size (MB)',
+                    data: [518,264,189,245,189,362,229,97,91],
+                    backgroundColor: [C.red,C.orange,C.yellow,C.yellow,C.yellow,C.cyan,C.purple,C.green,C.green],
+                    borderRadius: 4,
+                    yAxisID: 'ySize'
+                },
+                {
+                    type: 'line',
+                    label: 'CVEs (Grype)',
+                    data: [110,29,29,29,29,29,79,0,0],
+                    borderColor: C.pink,
+                    backgroundColor: C.pink,
+                    pointRadius: 4,
+                    tension: 0.2,
+                    yAxisID: 'yCves'
+                }
+            ]
         },
         options: {
-            indexAxis: 'y',
             plugins: {
-                legend: { display: false },
-                title:  { display: true, text: 'Compressed image size (MB) — update with your data', color: C.fg, font: { size: 13 } }
+                legend: { display: true, labels: { color: C.fg, font: { size: 12 } } },
+                title:  { display: true, text: 'Image size (MB) vs CVE count — live data', color: C.fg, font: { size: 13 } }
             },
             scales: {
-                x: { ...axis(), title: { display: true, text: 'MB', color: C.fg } },
-                y: { ...axis({ font: { size: 11 } }), grid: { display: false } }
+                x:     { ...axis({ font: { size: 10 } }), grid: { display: false } },
+                ySize: { ...axis(), position: 'left',  title: { display: true, text: 'MB',  color: C.fg } },
+                yCves: { ...axis(), position: 'right', title: { display: true, text: 'CVEs', color: C.fg }, grid: { display: false } }
             }
         }
     });

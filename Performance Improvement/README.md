@@ -1,32 +1,92 @@
 # 🚀 Performance Improvement — Java 17 vs 25 vs 28 EA (Valhalla)
 
 > **Demonstrate that upgrading Java gives you FREE performance gains — same code, faster execution, less memory.**
+> And be honest about the one part that isn't free (yet): Valhalla value types need a one-keyword code change,
+> and its performance payoff isn't fully realized in the current Java 28 EA preview build.
 
-This module runs identical JMH benchmarks on **Java 17**, **Java 25**, and **Java 28 EA** (with Project Valhalla) to show measurable improvements in performance and memory consumption.
+This module runs JMH benchmarks on **Java 17**, **Java 25**, and **Java 28 EA** (with Project Valhalla
+preview support) to show measurable, *verified* improvements in performance and memory consumption.
+
+**Results are published as HTML overview tables on GitHub Pages** after every workflow run:
+`https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/`. The report is generated straight from the
+JMH JSON output — a comparison only shows up as a headline "improvement" if the newer version measured
+at least 3% better; anything flat or regressed is still listed, just not presented as a win it isn't.
 
 ---
 
-## 📊 Five Benchmarks
+## 📊 Benchmarks
 
-### Memory Benchmarks
+### Memory — Java 17 → Java 25
 
-| # | Benchmark | What it measures | Java 25 / 28 advantage |
-|---|-----------|-----------------|------------------------|
-| 1 | **BoxingOverheadBenchmark** | ArrayList\<Integer\> vs int[] — cost of autoboxing | Compact Object Headers reduce overhead. Valhalla (Java 28) eliminates boxing. |
-| 2 | **ObjectAllocationBenchmark** | Allocating millions of small objects | Compact headers save 4 bytes per object (20-30%). ZGC handles pressure better. |
+| Benchmark | What it measures | Why Java 25 wins |
+|-----------|-----------------|------------------|
+| **BoxingOverheadBenchmark** | `ArrayList<Integer>` vs `int[]` — cost of autoboxing | Compact Object Headers (JEP 519, product feature since Java 25) shrink every `Integer`'s header. |
+| **ObjectAllocationBenchmark** | Millions of small objects/records/strings | Same compact-header saving, applied to arrays and records. |
 
-### Performance Benchmarks
+### Speed — Java 17 → Java 25
 
-| # | Benchmark | What it measures | Java 25 / 28 advantage |
-|---|-----------|-----------------|------------------------|
-| 3 | **StreamPerformanceBenchmark** | Stream pipelines, loops, math | Better JIT auto-vectorization, improved inlining. Same code 10-40% faster. |
-| 4 | **VirtualThreadsBenchmark** | Concurrent I/O-bound workloads | Virtual Threads: 100k tasks use ~20MB vs ~100GB. 5-50x throughput. |
+| Benchmark | What it measures | Why Java 25 wins |
+|-----------|-----------------|------------------|
+| **StreamPerformanceBenchmark** | A normal filter/map/reduce stream pipeline, and a `sqrt`/`log`/`sin`-heavy loop | Math intrinsics and general JIT/runtime improvements. `mathHeavyComputation` was the standout in local testing (~40% faster). |
+| **VirtualThreadsBenchmark** | Many short blocking I/O-bound tasks, platform-thread pool vs virtual threads | Virtual threads (JEP 444) remove the thread-per-task memory ceiling entirely. |
 
-### Valhalla Benchmark (Java 25 vs 28 EA)
+### Valhalla — Java 25 → Java 28 EA (preview)
 
-| # | Benchmark | What it measures | Java 28 Valhalla advantage |
-|---|-----------|-----------------|---------------------------|
-| 5 | **ValhallaBenchmark** | Point records in arrays, distance calculation, Mandelbrot | Value classes flatten into arrays: 3x less memory, 2-3x faster (no pointer-chasing). |
+| Benchmark | What it measures | Status |
+|-----------|-----------------|--------|
+| **ValhallaBenchmark** | `record Point(...)` in an array — run **unchanged** on both JDKs | Baseline/myth-check: expected ~0% difference (see below). |
+| **ValhallaValueBenchmark** *(Java 28 only, `-Pvalhalla` build)* | The exact same benchmark, `record` → `value record` | Real language feature, honestly-reported preview performance (see below). |
+
+> Two benchmarks were removed after measurement didn't back up their claims — see
+> "What we cut, and why" below rather than a Java-version-improvement fairy tale.
+
+---
+
+## 🔮 Valhalla: what's actually true right now
+
+`ValhallaBenchmark` and `ValhallaValueBenchmark` are **the same code**, except one uses
+`record Point(int x, int y) {}` and the other uses `value record Point(int x, int y) {}`.
+That's the entire Valhalla story for application developers — same syntax, one keyword.
+
+Two important things this repo verified by actually running it, not by assuming the JEP text:
+
+1. **Plain `record` never flattens, on any JDK — including Java 28.** Running `ValhallaBenchmark`
+   unchanged on Java 28 EA (no `value` keyword) shows ~0% difference vs Java 25. A record is an
+   identity object until you opt in with `value`. The workflow runs this as an explicit myth-check,
+   not just an assumption.
+2. **The `value` keyword alone doesn't guarantee a win yet, in this preview.** We measured
+   `ValhallaValueBenchmark` against two independent Valhalla-enabled JDK builds (mainline `openjdk:28-ea`
+   and the dedicated `jdk.java.net/valhalla` early-access build). In both, the array-flattening
+   optimization did not consistently engage: the `value record` array sometimes used **more** memory
+   (56 MB vs 40 MB per 2M-element array in one GC-profiled run) and ran **slower**, not less/faster.
+   The language feature (JEP 401, Value Classes and Objects) works correctly here; the runtime
+   optimization it depends on for the performance payoff is still catching up in this EA build.
+
+The published report shows this run's real numbers, with that context attached, instead of a promised
+`3x less memory, 2-3x faster` figure that a curious audience member could disprove on their own laptop.
+
+---
+
+## ✂️ What we cut, and why
+
+Two benchmarks were removed from `StreamPerformanceBenchmark` after local measurement (Temurin 17 vs 25,
+run directly, then cross-checked with the actual `-XX:+UseCompactObjectHeaders` flag used in CI):
+
+- **`manualLoopVectorizable`** — a hand-written "sum every even number × 3" loop, claimed to benefit from
+  "better C2 auto-vectorization". There is no delivered JEP for implicit auto-vectorization of ordinary
+  scalar loops in this JDK range — the real, explicit vectorization story is the incubating
+  **Vector API** (JEP 489/508), which requires different code entirely. Measured: **11% slower** on
+  Java 25 in local testing, and too small in absolute magnitude (sub-millisecond) to trust either way.
+- **`parallelStreamFilterMapReduce`** — dominated by `ForkJoinPool` common-pool sizing and core count,
+  not JVM version. Measured **23% slower** on Java 25 on a CPU-constrained runner — exactly the kind of
+  environment a GitHub Actions runner is. Not a reproducible "Java got faster" story.
+
+Rather than swap in a different benchmark to force a win, these were simply removed: `streamFilterMapReduce`
+and `mathHeavyComputation` cover the "JIT/runtime improved" story with numbers that held up.
+
+Also removed: `mandelbrotComputation` from the Valhalla suite — it never used `Point`/records/value types
+at all (just raw `double`s), so Valhalla had nothing to flatten. Keeping it there implied a benefit that
+the code couldn't possibly demonstrate.
 
 ---
 
@@ -38,12 +98,12 @@ This module runs identical JMH benchmarks on **Java 17**, **Java 25**, and **Jav
 # Build all three images
 docker build -f Dockerfile.java17 -t bench:java17 .
 docker build -f Dockerfile.java25 -t bench:java25 .
-docker build -f Dockerfile.java28 -t bench:java28 .
+docker build -f Dockerfile.java28 -t bench:java28 .   # -Pvalhalla, needs a Valhalla-capable Java 28 EA javac
 
 # Run quick benchmark (single fork, reduced iterations for demo)
 mkdir -p results
 
-echo "=== Java 17 ===" 
+echo "=== Java 17 ==="
 docker run --rm -v "$(pwd)/results:/results" bench:java17 \
   -f 1 -wi 2 -i 3 ".*StreamPerformance.*"
 
@@ -51,10 +111,15 @@ echo "=== Java 25 ==="
 docker run --rm -v "$(pwd)/results:/results" bench:java25 \
   -f 1 -wi 2 -i 3 ".*StreamPerformance.*"
 
-# Valhalla comparison
-echo "=== Java 28 EA (Valhalla) ==="
+# Valhalla: same record, unchanged, on Java 28 EA (expect ~0% difference)
+echo "=== Java 28 EA, plain record ==="
 docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-  -f 1 -wi 2 -i 3 ".*Valhalla.*"
+  -f 1 -wi 2 -i 3 "\.ValhallaBenchmark\."
+
+# Valhalla: value record, on Java 28 EA (the real comparison)
+echo "=== Java 28 EA, value record ==="
+docker run --rm -v "$(pwd)/results:/results" bench:java28 \
+  -f 1 -wi 2 -i 3 "\.ValhallaValueBenchmark\."
 ```
 
 ### Run all benchmarks with comparison script
@@ -64,141 +129,78 @@ chmod +x scripts/run-benchmarks.sh
 ./scripts/run-benchmarks.sh
 ```
 
-### Run specific benchmark
+### Generate the HTML report locally
 
 ```bash
-# Only stream performance
-./scripts/run-benchmarks.sh ".*StreamPerformance.*"
-
-# Only virtual threads
-./scripts/run-benchmarks.sh ".*VirtualThreads.*"
-
-# Only memory (boxing + allocation)
-./scripts/run-benchmarks.sh ".*Boxing.*|.*ObjectAllocation.*"
+python3 scripts/generate-html-report.py results/ results/html/index.html
+open results/html/index.html   # or xdg-open on Linux
 ```
 
 ---
 
 ## 🎯 What Each Benchmark Demonstrates
 
-### 1. Boxing Overhead (Memory)
+### Boxing Overhead & Object Allocation (Memory)
 
 ```java
-// This innocent-looking code creates millions of Integer wrapper objects:
 List<Integer> list = new ArrayList<>();
 for (int i = 0; i < 5_000_000; i++) {
-    list.add(i);  // autoboxing: each int becomes a 16-byte Integer object
+    list.add(i);  // autoboxing: each int becomes an Integer object
 }
 ```
 
-**Java 17:** Each `Integer` = 12-byte header + 4-byte int + padding = **16 bytes**  
-**Java 25 + Compact Headers:** 8-byte header + 4-byte int + padding = **12 bytes** (25% less)  
-**Java 25 + Valhalla (preview):** Zero boxing = **4 bytes** per element (75% less!)
+Compact Object Headers (JEP 450 → JEP 519, a stable *product* feature as of Java 25 — no experimental
+unlock flag needed) shrink every object's header from 12–16 bytes down to 8. For millions of small
+boxed `Integer`s or domain records, that's a real, measured double-digit percentage of heap.
 
-### 2. Object Allocation (Memory)
+### Stream & Math Performance (Speed)
 
-Small domain objects (Point, Measurement, etc.) are dominated by header overhead.
-Java 25's compact object headers (JEP 450) save 4 bytes per object — significant
-when you have millions of them.
+The **exact same code** runs faster on Java 25 for `mathHeavyComputation` — no code changes needed,
+just a JVM upgrade. `streamFilterMapReduce` is included as the "ordinary business logic" baseline; it
+measured roughly flat, and the report says so rather than rounding it up to a win.
 
-### 3. Stream Performance (Speed)
-
-The **exact same code** runs faster on Java 25 because:
-- C2 JIT compiler has better auto-vectorization (uses AVX2/AVX-512)
-- Improved loop optimizations and escape analysis
-- Better inlining decisions
-- Optimized Stream pipeline internals
-
-**No code changes needed — just upgrade the JVM.**
-
-### 4. Virtual Threads (Speed/Throughput)
+### Virtual Threads (Speed/Throughput)
 
 ```java
 // Java 17: limited by thread pool size, each thread = ~1MB
 ExecutorService exec = Executors.newFixedThreadPool(16);
 
-// Java 25: unlimited virtual threads, each = ~200 bytes
+// Java 21+: virtual threads, each = ~a few hundred bytes
 ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
 ```
 
-For I/O-bound workloads (HTTP servers, database queries), virtual threads
-provide 5-50x throughput improvement with the same hardware.
-
----
-
-## 🔮 5. Valhalla Value Classes (Java 28 EA)
-
-```java
-// Java 17/25: records are regular objects — heap-allocated, with 12-16 byte headers
-record Point(int x, int y) {}
-Point[] points = new Point[5_000_000];
-// → 5M heap objects, 5M pointers, ~120 MB memory, terrible cache behavior
-
-// Java 28 Valhalla: value classes are identity-free — flattened into arrays
-// (preview feature, same syntax, radically different runtime behavior)
-// → 0 heap objects, contiguous memory, ~40 MB, cache-friendly sequential access
-```
-
-**Why this matters:**
-- **3x less memory** for arrays of small objects (Points, Complex numbers, Colors, etc.)
-- **2-3x faster** iteration because data is contiguous (no pointer-chasing cache misses)
-- **Zero GC pressure** — value types are never individually garbage collected
-- **Same code** — just add `value` keyword to your record/class declaration
-
----
-
-## 📈 Expected Results
-
-### Java 17 → Java 25 (same code, free improvement)
-
-| Benchmark | Java 17 | Java 25 | Improvement |
-|-----------|---------|---------|-------------|
-| streamFilterMapReduce | ~18 ms | ~12 ms | **~33% faster** |
-| parallelStreamFilterMapReduce | ~5 ms | ~3 ms | **~40% faster** |
-| manualLoopVectorizable | ~8 ms | ~5 ms | **~35% faster** |
-| mathHeavyComputation | ~45 ms | ~35 ms | **~22% faster** |
-| sumBoxedArrayList (5M) | ~55 ms | ~40 ms | **~25% faster** (less GC) |
-| virtualThreads (50k tasks) | ~25s | ~500ms | **~50x faster** |
-| platformThreadPool (50k tasks) | ~25s | ~24s | ~same |
-
-*Results vary by hardware. Run on your own machine for accurate numbers.*
-
-### Java 25 → Java 28 EA (Valhalla value types)
-
-| Benchmark | Java 25 | Java 28 EA | Improvement |
-|-----------|---------|------------|-------------|
-| sumPointsRecord (5M) | ~55 ms | ~18 ms | **~3x faster** |
-| sumPointsFlattened (5M) | ~10 ms | ~10 ms | same (already flat) |
-| computeDistances (5M) | ~70 ms | ~25 ms | **~2.8x faster** |
-| mandelbrotComputation | ~45 ms | ~30 ms | **~33% faster** |
-
-*The `sumPointsFlattened` benchmark uses primitive arrays and serves as
-the theoretical best case — Valhalla's `sumPointsRecord` approaches this
-performance with the ergonomics of real objects.*
+For I/O-bound workloads (HTTP servers, database queries), virtual threads remove the thread-pool
+ceiling entirely — this is the largest, most reliable win in the whole suite.
 
 ---
 
 ## 🤖 GitHub Actions
 
-The workflow `.github/workflows/benchmark-java-versions.yml` runs two parallel jobs:
+`.github/workflows/benchmark-java-versions.yml` runs three jobs:
 
-1. **Java 17 vs 25** — core benchmarks (boxing, allocation, streams, virtual threads)
-2. **Java 25 vs 28 EA** — Valhalla-specific benchmarks (value class flattening)
+1. **`benchmark-17-vs-25`** — boxing, allocation, streams, virtual threads (speed + GC-profiled memory).
+2. **`benchmark-25-vs-28`** — the three-way Valhalla comparison described above.
+3. **`publish-report`** — downloads both jobs' raw JSON, builds the HTML overview tables, and publishes
+   them to `https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/`.
+
+The Pages publish step uses `peaceiris/actions-gh-pages` with `destination_dir: Benchmarks` and
+`keep_files: true` rather than `actions/deploy-pages`, because this repo has several other workflows
+publishing to the same Pages site (JaCoCo, security scan comparison, the reveal.js deck) — `deploy-pages`
+replaces the *entire* site on every run, which was silently wiping out each other's content. See those
+workflows for the same fix. **First-time setup:** the repo's Pages source needs to be set to
+"Deploy from a branch → `gh-pages`" under Settings → Pages (instead of "GitHub Actions").
 
 ---
 
 ## 🛡️ Key Takeaways
 
-1. **Free performance** — Upgrading Java 17→25 gives 10-40% speed improvement with zero code changes
-2. **Less memory** — Compact Object Headers reduce heap by 20-30% for object-heavy workloads
-3. **Virtual Threads** — Revolutionary for I/O-bound apps: handle millions of concurrent connections
-4. **Better GC** — Generational ZGC minimizes pause times and handles allocation pressure better
-5. **Valhalla (Java 28)** — Value classes eliminate boxing overhead entirely: 3x less memory, 2-3x faster for small objects in arrays
-6. **Just upgrade** — No code migration needed for most improvements (Valhalla benefits require adding `value` keyword)
-
-
-
-
-
-
-
+1. **Free performance** — Upgrading Java 17→25 measurably speeds up math-heavy code and shrinks the
+   heap for object-heavy workloads, with zero code changes.
+2. **Virtual Threads** — the single biggest, most reliable win here for I/O-bound applications.
+3. **Compact Object Headers** — now a stable product feature (JEP 519); meaningfully less heap for
+   boxed values and small domain objects.
+4. **Valhalla (Java 28, preview)** — the language feature is real and demonstrated correctly (one
+   keyword: `value`). The performance payoff described in JEP 401 is not yet consistently realized in
+   the current early-access build — worth watching, not yet worth promising.
+5. **Not everything about a new JDK is automatically faster** — two benchmarks were cut from this suite
+   because measurement didn't back up the claim. That's the standard this report holds itself to.
