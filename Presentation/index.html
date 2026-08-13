@@ -711,6 +711,56 @@ static PostgreSQLContainer&lt;?&gt; db
     </section>
 
     <section>
+        <h2>🔍 Testcontainers — Full Test Source</h2>
+        <p class="subtitle"><code>UserRepositoryIntegrationTest.java</code> — real Postgres container, no mocks</p>
+        <!-- GitHub sends X-Frame-Options: deny / frame-ancestors 'none' on both the
+             blob view and raw.githubusercontent.com, so this can't be embedded as a
+             live iframe like the JaCoCo/Scans/Testcontainers report pages below —
+             inlined instead (also means it renders with zero network dependency). -->
+        <pre class="small"><code class="language-java">@SpringBootTest
+@Testcontainers
+class UserRepositoryIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer&lt;?&gt; postgres =
+            new PostgreSQLContainer&lt;&gt;("postgres:16-alpine");
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Test
+    void savesAndFindsUser() {
+        User saved = userRepository.save(new User("Alice", "alice@example.com"));
+        assertThat(saved.getId()).isNotNull();
+        User found = userRepository.findById(saved.getId()).orElseThrow();
+        assertThat(found.getEmail()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void findsUserByEmail() { /* ... */ }
+    @Test
+    void deletesUser() { /* ... */ }
+    @Test
+    void findsAllUsers() { /* ... */ }
+}</code></pre>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">↗ Full source on GitHub</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Testcontainers — Latest Maven Result</h2>
+        <p class="subtitle">Live, click-through report published to GitHub Pages — Surefire results + captured Maven output, no tab switch needed</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" loading="lazy" title="Testcontainers Maven result report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
         <h2>Detect Dead Code in Production</h2>
         <div class="medium">
             <p>Code coverage in CI tells you what your tests exercise. Coverage from a <em>production agent</em> tells you what real users actually call — revealing removal candidates.</p>
