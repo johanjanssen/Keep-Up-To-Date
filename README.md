@@ -6,6 +6,7 @@ Java applications and Docker images secure, up-to-date, and well-tested.
 
 The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/).
 
+
 ---
 
 ## Prerequisites
