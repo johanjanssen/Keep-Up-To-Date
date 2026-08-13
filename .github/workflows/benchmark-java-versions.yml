@@ -66,7 +66,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧠 Memory Comparison (GC allocation rate)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          python3 scripts/compare-results.py \
+          python3 scripts/compare-results.py --memory \
             results/java17-gc.json "Java 17" \
             results/java25-gc.json "Java 25" > results/comparison-17vs25-memory.txt 2>&1
           cat results/comparison-17vs25-memory.txt >> $GITHUB_STEP_SUMMARY
@@ -141,6 +141,21 @@ jobs:
             2>&1 | tee results/java28-valhalla-value-output.txt
           cp results/results.json results/java28-valhalla-value.json
 
+      - name: "🧠 Run Valhalla memory benchmarks (GC profiler)"
+        run: |
+          # Same record vs value record comparison as above, this time with
+          # -prof gc so the report can show bytes allocated per op, not just
+          # speed. This is what actually proves (or disproves) the "value
+          # records don't need a header, so arrays flatten" memory claim.
+          docker run --rm -v "$(pwd)/results:/results" bench:java25 \
+            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 "\.ValhallaBenchmark\." \
+            2>&1 | tee results/java25-valhalla-gc-output.txt
+          cp results/results.json results/java25-valhalla-gc.json
+          docker run --rm -v "$(pwd)/results:/results" bench:java28 \
+            -f 3 -wi 5 -i 5 -prof gc -p size=1000000 "\.ValhallaValueBenchmark\." \
+            2>&1 | tee results/java28-valhalla-value-gc-output.txt
+          cp results/results.json results/java28-valhalla-value-gc.json
+
       - name: "📈 Compare & print plain text table"
         run: |
           echo "## 🔮 Java 25 vs Java 28 EA — Valhalla Value Types" >> $GITHUB_STEP_SUMMARY
@@ -156,13 +171,21 @@ jobs:
           cat results/comparison-25vs28-value.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Reality check:** this is a *preview* feature on an *early-access* JDK. In our own testing" >> $GITHUB_STEP_SUMMARY
-          echo "across two independent Valhalla-enabled builds, array flattening did not consistently engage yet —" >> $GITHUB_STEP_SUMMARY
-          echo "value records sometimes used MORE memory and ran SLOWER than plain records. The language feature" >> $GITHUB_STEP_SUMMARY
-          echo "is real and correctly demonstrated here; the runtime optimization from JEP 401 is still catching up." >> $GITHUB_STEP_SUMMARY
-          echo "Whatever this run measured is reported as-is below, not adjusted to match the expectation." >> $GITHUB_STEP_SUMMARY
+          echo "### 🧠 Memory Comparison (GC allocation rate)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python3 scripts/compare-results.py --memory \
+            results/java25-valhalla-gc.json "Java 25" \
+            results/java28-valhalla-value-gc.json "Java 28 EA (value)" > results/comparison-25vs28-value-memory.txt 2>&1
+          cat results/comparison-25vs28-value-memory.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Reality check:** this is a *preview* feature on an *early-access* JDK. Whatever this run" >> $GITHUB_STEP_SUMMARY
+          echo "measured — speed and memory — is reported as-is above, not adjusted to match the JEP 401" >> $GITHUB_STEP_SUMMARY
+          echo "expectation. Past local testing across two independent Valhalla-enabled builds found array" >> $GITHUB_STEP_SUMMARY
+          echo "flattening did not consistently engage yet; the HTML report only calls this a win if this" >> $GITHUB_STEP_SUMMARY
+          echo "run's own numbers back it up." >> $GITHUB_STEP_SUMMARY
 
-      - name: "🖼️ Generate chart (record vs value record)"
+      - name: "🖼️ Generate charts (record vs value record)"
         run: |
           pip install matplotlib numpy -q
           mkdir -p results/charts
@@ -170,6 +193,10 @@ jobs:
             results/java25-valhalla.json "Java 25" \
             results/java28-valhalla-value.json "Java 28 EA (value)" \
             results/charts java25-vs-java28-valhalla
+          python3 scripts/generate-charts.py --memory \
+            results/java25-valhalla-gc.json "Java 25" \
+            results/java28-valhalla-value-gc.json "Java 28 EA (value)" \
+            results/charts java25-vs-java28-valhalla-memory
         continue-on-error: true
 
       - name: "📦 Upload results + charts (single zip)"
@@ -187,6 +214,8 @@ jobs:
           path: |
             Performance Improvement/results/java25-valhalla.json
             Performance Improvement/results/java28-valhalla-value.json
+            Performance Improvement/results/java25-valhalla-gc.json
+            Performance Improvement/results/java28-valhalla-value-gc.json
 
   publish-report:
     name: "🌐 Publish HTML report to GitHub Pages"

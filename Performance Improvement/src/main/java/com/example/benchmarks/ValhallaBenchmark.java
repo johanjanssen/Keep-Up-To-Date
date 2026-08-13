@@ -6,15 +6,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * VALHALLA BASELINE: plain identity records (Project Valhalla, Java 28 EA)
  * ──────────────────────────────────────────────────────────────────────────
- * This class is built and run UNCHANGED on every JDK (17, 25, 28 EA). It uses
- * an ordinary `record Point(int x, int y)` — the same code you'd write today.
- *
- * IMPORTANT — this is intentionally the "nothing happened" baseline:
- * a plain record is an identity class. Merely running it on a JVM that
- * *supports* value classes does NOT flatten it — the JVM only flattens types
- * explicitly declared `value class` / `value record`. Comparing this class
- * between Java 25 and Java 28 EA is expected to show ~0% difference, and the
- * report calls that out rather than implying an upgrade-only win.
+ * This class uses an ordinary `record Point(int x, int y)` — the same code
+ * you'd write today. It's run on Java 25 to produce the "before" side of the
+ * Valhalla comparison: a plain record is an identity class, so this is what
+ * `Point[]` costs, in time and memory, without opting into value types.
  *
  * The actual Valhalla payoff — recompiling the *same shape* of code as
  * `value record Point(...)` — lives in {@code ValhallaValueBenchmark}
@@ -22,7 +17,8 @@ import java.util.concurrent.TimeUnit;
  * "valhalla" Maven profile. That class uses the same benchmark method names
  * (sumPointsRecord, computeDistances) on purpose, so the comparison scripts
  * line the two up automatically: Java 25 (this class) vs Java 28
- * (ValhallaValueBenchmark) is the real "what did Valhalla buy us" story.
+ * (ValhallaValueBenchmark) is the real "what did Valhalla buy us" story,
+ * for both speed and memory (GC-profiled allocation).
  *
  * Expected results once you opt in with `value`:
  *   record Point[]       = array of pointers to heap objects (~24 bytes/point)
