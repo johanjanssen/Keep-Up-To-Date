@@ -9,34 +9,60 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Sets permissions of the GITHUB_TOKEN to allow pushing to the gh-pages branch
 permissions:
   contents: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Several workflows (jacoco.yml, owasp-dc.yml, compare-scans.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
 concurrency:
-  group: "pages"
+  group: "gh-pages-deploy"
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Published to the ROOT of the gh-pages branch with keep_files: true, rather
-      # than actions/deploy-pages, because this repo has MULTIPLE workflows
-      # publishing to the same Pages site (jacoco.yml → JaCoCo/, compare-scans.yml
-      # → Scans/, benchmark-java-versions.yml → Benchmarks/). actions/deploy-pages
-      # replaces the ENTIRE site on every run, so those workflows were silently
-      # wiping each other's content out. keep_files preserves those subfolders
-      # while this workflow only touches its own (root-level) files.
-      - name: Deploy to GitHub Pages
+      - name: Build root landing page
+        run: |
+          mkdir -p tmp/root
+          cat > tmp/root/index.html << 'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Keep Up To Date</title>
+          </head>
+          <body>
+            <h1>Keep Up To Date</h1>
+            <ul>
+              <li><a href="Presentation/">Presentation</a></li>
+              <li><a href="JaCoCo/">JaCoCo coverage demo</a></li>
+              <li><a href="OWASP/">OWASP Dependency Check report</a></li>
+              <li><a href="Scans/">Trivy vs Grype scan comparison</a></li>
+            </ul>
+          </body>
+          </html>
+          HTML
+
+      - name: Deploy root landing page
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: 'Presentation'
+          publish_dir: tmp/root
+          destination_dir: .
           keep_files: true
+
+      - name: Deploy Presentation to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: Presentation
+          destination_dir: Presentation
+          keep_files: true
+
+      # Now the presentation is available under https://johanjanssen.github.io/Keep-Up-To-Date/Presentation[/]

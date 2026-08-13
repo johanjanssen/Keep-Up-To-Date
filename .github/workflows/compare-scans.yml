@@ -6,6 +6,13 @@ on:
     paths: ['Compare Security Scans/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   compare:
     runs-on: ubuntu-latest
@@ -71,22 +78,14 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mkdir -p tmp/pages
-          cp "Compare Security Scans/target/results/html/index.html" tmp/pages/
+          mkdir -p tmp/pages/Scans
+          cp "Compare Security Scans/target/results/html/index.html" tmp/pages/Scans/
 
-      # Published as its own subfolder (destination_dir + keep_files) rather than
-      # actions/deploy-pages, because this repo has MULTIPLE workflows publishing
-      # to the same Pages site (static.yml → root, jacoco.yml → JaCoCo/,
-      # benchmark-java-versions.yml → Benchmarks/). actions/deploy-pages replaces
-      # the ENTIRE site on every run, so those workflows were silently wiping each
-      # other's content out. Publishing to a gh-pages branch with destination_dir
-      # scopes each workflow to its own subfolder and keep_files stops it from
-      # touching the others.
-      - name: Deploy to GitHub Pages (Scans/ subfolder)
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/pages
+          publish_dir: tmp/pages/Scans
           destination_dir: Scans
           keep_files: true
 
