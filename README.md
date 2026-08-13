@@ -194,3 +194,5 @@ bash run-all-demos.sh
 > ⚠ **This takes a long time** (native image builds alone can take 20+ minutes each).
 > It requires Docker, Java 25, jq, curl, and git. See the script header for details.
 
+```TODO
+- Add Old GroupIds Alerter (oga)
