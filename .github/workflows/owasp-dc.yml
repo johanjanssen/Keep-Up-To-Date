@@ -6,13 +6,18 @@ on:
     paths: ['OWASP Dependency Check/**', 'Vulnerable Application/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, compare-scans.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -49,12 +54,12 @@ jobs:
           cp "Vulnerable Application/target/dependency-check-report.json" tmp/pages/OWASP/ 2>/dev/null || true
           cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/OWASP/ 2>/dev/null || true
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/pages
-
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: tmp/pages/OWASP
+          destination_dir: OWASP
+          keep_files: true
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/OWASP[/index.html]

@@ -6,13 +6,18 @@ on:
     paths: ['JaCoCo/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, owasp-dc.yml, compare-scans.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   jacoco:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -30,12 +35,12 @@ jobs:
           mkdir -p tmp/coverage-report/JaCoCo
           mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/coverage-report
-
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: tmp/coverage-report/JaCoCo
+          destination_dir: JaCoCo
+          keep_files: true
 
 # Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo[/index.html]

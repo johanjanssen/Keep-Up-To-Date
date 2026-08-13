@@ -6,13 +6,18 @@ on:
     paths: ['Compare Security Scans/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, this one) each
+# publish their own subfolder to the same gh-pages branch. They share this group
+# so their deploys queue up one after another instead of racing to push the branch.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   compare:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -76,13 +81,13 @@ jobs:
           mkdir -p tmp/pages/Scans
           cp "Compare Security Scans/target/results/html/index.html" tmp/pages/Scans/
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: tmp/pages
-
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: tmp/pages/Scans
+          destination_dir: Scans
+          keep_files: true
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans[/index.html]
 
