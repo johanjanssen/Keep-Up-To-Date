@@ -134,15 +134,7 @@ jobs:
             2>&1 | tee results/java25-valhalla-output.txt
           cp results/results.json results/java25-valhalla.json
 
-          # 2) Myth-check: Java 28 EA running the SAME plain `record Point` class,
-          #    unchanged. No `value` keyword — this should show ~0% difference,
-          #    proving that upgrading the JVM alone does not flatten records.
-          docker run --rm -v "$(pwd)/results:/results" bench:java28 \
-            -f 3 -wi 5 -i 5 -p size=1000000 "\.ValhallaBenchmark\." \
-            2>&1 | tee results/java28-valhalla-samecode-output.txt
-          cp results/results.json results/java28-valhalla-samecode.json
-
-          # 3) The real Valhalla comparison: Java 28 EA running `value record Point`
+          # 2) The real Valhalla comparison: Java 28 EA running `value record Point`
           #    (ValhallaValueBenchmark — only present in the -Pvalhalla build).
           docker run --rm -v "$(pwd)/results:/results" bench:java28 \
             -f 3 -wi 5 -i 5 -p size=1000000 "\.ValhallaValueBenchmark\." \
@@ -155,15 +147,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Project Valhalla introduces **value classes/records** that can eliminate object" >> $GITHUB_STEP_SUMMARY
           echo "headers and flatten arrays — but only for types explicitly declared \`value\`." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Myth-check — same \`record\`, just a newer JVM" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          python3 scripts/compare-results.py \
-            results/java25-valhalla.json "Java 25" \
-            results/java28-valhalla-samecode.json "Java 28 EA" > results/comparison-25vs28-samecode.txt 2>&1
-          cat results/comparison-25vs28-samecode.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "_Expected: ~0% change — a plain record never flattens, on any JDK version._" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### The real comparison — \`record\` → \`value record\`" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -203,7 +186,6 @@ jobs:
           name: benchmark-json-25-vs-28
           path: |
             Performance Improvement/results/java25-valhalla.json
-            Performance Improvement/results/java28-valhalla-samecode.json
             Performance Improvement/results/java28-valhalla-value.json
 
   publish-report:

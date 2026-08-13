@@ -9,9 +9,8 @@ Meant to be published as-is to GitHub Pages — no external assets, no build ste
 Design choice (see README "What this report hides, on purpose"): rows are
 computed from the *actual* JSON numbers, not hand-picked. A row only appears
 in the audience-facing "Proven improvements" tables if the newer version is
-at least IMPROVEMENT_THRESHOLD_PCT better. Anything flat/regressed still
-prints in the "Full results" appendix so nothing is silently lost — it's
-just not presented as a win it isn't.
+at least IMPROVEMENT_THRESHOLD_PCT better. Anything flat/regressed is left
+out of the report entirely — it's not presented as a win it isn't.
 
 Usage:
   python3 generate-html-report.py <results_dir> <output_html> [--title "..."]
@@ -19,8 +18,6 @@ Usage:
 Expected files in <results_dir> (missing ones degrade gracefully):
   java17.json / java25.json                      — 17 vs 25 speed
   java17-gc.json / java25-gc.json                 — 17 vs 25 memory (GC profiler)
-  java25-valhalla.json / java28-valhalla-samecode.json
-                                                   — "just recompiled" baseline (record)
   java25-valhalla.json / java28-valhalla-value.json
                                                    — real Valhalla win (value record)
 """
@@ -116,22 +113,9 @@ def rows_html(rows, only_verdicts=None):
 
 def section(title, subtitle, label_before, label_after, rows, note=None):
     improved = [r for r in rows if r["verdict"] == "improved"]
-    other = [r for r in rows if r["verdict"] != "improved"]
     note_html = f'<p class="note">{note}</p>' if note else ""
-    other_html = ""
-    if other:
-        other_html = f"""
-        <details>
-          <summary>{len(other)} more result(s) not shown above — flat, regressed, or missing data</summary>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th class="bench-col">Benchmark</th><th>{html.escape(label_before)}</th><th>{html.escape(label_after)}</th><th>Δ</th><th>Unit</th><th>Verdict</th></tr></thead>
-              <tbody>{rows_html(other)}</tbody>
-            </table>
-          </div>
-        </details>"""
     improved_html = rows_html(improved) if improved else \
-        '<tr><td colspan="6" class="muted" style="text-align:center">No comparison in this group cleared the improvement threshold — see full results below.</td></tr>'
+        '<tr><td colspan="6" class="muted" style="text-align:center">No comparison in this group cleared the improvement threshold.</td></tr>'
     return f"""
     <section>
       <h2>{html.escape(title)}</h2>
@@ -143,7 +127,6 @@ def section(title, subtitle, label_before, label_after, rows, note=None):
           <tbody>{improved_html}</tbody>
         </table>
       </div>
-      {other_html}
     </section>"""
 
 
@@ -191,11 +174,8 @@ PAGE_TEMPLATE = """<!doctype html>
   .pct.bad, .verdict.bad {{ color: var(--bad); }}
   .pct.muted, .verdict.muted {{ color: var(--muted); font-weight: 400; }}
   .verdict {{ font-size: 0.85rem; font-weight: 600; text-transform: lowercase; }}
-  details {{ margin-top: 0.9rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }}
-  details summary {{ cursor: pointer; padding: 0.7rem 1rem; font-size: 0.88rem; color: var(--muted); }}
-  details table {{ margin: 0; }}
   a {{ color: var(--focus); }}
-  a:focus-visible, summary:focus-visible {{ outline: 2px solid var(--focus); outline-offset: 2px; }}
+  a:focus-visible {{ outline: 2px solid var(--focus); outline-offset: 2px; }}
   footer {{ color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }}
   code {{ background: var(--alt-row); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; }}
 </style>
@@ -206,8 +186,7 @@ PAGE_TEMPLATE = """<!doctype html>
   <p class="subtitle">Generated {generated} &middot; JMH {jmh_note} &middot; identical code, only the JDK changes</p>
   <p class="lede">Only comparisons where the newer version measured at least {threshold:.0f}% better are shown as
   headline "improvements" below — this is computed from the raw JMH numbers on every run, not hand-picked.
-  Anything flat or regressed is still recorded, just tucked into the "more results" panel under each
-  section so nothing is hidden, it's just not presented as a win it isn't.</p>
+  Anything flat or regressed is left out rather than presented as a win it isn't.</p>
 
   {sections}
 
@@ -243,16 +222,6 @@ def main():
             "Java 17", "Java 25", build_rows(mem17, mem25)))
 
     v25 = load_metrics(os.path.join(d, "java25-valhalla.json"))
-    v28_same = load_metrics(os.path.join(d, "java28-valhalla-samecode.json"))
-    if v25 or v28_same:
-        sections.append(section(
-            "🔮 Valhalla myth-check — same code, just a newer JVM",
-            "<code>record Point(...)</code> recompiled and run unchanged on Java 28 EA. No <code>value</code> keyword used.",
-            "Java 25", "Java 28 EA (unchanged)", build_rows(v25, v28_same),
-            note="Expected result: ~0% change. A plain record is still an identity object on every JDK — "
-                 "the JVM only flattens types explicitly declared <code>value class</code> / <code>value record</code>. "
-                 "This section exists to make that point, not to hide it."))
-
     v28_value = load_metrics(os.path.join(d, "java28-valhalla-value.json"))
     if v25 or v28_value:
         sections.append(section(
