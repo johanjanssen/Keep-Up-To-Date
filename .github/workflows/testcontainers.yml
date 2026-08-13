@@ -6,13 +6,17 @@ on:
     paths: ['Testcontainers/**']
   workflow_dispatch:
 
+# Several workflows publish their own subfolder to the same gh-pages branch.
+# They share this group so their deploys queue up instead of racing to push it.
+concurrency:
+  group: "gh-pages-deploy"
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -37,16 +41,22 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mkdir -p tmp/pages/testcontainers
-          cp Testcontainers/target/pages-report/index.html tmp/pages/testcontainers/
+          mkdir -p tmp/pages
+          cp Testcontainers/target/pages-report/index.html tmp/pages/
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (testcontainers/ subfolder)
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: tmp/pages
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: tmp/pages
+          destination_dir: testcontainers
+          keep_files: true
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers[/index.html]
 

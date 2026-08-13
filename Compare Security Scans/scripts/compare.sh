@@ -61,33 +61,31 @@ extract_trivy_cve_ids() {
 extract_grype_cve_ids() {
     local FILE="$1"
     [[ -f "$FILE" ]] || return
-    jq -r '[.matches[]? | .vulnerability.id] | unique | .[]' "$FILE" 2>/dev/null
+    # Grype often reports app-layer findings under a GHSA-* id while Trivy reports
+    # the exact same vulnerability under its CVE-* id (e.g. GHSA-jjjh-jjxp-wpff is
+    # CVE-2022-42003). Comparing raw ids would then count that one shared finding
+    # as "unique" to BOTH tools at once. relatedVulnerabilities carries the NVD
+    # CVE alias when one exists, so prefer that id for cross-tool comparison.
+    jq -r '
+        [.matches[]? |
+            (.vulnerability.id) as $id |
+            if ($id | startswith("CVE-")) then $id
+            else ((.relatedVulnerabilities // [])[] | select(.id | startswith("CVE-")) | .id) // $id
+            end
+        ] | unique | .[]
+    ' "$FILE" 2>/dev/null
 }
 
-# Check if Grype found all CVEs that Trivy found
-# Returns: "Yes", "No (N missed)", or "-"
-check_grype_covers_trivy() {
-    local GRYPE_FILE="$1" TRIVY_FILE="$2"
-    [[ -f "$TRIVY_FILE" ]] || { echo "-"; return; }
-    [[ -f "$GRYPE_FILE" ]] || { echo "all"; return; }
-
-    local TRIVY_CVES GRYPE_CVES MISSED
-    TRIVY_CVES=$(extract_trivy_cve_ids "$TRIVY_FILE")
-    [[ -z "$TRIVY_CVES" ]] && { echo "-"; return; }
-    GRYPE_CVES=$(extract_grype_cve_ids "$GRYPE_FILE")
-
-    MISSED=0
-    while IFS= read -r CVE; do
-        if ! echo "$GRYPE_CVES" | grep -qxF "$CVE"; then
-            MISSED=$((MISSED + 1))
-        fi
-    done <<< "$TRIVY_CVES"
-
-    if [[ $MISSED -eq 0 ]]; then
-        echo "-"
-    else
-        echo "$MISSED"
-    fi
+# Count ids present in FILE_A's list but not in FILE_B's list (both already
+# CVE-normalized). Used for "Unique in X" — a finding X has that Y doesn't.
+unique_count() {
+    local IDS_A="$1" IDS_B="$2"
+    [[ -z "$IDS_A" ]] && { echo "-"; return; }
+    local MISSING=0
+    while IFS= read -r ID; do
+        echo "$IDS_B" | grep -qxF "$ID" || MISSING=$((MISSING + 1))
+    done <<< "$IDS_A"
+    [[ $MISSING -eq 0 ]] && echo "-" || echo "$MISSING"
 }
 
 # Count vulnerabilities by class for Trivy (os vs app)
@@ -161,10 +159,10 @@ echo "║  VIEW 1: Severity Count Comparison — Grype vs Trivy                 
 echo "╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-BOTH_FMT="%-50s │ %5s %4s %4s %4s %4s %4s │ %5s %4s %4s %4s %4s %4s │ %-12s\n"
+BOTH_FMT="%-50s │ %5s %4s %4s %4s %4s %4s │ %5s %4s %4s %4s %4s %4s │ %-12s │ %-12s\n"
 
-printf "%-50s │ %-30s │ %-30s │ %-12s\n" "IMAGE" "  GRYPE (Tot/C/H/M/L/U)" "  TRIVY (Tot/C/H/M/L/U)" "Unique in Trivy"
-printf '%s┼%s┼%s┼%s\n' "$(printf '─%.0s' {1..51})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..18})"
+printf "%-50s │ %-30s │ %-30s │ %-12s │ %-12s\n" "IMAGE" "  GRYPE (Tot/C/H/M/L/U)" "  TRIVY (Tot/C/H/M/L/U)" "Unique Grype" "Unique Trivy"
+printf '%s┼%s┼%s┼%s┼%s\n' "$(printf '─%.0s' {1..51})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..14})" "$(printf '─%.0s' {1..14})"
 
 for IMG in "${ALL_IMAGES[@]}"; do
     FNAME=$(image_to_filename "$IMG")
@@ -172,16 +170,20 @@ for IMG in "${ALL_IMAGES[@]}"; do
     TRIVY_FILE="$RESULTS_DIR/trivy/${FNAME}.json"
     GRYPE_COUNTS=$(count_grype "$GRYPE_FILE")
     TRIVY_COUNTS=$(count_trivy "$TRIVY_FILE")
-    COVERAGE=$(check_grype_covers_trivy "$GRYPE_FILE" "$TRIVY_FILE")
+    GRYPE_CVES=$(extract_grype_cve_ids "$GRYPE_FILE")
+    TRIVY_CVES=$(extract_trivy_cve_ids "$TRIVY_FILE")
+    UNIQUE_GRYPE=$(unique_count "$GRYPE_CVES" "$TRIVY_CVES")
+    UNIQUE_TRIVY=$(unique_count "$TRIVY_CVES" "$GRYPE_CVES")
     # shellcheck disable=SC2086
-    printf "$BOTH_FMT" "$IMG" $GRYPE_COUNTS $TRIVY_COUNTS "$COVERAGE"
+    printf "$BOTH_FMT" "$IMG" $GRYPE_COUNTS $TRIVY_COUNTS "$UNIQUE_GRYPE" "$UNIQUE_TRIVY"
 done
 
 echo ""
 echo "Legend: Tot=Total  C=Critical  H=High  M=Medium  L=Low  U=Unknown"
-echo "        All counts are unique CVEs (deduplicated by CVE ID)"
+echo "        All counts are unique CVEs (deduplicated by CVE ID, with Grype's GHSA ids resolved to their NVD CVE alias"
+echo "        via relatedVulnerabilities so the same finding under two different id schemes isn't double-counted)"
 echo "        '-' = scan not run, or no unique findings"
-echo "        Unique Trivy = Number of CVEs found by Trivy but NOT by Grype"
+echo "        Unique Grype = CVEs found by Grype but NOT by Trivy   Unique Trivy = CVEs found by Trivy but NOT by Grype"
 echo "        ⚠ Trivy may show 0 for Oracle Linux 10 images (e.g. GraalVM) — its vuln DB lacks OL10 coverage"
 
 # ══════════════════════════════════════════════════════════════════
@@ -239,7 +241,7 @@ echo "║  • OS-level: vulnerabilities in distro packages (apt/rpm) — reduce
 echo "║  • App-level: vulnerabilities in JARs/dependencies — same across images (same app)                             ║"
 echo "║  • ⚠ OWASP scans a DIFFERENT project (demo with intentionally vulnerable deps like log4j 2.0,                 ║"
 echo "║    jackson-databind 2.9.10, Spring Boot 2.7) — NOT the hello-conference app that Trivy/Grype scan              ║"
-echo "║  • Unique Trivy = CVEs that only Trivy found — use both tools for best coverage                                ║"
+echo "║  • Unique Grype/Trivy = CVEs only that tool found — use both tools for best coverage                           ║"
 echo "╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 

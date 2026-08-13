@@ -46,19 +46,35 @@ def load_trivy(path):
                 counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
     return name, counts, seen
+def grype_cve_alias(match):
+    # Grype often reports app-layer findings under a GHSA-* id while Trivy reports
+    # the exact same vulnerability under its CVE-* id (e.g. GHSA-jjjh-jjxp-wpff is
+    # CVE-2022-42003 — confirmed via Grype's own relatedVulnerabilities). Comparing
+    # raw ids would then count that single, shared finding as "unique" to BOTH
+    # tools at once. Grype's relatedVulnerabilities carries the NVD CVE alias when
+    # one exists, so prefer that for any cross-tool (Grype vs Trivy) comparison.
+    vid = match.get("vulnerability", {}).get("id", "")
+    if vid.startswith("CVE-"):
+        return vid
+    for related in match.get("relatedVulnerabilities") or []:
+        rid = related.get("id", "")
+        if rid.startswith("CVE-"):
+            return rid
+    return vid  # no NVD CVE alias exists (yet) — genuinely Grype-only
 def load_grype(path):
     with open(path, encoding="utf-8-sig") as f:
         data = json.load(f)
     name = data.get("source",{}).get("target",{}).get("userInput") or filename_to_image(path)
-    seen, counts = set(), {s:0 for s in SEV_ORDER}
+    seen, cross_ids, counts = set(), set(), {s:0 for s in SEV_ORDER}
     for match in data.get("matches",[]):
         vid = match.get("vulnerability",{}).get("id","")
         sev = match.get("vulnerability",{}).get("severity","UNKNOWN").upper()
+        cross_ids.add(grype_cve_alias(match))
         if vid not in seen:
             seen.add(vid)
             counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
-    return name, counts, seen
+    return name, counts, cross_ids
 def load_all(trivy_dir, grype_dir):
     # Keyed by filename stem (stable join key — identical between the trivy/grype
     # dirs since both are produced by the same images.conf#image_to_filename).

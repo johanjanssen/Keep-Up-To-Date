@@ -17,12 +17,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -79,15 +74,25 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mkdir -p tmp/pages/OWASP
+          mkdir -p tmp/pages
           # Renamed to index.html so the report is actually reachable at .../OWASP/
           # instead of only at .../OWASP/dependency-check-report.html
-          cp "Vulnerable Application/target/dependency-check-report.html" tmp/pages/OWASP/index.html
-          cp "Vulnerable Application/target/dependency-check-report.json" tmp/pages/OWASP/ 2>/dev/null || true
-          cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/OWASP/ 2>/dev/null || true
+          cp "Vulnerable Application/target/dependency-check-report.html" tmp/pages/index.html
+          cp "Vulnerable Application/target/dependency-check-report.json" tmp/pages/ 2>/dev/null || true
+          cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/ 2>/dev/null || true
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (OWASP/ subfolder)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: tmp/pages
+          destination_dir: OWASP
+          keep_files: true
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/OWASP[/index.html]
