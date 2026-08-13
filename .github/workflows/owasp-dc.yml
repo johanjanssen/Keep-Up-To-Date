@@ -25,6 +25,24 @@ jobs:
       - name: Build Vulnerable App
         run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
 
+      - name: Get cache date
+        id: cache-date
+        # A new cache "generation" every day keeps the cache from growing forever
+        # while restore-keys below still lets each day start from yesterday's data,
+        # so update-cache.sh / dependency-check:check only ever process the delta.
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore NVD cache
+        id: restore-nvd-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: nvd-owasp-dc-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            nvd-owasp-dc-
+
       - name: Start NVD cache
         env:
           # This maps your GitHub secret to an environment variable the tool can read
@@ -39,6 +57,15 @@ jobs:
 
       - name: Run dependency check
         run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
+
+      - name: Save NVD cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ steps.restore-nvd-cache.outputs.cache-primary-key }}
 
       - name: Prepare Pages directory
         run: |
