@@ -17,7 +17,12 @@ jobs:
   compare:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -82,12 +87,8 @@ jobs:
           cp "Compare Security Scans/target/results/html/index.html" tmp/pages/Scans/
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/pages/Scans
-          destination_dir: Scans
-          keep_files: true
+        id: deployment
+        uses: actions/deploy-pages@v4
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans/index.html
 

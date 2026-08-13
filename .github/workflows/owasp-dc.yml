@@ -17,7 +17,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -82,11 +87,7 @@ jobs:
           cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/OWASP/ 2>/dev/null || true
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/pages/OWASP
-          destination_dir: OWASP
-          keep_files: true
+        id: deployment
+        uses: actions/deploy-pages@v4
 
       # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/OWASP[/index.html]

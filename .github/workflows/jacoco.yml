@@ -17,7 +17,12 @@ jobs:
   jacoco:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,11 +41,7 @@ jobs:
           mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: tmp/coverage-report/JaCoCo
-          destination_dir: JaCoCo
-          keep_files: true
+        id: deployment
+        uses: actions/deploy-pages@v4
 
 # Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo[/index.html]
