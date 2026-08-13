@@ -27,8 +27,8 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
-          mkdir -p tmp/coverage-report/Jacoco
-          mv JaCoCo/target/coverage-report/* tmp/coverage-report/Jacoco/
+          mkdir -p tmp/coverage-report/JaCoCo
+          mv JaCoCo/target/coverage-report/* tmp/coverage-report/JaCoCo/
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
@@ -38,4 +38,4 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
 
-# Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Jacoco[/index.html]
+# Now the coverage report is available under https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo[/index.html]

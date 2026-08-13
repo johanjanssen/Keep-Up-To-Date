@@ -1,6 +1,9 @@
-name: "🚀 Performance — Java 17 vs 25 vs 28 EA (Valhalla)"
+name: "Performance — Java 17 vs 25 vs 28 EA (Valhalla)"
 
 on:
+  push:
+    branches: [ master ]
+    paths: [ 'Performance Improvement/**' ]
   workflow_dispatch:
 
 jobs:

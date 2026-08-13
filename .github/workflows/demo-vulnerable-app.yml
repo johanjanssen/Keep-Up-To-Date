@@ -1,6 +1,9 @@
-name: "🔓 Vulnerable App — Full Demo"
+name: "Vulnerable App — Full Demo"
 
 on:
+  push:
+    branches: [ master ]
+    paths: [ 'Vulnerable Application Old Java/**' ]
   workflow_dispatch:
 
 jobs:
