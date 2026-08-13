@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docker Image Size &amp; Performance Comparison</title>
+<style>
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --accent: #1565C0; --ok: #2E7D32; --warn: #B71C1C;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  section { margin-bottom: 3rem; }
+  h2 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  p.hint { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 1rem; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); font-variant-numeric: tabular-nums; }
+  th, td { padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.image-col, td.image-name { text-align: left; white-space: normal; font-variant-numeric: normal; }
+  thead th { position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }
+  tbody tr:nth-child(even) { background: var(--alt-row); }
+  tbody tr.not-built { opacity: 0.55; font-style: italic; }
+  td.muted { color: var(--muted); }
+  td.warmup-ok { color: var(--ok); font-weight: 700; }
+  td.warmup-timeout { color: var(--warn); font-weight: 700; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Docker Image Size &amp; Performance Comparison</h1>
+  <p class="subtitle">Generated 2026-08-13 20:03 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
+
+  <section>
+    <h2>Image Size &amp; Package Comparison</h2>
+    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Image Size</th><th>App Size</th><th>App+Runtime Size</th><th>Packages</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+        <tr>
+          <td class="image-name">eclipse-temurin:25-jre</td>
+          <td>336MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>106</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">eclipse-temurin:25-jdk</td>
+          <td>414MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>115</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">azul/zulu-openjdk:25-jdk-crac</td>
+          <td>528MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>103</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">gcr.io/distroless/base-debian12</td>
+          <td>20.8MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">gcr.io/distroless/static-debian12</td>
+          <td>2.08MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>4</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">debian:12-slim</td>
+          <td>74.8MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>88</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">almalinux/10-base</td>
+          <td>193MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>147</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">almalinux:10-kitten-minimal</td>
+          <td>74MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>84</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">ghcr.io/graalvm/native-image-community:25</td>
+          <td>1.14GB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>146</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jre-temurin</td>
+          <td>360MB</td>
+          <td>+22.6 MB</td>
+          <td class="muted">–</td>
+          <td>106</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-full-distroless-base</td>
+          <td>153MB</td>
+          <td class="muted">–</td>
+          <td>+126.0 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-distroless-base</td>
+          <td>112MB</td>
+          <td class="muted">–</td>
+          <td>+87.3 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-netty-distroless-base</td>
+          <td>128MB</td>
+          <td class="muted">–</td>
+          <td>+102.1 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-cds-distroless-base</td>
+          <td>156MB</td>
+          <td class="muted">–</td>
+          <td>+129.2 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-tuned-distroless-base</td>
+          <td>112MB</td>
+          <td class="muted">–</td>
+          <td>+87.3 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:crac-azul-distroless-base</td>
+          <td>245MB</td>
+          <td class="muted">–</td>
+          <td>+214.1 MB</td>
+          <td>6</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-debian-slim</td>
+          <td>160MB</td>
+          <td class="muted">–</td>
+          <td>+81.4 MB</td>
+          <td>88</td>
+        </tr>
+
+        <tr class="not-built">
+          <td class="image-name">hello-conference:native-minimal-distroless-static</td>
+          <td>NOT BUILT</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-scratch</td>
+          <td>66.2MB</td>
+          <td class="muted">–</td>
+          <td>+63.1 MB</td>
+          <td class="muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-netty-scratch</td>
+          <td>100MB</td>
+          <td class="muted">–</td>
+          <td>+95.4 MB</td>
+          <td class="muted">–</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Startup &amp; Memory Performance</h2>
+    <p class="hint">STARTUP(log) = Spring Boot's own "Started in X seconds" measurement. STARTUP(wall) = wall-clock time from "docker run" to the first healthy HTTP response.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Memory</th><th>Warmup</th><th>Startup (log)</th><th>Startup (wall)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="5">No results.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Build Docker Images &middot; <a href="https://github.com/johanjanssen/Keep-Up-To-Date">Keep-Up-To-Date</a></footer>
+</main>
+</body>
+</html>
