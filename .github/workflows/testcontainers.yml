@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -19,5 +23,33 @@ jobs:
           java-version: '25'
 
       - name: Run Testcontainers integration tests
-        run: bash Testcontainers/scripts/run-tests.sh
+        id: run_tests
+        continue-on-error: true
+        run: bash Testcontainers/scripts/run-tests.sh 2>&1 | tee /tmp/testcontainers-output.txt
 
+      - name: Generate HTML report
+        run: |
+          python3 "Testcontainers/scripts/generate-html-report.py" \
+            --log /tmp/testcontainers-output.txt \
+            --surefire-dir "Testcontainers/target/surefire-reports" \
+            --output "Testcontainers/target/pages-report/index.html" \
+            --title "Testcontainers Integration Tests — Maven Result"
+
+      - name: Prepare Pages directory
+        run: |
+          mkdir -p tmp/pages/testcontainers
+          cp Testcontainers/target/pages-report/index.html tmp/pages/testcontainers/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tmp/pages
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers[/index.html]
+
+      - name: Fail job if tests failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1
