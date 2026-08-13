@@ -2,7 +2,7 @@ name: OWASP Dependency Check
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['OWASP Dependency Check/**', 'Vulnerable Application/**']
   workflow_dispatch:
 
@@ -40,10 +40,21 @@ jobs:
       - name: Run dependency check
         run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
 
+      - name: Prepare Pages directory
+        run: |
+          mkdir -p tmp/pages/OWASP
+          # Renamed to index.html so the report is actually reachable at .../OWASP/
+          # instead of only at .../OWASP/dependency-check-report.html
+          cp "Vulnerable Application/target/dependency-check-report.html" tmp/pages/OWASP/index.html
+          cp "Vulnerable Application/target/dependency-check-report.json" tmp/pages/OWASP/ 2>/dev/null || true
+          cp "Vulnerable Application/target/dependency-check-report.sarif" tmp/pages/OWASP/ 2>/dev/null || true
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: Vulnerable Application/target/dependency-check-report.*
+          path: tmp/pages
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/OWASP[/index.html]

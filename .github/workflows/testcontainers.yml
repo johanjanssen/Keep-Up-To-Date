@@ -2,7 +2,7 @@ name: Testcontainers
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['Testcontainers/**']
   workflow_dispatch:
 

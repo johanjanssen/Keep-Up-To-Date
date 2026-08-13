@@ -38,6 +38,14 @@ for IMG in "${BASE_IMAGES[@]}"; do
         echo "  ↓  Pulling ${PULL_REF} …"
         docker pull "${PULL_REF}"
     fi
+
+    # A digest pull only creates the "image@sha256:..." reference — it does NOT
+    # create the plain "image:tag" reference that images.conf / the scan scripts
+    # look up. Tag it explicitly so downstream tools resolve the *pinned* digest
+    # instead of silently re-pulling (and scanning) whatever "tag" points to now.
+    if [[ -n "${DIGEST}" ]]; then
+        docker tag "${PULL_REF}" "${IMG}"
+    fi
 done
 echo "✅  All base images up to date."
 

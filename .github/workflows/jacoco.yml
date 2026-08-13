@@ -2,7 +2,7 @@ name: JaCoCo Demo
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['JaCoCo/**']
   workflow_dispatch:
 

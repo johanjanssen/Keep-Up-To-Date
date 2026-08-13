@@ -66,7 +66,12 @@ echo "-> Running /mirror.sh inside container '${CONTAINER_NAME}' ..."
 echo "   NVD_API_KEY is read from the container's own environment."
 echo ""
 
-docker exec -u mirror "${CONTAINER_NAME}" /mirror.sh
+# Run as root, not the image's default "mirror" user (uid 100): /usr/local/apache2/htdocs
+# is a bind mount of DATA_DIR, which is created on the host (owned by the CI runner's /
+# local user's uid) — "mirror" doesn't own it and can't create .nvd_requests/ underneath
+# it, causing "Unable to create http cache directory". start-cache.sh already starts the
+# container itself as --user root for the same reason; keep exec consistent with that.
+docker exec -u root "${CONTAINER_NAME}" /mirror.sh
 
 # ── Post-update state ─────────────────────────────────────────────────────────
 echo ""

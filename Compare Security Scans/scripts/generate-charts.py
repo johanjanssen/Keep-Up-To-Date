@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Generate presentation-ready Trivy-vs-Grype comparison charts.
 Produces:
@@ -29,11 +29,17 @@ SEV_COLORS = {"CRITICAL":"#B71C1C","HIGH":"#E65100","MEDIUM":"#F9A825","LOW":"#5
 SEV_ORDER  = ["CRITICAL","HIGH","MEDIUM","LOW","UNKNOWN"]
 TOOL_COLORS = {"Grype":"#E65100","Trivy":"#1565C0"}
 def filename_to_image(fname):
+    # Fallback only: images.conf's image_to_filename maps BOTH '/' and ':' to '_'
+    # (tr '/:' '__'), so this reverse mapping is lossy/ambiguous (e.g.
+    # "gcr.io/distroless/base-debian12" and a hypothetical "gcr.io:distroless:..."
+    # would collide). Prefer the real name embedded in the JSON (ArtifactName /
+    # source.target.userInput) — see load_trivy/load_grype below.
     base = os.path.splitext(os.path.basename(fname))[0]
-    return base.replace("__",":",1)
+    return base.replace("_", ":", 1)
 def load_trivy(path):
     with open(path, encoding="utf-8-sig") as f:
         data = json.load(f)
+    name = data.get("ArtifactName") or filename_to_image(path)
     seen, counts = set(), {s:0 for s in SEV_ORDER}
     for result in data.get("Results",[]):
         for vuln in result.get("Vulnerabilities") or []:
@@ -43,10 +49,11 @@ def load_trivy(path):
                 seen.add(vid)
                 counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
-    return counts
+    return name, counts
 def load_grype(path):
     with open(path, encoding="utf-8-sig") as f:
         data = json.load(f)
+    name = data.get("source",{}).get("target",{}).get("userInput") or filename_to_image(path)
     seen, counts = set(), {s:0 for s in SEV_ORDER}
     for match in data.get("matches",[]):
         vid = match.get("vulnerability",{}).get("id","")
@@ -55,21 +62,32 @@ def load_grype(path):
             seen.add(vid)
             counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
-    return counts
+    return name, counts
 def load_all(trivy_dir, grype_dir):
+    # Keyed by filename stem (stable join key — identical between the trivy/grype
+    # dirs since both are produced by the same images.conf#image_to_filename).
+    # The display name comes from inside the JSON, not from reversing that key.
     results = {}
     for path in sorted(glob.glob(os.path.join(trivy_dir,"*.json"))):
-        img = filename_to_image(path)
-        try: results.setdefault(img,{})["trivy"] = load_trivy(path)
+        key = os.path.splitext(os.path.basename(path))[0]
+        try:
+            name, counts = load_trivy(path)
+            entry = results.setdefault(key, {})
+            entry["name"] = name
+            entry["trivy"] = counts
         except Exception as e: print(f"  WARN trivy {path}: {e}")
     for path in sorted(glob.glob(os.path.join(grype_dir,"*.json"))):
-        img = filename_to_image(path)
-        try: results.setdefault(img,{})["grype"] = load_grype(path)
+        key = os.path.splitext(os.path.basename(path))[0]
+        try:
+            name, counts = load_grype(path)
+            entry = results.setdefault(key, {})
+            entry.setdefault("name", name)
+            entry["grype"] = counts
         except Exception as e: print(f"  WARN grype {path}: {e}")
     # Sort by Trivy total desc
     empty = {"_total":0,"CRITICAL":0,"HIGH":0,"MEDIUM":0,"LOW":0,"UNKNOWN":0}
-    items = [(img, data.get("grype",empty), data.get("trivy",empty))
-             for img, data in results.items()]
+    items = [(data.get("name", filename_to_image(key)), data.get("grype",empty), data.get("trivy",empty))
+             for key, data in results.items()]
     items.sort(key=lambda x: x[2]["_total"], reverse=True)
     return items
 def draw_table(items, title, out_path):

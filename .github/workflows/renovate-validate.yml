@@ -2,7 +2,7 @@ name: Renovate Config Validate
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['Renovate/renovate.json', 'renovate.json']
   workflow_dispatch:
 

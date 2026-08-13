@@ -2,13 +2,17 @@ name: Compare Security Scans
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['Compare Security Scans/**']
   workflow_dispatch:
 
 jobs:
   compare:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +26,15 @@ jobs:
       # No separate Maven build needed here.
 
       - name: Pull & tag base images
-        run: |
-          bash "Build Docker Images/pull-base-images.sh"
-          # Ensure tag-based lookup works after digest-pinned pulls
-          source images.conf
-          for IMG in "${BASE_IMAGES[@]}"; do
-            docker image inspect "$IMG" >/dev/null 2>&1 || docker pull "$IMG" || true
-          done
+        run: bash "Build Docker Images/pull-base-images.sh"
 
       - name: Build all hello-conference Docker images
         run: bash "Build Docker Images/build-all-images.sh"
+        # A single flaky image (e.g. a transient network blip in a native-image
+        # toolchain download) shouldn't stop the other images from being scanned
+        # and reported on — scan-*.sh / compare.sh already handle unbuilt images
+        # gracefully (they show up as "NOT BUILT" instead of failing the run).
+        continue-on-error: true
 
       - name: Scan with Grype
         run: bash "Compare Security Scans/scripts/scan-grype.sh"
@@ -57,6 +60,31 @@ jobs:
             --title "Container Image CVE Comparison — Trivy vs Grype" \
             --prefix scan
         continue-on-error: true
+
+      - name: Generate HTML report
+        run: |
+          python3 "Compare Security Scans/scripts/generate-html-report.py" \
+            "Compare Security Scans/target/results/trivy" \
+            "Compare Security Scans/target/results/grype" \
+            "Compare Security Scans/target/results/charts" \
+            /tmp/compare-output.txt \
+            "Compare Security Scans/target/results/html/index.html" \
+            --title "Container Image CVE Comparison — Trivy vs Grype"
+
+      - name: Prepare Pages directory
+        run: |
+          mkdir -p tmp/pages/Scans
+          cp "Compare Security Scans/target/results/html/index.html" tmp/pages/Scans/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tmp/pages
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans[/index.html]
 
       - name: Upload comparison data
         uses: actions/upload-artifact@v4
