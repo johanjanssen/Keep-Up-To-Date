@@ -1,0 +1,84 @@
+name: Measure Docker Images
+
+on:
+  push:
+    branches: [master]
+    paths: ['Build Docker Images/**']
+  workflow_dispatch:
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # Note: Docker multi-stage builds compile the app internally.
+      # No separate Maven build needed here.
+
+      - name: Pull & tag base images
+        run: bash "Build Docker Images/pull-base-images.sh"
+
+      - name: Build all hello-conference Docker images
+        run: bash "Build Docker Images/build-all-images.sh"
+        # A single flaky image shouldn't stop the others from being measured and
+        # reported on — measure-images.sh / measure-performance.sh already handle
+        # unbuilt images gracefully (they show up as "NOT BUILT" / are skipped).
+        continue-on-error: true
+
+      - name: Measure image size & packages
+        run: |
+          bash "Build Docker Images/measure-images.sh" 2>&1 | tee /tmp/measure-images-output.txt
+          echo "## 📦 Docker Image Size & Package Comparison" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/measure-images-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Measure startup time & memory
+        run: |
+          bash "Build Docker Images/measure-performance.sh" 2>&1 | tee /tmp/measure-performance-output.txt
+          echo "## ⏱️ Docker Image Startup & Memory Comparison" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/measure-performance-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate HTML report
+        run: |
+          python3 "Build Docker Images/scripts/generate-html-report.py" \
+            /tmp/measure-images-output.txt \
+            /tmp/measure-performance-output.txt \
+            "Build Docker Images/target/results/html/index.html" \
+            --title "Docker Image Size & Performance Comparison"
+
+      - name: Prepare Pages directory
+        run: |
+          mkdir -p tmp/pages/images
+          cp "Build Docker Images/target/results/html/index.html" tmp/pages/images/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tmp/pages
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/images[/index.html]
+
+      - name: Upload measurement data
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-measurement-data
+          path: |
+            /tmp/measure-images-output.txt
+            /tmp/measure-performance-output.txt
