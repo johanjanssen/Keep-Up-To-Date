@@ -54,7 +54,7 @@
 <body>
 <main>
   <h1>Java Performance — 17 vs 25 vs 28 EA (Valhalla)</h1>
-  <p class="subtitle">Generated 2026-08-13 20:12 UTC &middot; JMH 1.37 &middot; identical code, only the JDK changes</p>
+  <p class="subtitle">Generated 2026-08-13 20:28 UTC &middot; JMH 1.37 &middot; identical code, only the JDK changes</p>
   <p class="lede">Only comparisons where the newer version measured at least 3% better are shown as
   headline "improvements" below — this is computed from the raw JMH numbers on every run, not hand-picked.
   Anything flat or regressed is still recorded, just tucked into the "more results" panel under each
@@ -71,35 +71,44 @@
           <tbody>
         <tr>
           <td class="bench-name">allocateAndProcessStrings (count=1000000)</td>
-          <td class="num">8.23</td>
-          <td class="num">6.09</td>
-          <td class="num"><span class="pct good">+26.0%</span></td>
+          <td class="num">6.67</td>
+          <td class="num">4.09</td>
+          <td class="num"><span class="pct good">+38.7%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">allocateAndProcessStrings (count=5000000)</td>
-          <td class="num">41.13</td>
-          <td class="num">30.51</td>
-          <td class="num"><span class="pct good">+25.8%</span></td>
+          <td class="num">31.82</td>
+          <td class="num">20.79</td>
+          <td class="num"><span class="pct good">+34.7%</span></td>
+          <td class="unit">ms/op</td>
+          <td class="verdict good">faster/leaner</td>
+        </tr>
+
+        <tr>
+          <td class="bench-name">mathHeavyComputation (size=1000000)</td>
+          <td class="num">23.03</td>
+          <td class="num">13.05</td>
+          <td class="num"><span class="pct good">+43.3%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">sumPrimitiveArray (size=1000000)</td>
-          <td class="num">0.75</td>
-          <td class="num">0.33</td>
-          <td class="num"><span class="pct good">+56.4%</span></td>
+          <td class="num">1.15</td>
+          <td class="num">0.81</td>
+          <td class="num"><span class="pct good">+30.0%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">virtualThreads (taskCount=10000)</td>
-          <td class="num">6,377.59</td>
-          <td class="num">8.15</td>
+          <td class="num">6,358.43</td>
+          <td class="num">9.46</td>
           <td class="num"><span class="pct good">+99.9%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
@@ -108,81 +117,72 @@
       </div>
       
         <details>
-          <summary>8 more result(s) not shown above — flat, regressed, or missing data</summary>
+          <summary>7 more result(s) not shown above — flat, regressed, or missing data</summary>
           <div class="table-scroll">
             <table>
               <thead><tr><th class="bench-col">Benchmark</th><th>Java 17</th><th>Java 25</th><th>Δ</th><th>Unit</th><th>Verdict</th></tr></thead>
               <tbody>
         <tr>
           <td class="bench-name">allocateSmallObjects (count=1000000)</td>
-          <td class="num">15.84</td>
-          <td class="num">16.81</td>
-          <td class="num"><span class="pct bad">-6.2%</span></td>
+          <td class="num">19.70</td>
+          <td class="num">19.78</td>
+          <td class="num"><span class="pct muted">-0.4%</span></td>
           <td class="unit">ms/op</td>
-          <td class="verdict bad">slower/heavier</td>
+          <td class="verdict muted">no real change</td>
         </tr>
 
         <tr>
           <td class="bench-name">allocateSmallObjects (count=5000000)</td>
-          <td class="num">78.23</td>
-          <td class="num">89.00</td>
-          <td class="num"><span class="pct bad">-13.8%</span></td>
-          <td class="unit">ms/op</td>
-          <td class="verdict bad">slower/heavier</td>
-        </tr>
-
-        <tr>
-          <td class="bench-name">mathHeavyComputation (size=1000000)</td>
-          <td class="num">18.59</td>
-          <td class="num">19.26</td>
-          <td class="num"><span class="pct bad">-3.6%</span></td>
+          <td class="num">95.58</td>
+          <td class="num">99.10</td>
+          <td class="num"><span class="pct bad">-3.7%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict bad">slower/heavier</td>
         </tr>
 
         <tr>
           <td class="bench-name">platformThreadPool (taskCount=10000)</td>
-          <td class="num">6,378.92</td>
-          <td class="num">6,378.09</td>
-          <td class="num"><span class="pct muted">+0.0%</span></td>
+          <td class="num">6,358.70</td>
+          <td class="num">6,363.28</td>
+          <td class="num"><span class="pct muted">-0.1%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict muted">no real change</td>
         </tr>
 
         <tr>
           <td class="bench-name">recordStyleAllocation (count=1000000)</td>
-          <td class="num">30.64</td>
-          <td class="num">30.67</td>
-          <td class="num"><span class="pct muted">-0.1%</span></td>
+          <td class="num">17.71</td>
+          <td class="num">17.35</td>
+          <td class="num"><span class="pct muted">+2.0%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict muted">no real change</td>
         </tr>
 
         <tr>
           <td class="bench-name">recordStyleAllocation (count=5000000)</td>
-          <td class="num">153.16</td>
-          <td class="num">153.30</td>
-          <td class="num"><span class="pct muted">-0.1%</span></td>
+          <td class="num">87.32</td>
+          <td class="num">87.91</td>
+          <td class="num"><span class="pct muted">-0.7%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict muted">no real change</td>
         </tr>
 
         <tr>
           <td class="bench-name">streamFilterMapReduce (size=1000000)</td>
-          <td class="num">0.72</td>
-          <td class="num">0.72</td>
-          <td class="num"><span class="pct muted">-1.1%</span></td>
+          <td class="num">0.52</td>
+          <td class="num">0.54</td>
+          <td class="num"><span class="pct bad">-3.7%</span></td>
           <td class="unit">ms/op</td>
-          <td class="verdict muted">no real change</td>
+          <td class="verdict bad">slower/heavier</td>
         </tr>
 
         <tr>
           <td class="bench-name">sumBoxedArrayList (size=1000000)</td>
-          <td class="num">17.93</td>
-          <td class="num">20.28</td>
-          <td class="num"><span class="pct bad">-13.1%</span></td>
+          <td class="num">22.46</td>
+          <td class="num">22.41</td>
+          <td class="num"><span class="pct muted">+0.3%</span></td>
           <td class="unit">ms/op</td>
-          <td class="verdict bad">slower/heavier</td>
+          <td class="verdict muted">no real change</td>
         </tr></tbody>
             </table>
           </div>
@@ -198,19 +198,28 @@
           <thead><tr><th class="bench-col">Benchmark</th><th>Java 17</th><th>Java 25</th><th>Δ</th><th>Unit</th><th>Verdict</th></tr></thead>
           <tbody>
         <tr>
+          <td class="bench-name">mathHeavyComputation (size=1000000)</td>
+          <td class="num">67.49</td>
+          <td class="num">40.16</td>
+          <td class="num"><span class="pct good">+40.5%</span></td>
+          <td class="unit">B/op</td>
+          <td class="verdict good">faster/leaner</td>
+        </tr>
+
+        <tr>
           <td class="bench-name">platformThreadPool (taskCount=10000)</td>
           <td class="num">1.2 MB</td>
-          <td class="num">918.6 KB</td>
-          <td class="num"><span class="pct good">+23.2%</span></td>
+          <td class="num">949.4 KB</td>
+          <td class="num"><span class="pct good">+22.0%</span></td>
           <td class="unit">B/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">streamFilterMapReduce (size=1000000)</td>
-          <td class="num">434.10</td>
-          <td class="num">354.08</td>
-          <td class="num"><span class="pct good">+18.4%</span></td>
+          <td class="num">433.59</td>
+          <td class="num">361.76</td>
+          <td class="num"><span class="pct good">+16.6%</span></td>
           <td class="unit">B/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr></tbody>
@@ -218,7 +227,7 @@
       </div>
       
         <details>
-          <summary>10 more result(s) not shown above — flat, regressed, or missing data</summary>
+          <summary>9 more result(s) not shown above — flat, regressed, or missing data</summary>
           <div class="table-scroll">
             <table>
               <thead><tr><th class="bench-col">Benchmark</th><th>Java 17</th><th>Java 25</th><th>Δ</th><th>Unit</th><th>Verdict</th></tr></thead>
@@ -260,28 +269,19 @@
         </tr>
 
         <tr>
-          <td class="bench-name">mathHeavyComputation (size=1000000)</td>
-          <td class="num">54.14</td>
-          <td class="num">59.70</td>
-          <td class="num"><span class="pct bad">-10.3%</span></td>
-          <td class="unit">B/op</td>
-          <td class="verdict bad">slower/heavier</td>
-        </tr>
-
-        <tr>
           <td class="bench-name">recordStyleAllocation (count=1000000)</td>
-          <td class="num">89.29</td>
-          <td class="num">95.86</td>
-          <td class="num"><span class="pct bad">-7.4%</span></td>
+          <td class="num">49.56</td>
+          <td class="num">53.55</td>
+          <td class="num"><span class="pct bad">-8.1%</span></td>
           <td class="unit">B/op</td>
           <td class="verdict bad">slower/heavier</td>
         </tr>
 
         <tr>
           <td class="bench-name">recordStyleAllocation (count=5000000)</td>
-          <td class="num">420.65</td>
-          <td class="num">452.78</td>
-          <td class="num"><span class="pct bad">-7.6%</span></td>
+          <td class="num">248.54</td>
+          <td class="num">263.20</td>
+          <td class="num"><span class="pct bad">-5.9%</span></td>
           <td class="unit">B/op</td>
           <td class="verdict bad">slower/heavier</td>
         </tr>
@@ -307,8 +307,8 @@
         <tr>
           <td class="bench-name">virtualThreads (taskCount=10000)</td>
           <td class="num">1.2 MB</td>
-          <td class="num">8.6 MB</td>
-          <td class="num"><span class="pct bad">-617.2%</span></td>
+          <td class="num">8.9 MB</td>
+          <td class="num"><span class="pct bad">-630.5%</span></td>
           <td class="unit">B/op</td>
           <td class="verdict bad">slower/heavier</td>
         </tr></tbody>
@@ -327,18 +327,18 @@
           <tbody>
         <tr>
           <td class="bench-name">computeDistances (size=1000000)</td>
-          <td class="num">21.27</td>
-          <td class="num">16.92</td>
-          <td class="num"><span class="pct good">+20.5%</span></td>
+          <td class="num">21.46</td>
+          <td class="num">16.89</td>
+          <td class="num"><span class="pct good">+21.3%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">sumPointsRecord (size=1000000)</td>
-          <td class="num">19.26</td>
-          <td class="num">13.86</td>
-          <td class="num"><span class="pct good">+28.0%</span></td>
+          <td class="num">19.10</td>
+          <td class="num">13.79</td>
+          <td class="num"><span class="pct good">+27.8%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr></tbody>
@@ -357,18 +357,18 @@
           <tbody>
         <tr>
           <td class="bench-name">computeDistances (size=1000000)</td>
-          <td class="num">21.27</td>
-          <td class="num">18.07</td>
-          <td class="num"><span class="pct good">+15.0%</span></td>
+          <td class="num">21.46</td>
+          <td class="num">17.86</td>
+          <td class="num"><span class="pct good">+16.8%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr>
 
         <tr>
           <td class="bench-name">sumPointsRecord (size=1000000)</td>
-          <td class="num">19.26</td>
-          <td class="num">14.51</td>
-          <td class="num"><span class="pct good">+24.7%</span></td>
+          <td class="num">19.10</td>
+          <td class="num">14.49</td>
+          <td class="num"><span class="pct good">+24.1%</span></td>
           <td class="unit">ms/op</td>
           <td class="verdict good">faster/leaner</td>
         </tr></tbody>
