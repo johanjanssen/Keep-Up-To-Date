@@ -9,7 +9,7 @@
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --add-bg: #E4F5E1; --add-fg: #1C5B26; --del-bg: #FBE7E7; --del-fg: #8C1F1F;
     --hunk-bg: #EEF1FC; --hunk-fg: #4353C4;
-    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --alt-row: #EEF1FC;
     --focus: #4353C4; --ok: #1C5B26; --ok-bg: #E4F5E1; --warn: #8C5A00; --warn-bg: #FBF0DA;
   }
   @media (prefers-color-scheme: dark) {
@@ -64,13 +64,6 @@
   .badge.muted { background: var(--alt-row); color: var(--muted); }
   .note { color: var(--muted); font-size: 0.88rem; margin-top: 0.6rem; }
 
-  .file-index { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
-  .file-index li {
-    display: flex; justify-content: space-between; gap: 1rem;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.45rem 0.8rem; font-size: 0.88rem;
-  }
-  .file-index a { text-decoration: none; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .stats { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; white-space: nowrap; }
   .stat-add { color: var(--add-fg); }
   .stat-del { color: var(--del-fg); }
@@ -81,11 +74,11 @@
   }
   details.file summary {
     cursor: pointer; list-style: none; padding: 0.7rem 1rem; display: flex;
-    justify-content: space-between; gap: 1rem; background: var(--header-bg); color: var(--header-fg);
+    justify-content: space-between; gap: 1rem; background: var(--surface); color: var(--text);
+    border-bottom: 1px solid var(--border);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88rem;
   }
   details.file summary::-webkit-details-marker { display: none; }
-  details.file summary .stats { color: var(--header-fg); opacity: 0.85; }
   .diff {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.82rem; overflow-x: auto;
@@ -107,7 +100,7 @@
   <p class="subtitle">
     Recipes run by OpenRewrite against the demo project's actual source — every line below is a
     real change the recipes made, not a mock-up.
-    Generated 2026-08-14 08:59 UTC.
+    Generated 2026-08-14 09:29 UTC.
   </p>
 
   <h2>Before → after</h2>
@@ -145,17 +138,6 @@
   <p class="note">One pre-existing test intentionally asserted the OLD buggy behaviour (a NullPointerException on a null role) — EqualsAvoidsNull just fixed that bug, so the test now fails and needs updating. That's expected: automated codemods still need a human to review tests that encoded the bug they fix.</p>
 
   <h2>Files changed (8)</h2>
-  <ul class="file-index">
-<li><a href="#file-0">OpenRewrite/Dockerfile</a><span class="stats"><span class="stat-add">+2</span> <span class="stat-del">-2</span></span></li>
-<li><a href="#file-1">OpenRewrite/pom.xml</a><span class="stats"><span class="stat-add">+23</span> <span class="stat-del">-20</span></span></li>
-<li><a href="#file-2">OpenRewrite/src/main/java/com/example/openrewrite/OpenRewriteDemoApplication.java</a><span class="stats"><span class="stat-add">+5</span> <span class="stat-del">-1</span></span></li>
-<li><a href="#file-3">OpenRewrite/src/main/java/com/example/openrewrite/controller/GreetingController.java</a><span class="stats"><span class="stat-add">+24</span> <span class="stat-del">-18</span></span></li>
-<li><a href="#file-4">OpenRewrite/src/main/java/com/example/openrewrite/model/Person.java</a><span class="stats"><span class="stat-add">+41</span> <span class="stat-del">-26</span></span></li>
-<li><a href="#file-5">OpenRewrite/src/main/java/com/example/openrewrite/service/GreetingService.java</a><span class="stats"><span class="stat-add">+44</span> <span class="stat-del">-29</span></span></li>
-<li><a href="#file-6">OpenRewrite/src/test/java/com/example/openrewrite/GreetingServiceTest.java</a><span class="stats"><span class="stat-add">+27</span> <span class="stat-del">-19</span></span></li>
-<li><a href="#file-7">OpenRewrite/src/test/java/com/example/openrewrite/PersonTest.java</a><span class="stats"><span class="stat-add">+40</span> <span class="stat-del">-23</span></span></li>
-  </ul>
-
   
     <details class="file" id="file-0" open>
       <summary><span class="path">OpenRewrite/Dockerfile</span><span class="stats"><span class="stat-add">+2</span> <span class="stat-del">-2</span></span></summary>
