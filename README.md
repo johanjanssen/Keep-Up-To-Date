@@ -180,6 +180,10 @@ bash Renovate/scripts/demo.sh           # full automated demo (~10-15 min first 
 bash Renovate/scripts/reset-demo.sh     # clean up everything
 ```
 
+A GitHub Action re-runs the Gitea + Renovate half of this demo on every push and weekly,
+then publishes the real PRs it opened — titles, labels, and diffs — to
+[GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date/renovate/).
+
 ---
 
 ## Run Everything

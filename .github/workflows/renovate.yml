@@ -1,0 +1,101 @@
+name: Renovate
+
+on:
+  push:
+    branches: [master]
+    paths: ['Renovate/**']
+  workflow_dispatch:
+  schedule:
+    # Weekly, so the published report keeps reflecting real, current updates
+    # even when nobody touches Renovate/ for a while.
+    - cron: '17 6 * * 1'
+
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, compare-scans.yml,
+# openrewrite.yml, this one) each publish their own subfolder to the same
+# gh-pages branch. Each workflow gets its OWN concurrency group (rather than
+# sharing one) so this run is never cancelled while queued behind an unrelated
+# workflow's deploy — GitHub cancels *queued* runs within a shared group even
+# with cancel-in-progress: false. The deploy step below still pushes to the
+# shared gh-pages branch, so it's wrapped in Wandalen/wretry.action to retry
+# automatically on the rare occasion it collides with another workflow's push.
+concurrency:
+  group: "gh-pages-deploy-renovate"
+  cancel-in-progress: false
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Live demo infrastructure ──────────────────────────────────────────
+      # Same scripts a viewer would run locally (bash Renovate/scripts/demo.sh),
+      # minus the Jenkins step — this workflow only needs Renovate to actually
+      # open PRs against a real Gitea repo, not a CI build for each one.
+      - name: Start Gitea (Docker Compose)
+        run: bash Renovate/scripts/01-start-gitea.sh
+
+      - name: Configure Gitea (admin user, repo, API token)
+        run: bash Renovate/scripts/02-setup-gitea.sh
+
+      - name: Push this repository to Gitea as the scan target
+        run: bash Renovate/scripts/03-push-code.sh
+
+      - name: Run Renovate — opens real PRs against the Gitea repo
+        env:
+          # Authenticates lookups against github.com (github-actions manager,
+          # release/changelog fetching) so scanning .github/workflows/*.yml
+          # doesn't hit the 60 req/hour anonymous GitHub API rate limit.
+          RENOVATE_GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Renovate/scripts/05-run-renovate.sh
+
+      - name: Export the opened PRs (titles, labels, real diffs) before Gitea is torn down
+        run: bash Renovate/scripts/06-export-prs.sh /tmp/renovate-prs.json
+
+      - name: Generate HTML report
+        run: |
+          mkdir -p tmp/pages
+          mapfile -t RULES < <(jq -r '.packageRules[].description' Renovate/renovate.json)
+          RULE_ARGS=()
+          for r in "${RULES[@]}"; do RULE_ARGS+=(--rule "$r"); done
+          python3 Renovate/scripts/generate-html-report.py \
+            /tmp/renovate-prs.json \
+            tmp/pages/index.html \
+            --title "Renovate demo — live dependency-update PRs" \
+            "${RULE_ARGS[@]}"
+          PR_COUNT=$(jq 'length' /tmp/renovate-prs.json)
+          echo "## 🤖 Renovate demo" >> "$GITHUB_STEP_SUMMARY"
+          echo "${PR_COUNT} pull request(s) opened against a live, ephemeral Gitea instance." >> "$GITHUB_STEP_SUMMARY"
+
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (renovate/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages
+            destination_dir: renovate
+            keep_files: true
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/renovate[/index.html]
+
+      - name: Upload exported PR data as a workflow artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: renovate-prs
+          path: /tmp/renovate-prs.json
+
+      - name: Tear down the ephemeral Gitea instance
+        if: always()
+        run: docker compose -f Renovate/docker/docker-compose.yml down -v
