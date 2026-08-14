@@ -6,7 +6,7 @@ set -euo pipefail
 export MSYS_NO_PATHCONV=1
 
 IMAGE="${1:-eclipse-temurin:25-jre}"
-TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:0.71.2}"
+TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:0.73.0}"
 TRIVY_CACHE_VOL="${TRIVY_CACHE_VOL:-trivy-db}"
 DOCKER_SOCK="/var/run/docker.sock"
 SEVERITY="${SEVERITY:-CRITICAL,HIGH}"

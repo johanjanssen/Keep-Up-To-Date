@@ -14,7 +14,7 @@
 # ⚠  First build: ~20-25 min.  Subsequent source-only rebuilds use cached layers.
 
 # ── Stage 1: toolchain (musl libc + static zlib) ─────────────
-FROM ghcr.io/graalvm/native-image-community:25@sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0 AS toolchain
+FROM ghcr.io/graalvm/native-image-community:25i2@sha256:7187b4a37ebd4055f7a5fb518f9882ad6e25331862633991cbe007a1f43d739d AS toolchain
 
 RUN microdnf install -y \
         gcc binutils make tar gzip curl findutils \
