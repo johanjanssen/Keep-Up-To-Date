@@ -21,22 +21,29 @@ OpenRewrite/
       GreetingServiceTest.java    JUnit 4: @RunWith, @Before, Assert.*
       PersonTest.java             JUnit 4: @Test(expected=...) pattern
   scripts/
-    run-openrewrite.sh   ← run the migration (start here)
-    build-image.sh       ← build the Docker image after migration
-    run-image.sh         ← run the container
+    run-openrewrite.sh       ← run the migration (start here)
+    build-image.sh           ← build the Docker image after migration
+    run-image.sh             ← run the container
+    generate-html-report.py  ← CI-only: renders the diff as the GitHub Pages report
 ```
 
 ---
 
-## Before OpenRewrite
+## Before → after OpenRewrite
 
-| Dimension         | State                          |
-|-------------------|--------------------------------|
-| Spring Boot       | `2.7.18`                       |
-| Java source level | `17`                           |
-| Test framework    | JUnit **4** (`junit:junit:4.13.2`) |
-| Code style        | Intentionally inconsistent     |
-| Null safety       | `var.equals("literal")` everywhere |
+| Dimension          | Before                             | After                             |
+|---------------------|-------------------------------------|------------------------------------|
+| Spring Boot         | `2.7.18`                           | `4.0.x` (latest Spring Boot 4.0 patch) |
+| Java source level   | `17`                                | `25`                                |
+| Test framework      | JUnit **4** (`junit:junit:4.13.2`) | JUnit **5** (Jupiter)               |
+| Code style          | Intentionally inconsistent          | Reformatted (AutoFormat)            |
+| Null safety         | `var.equals("literal")` everywhere  | `"literal".equals(var)` everywhere  |
+
+> OpenRewrite's recipe catalog is versioned separately from Spring Boot itself and
+> typically lags a release or two behind — at the time of writing the newest
+> fixed-version recipe is `UpgradeSpringBoot_4_0`, even though Spring Boot's own
+> latest GA release may already be `4.1.x`. See `scripts/run-openrewrite.sh` for
+> the exact recipe/version pins in use.
 
 ---
 
@@ -117,15 +124,16 @@ return """
         """.formatted(name);
 ```
 
-### 5. `org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_1`
+### 5. `org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0`
 
-Upgrades Spring Boot from `2.7.18` all the way to `4.1.0`.  Key changes:
+Upgrades Spring Boot from `2.7.18` all the way to `4.0.x`.  Key changes:
 
 - `spring-boot-starter-parent` version bumped through the full 2→3→4 chain
 - `javax.*` imports replaced with `jakarta.*` (Jakarta EE 9+)
+- `spring-boot-starter-web` renamed to `spring-boot-starter-webmvc` (Boot 4's modular starters)
 - Spring Security, Actuator, and property-key renames applied
 - `junit-vintage-engine` and `junit:junit` removed from `pom.xml`
-- OpenRewrite chains through Boot 3.0 / 3.1 / 3.2 / 3.3 / 4.0 / 4.1 incrementally
+- OpenRewrite chains through Boot 3.0 / 3.1 / 3.2 / 3.3 / 3.4 / 3.5 / 4.0 incrementally
 
 ---
 
@@ -145,18 +153,18 @@ Or run individual Maven goals directly:
 
 ```bash
 ../mvnw -U -f pom.xml \
-  "org.openrewrite.maven:rewrite-maven-plugin:5.42.0:dryRun" \
+  "org.openrewrite.maven:rewrite-maven-plugin:6.46.1:dryRun" \
   -Drewrite.recipeArtifactCoordinates=\
-org.openrewrite.recipe:rewrite-spring:5.21.0,\
-org.openrewrite.recipe:rewrite-testing-frameworks:2.21.0,\
-org.openrewrite.recipe:rewrite-migrate-java:2.26.0,\
-org.openrewrite.recipe:rewrite-static-analysis:2.13.0 \
+org.openrewrite.recipe:rewrite-spring:6.37.0,\
+org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\
+org.openrewrite.recipe:rewrite-migrate-java:3.42.0,\
+org.openrewrite.recipe:rewrite-static-analysis:2.41.0 \
   -Drewrite.activeRecipes=\
 org.openrewrite.java.format.AutoFormat,\
 org.openrewrite.staticanalysis.EqualsAvoidsNull,\
 org.openrewrite.java.testing.junit5.JUnit4to5Migration,\
 org.openrewrite.java.migrate.UpgradeToJava25,\
-org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_1
+org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
 ```
 
 ### Step 2 — Review changes
@@ -170,6 +178,14 @@ git diff
 ```bash
 ../mvnw -f pom.xml test
 ```
+
+Expect **17/18 to pass**. `PersonTest.testIsAdminWithNullRoleThrowsNPE` fails —
+on purpose. It asserted the *old buggy* behavior (`role.equals("admin")` throwing
+an NPE on a null role); `EqualsAvoidsNull` just fixed that bug by rewriting it to
+`"admin".equals(role)`, so the NPE no longer happens. This is the demo's one
+deliberate reminder that an automated codemod can fix real bugs while making a
+test that encoded the bug fail — the test needs a human to update it to
+`assertFalse(nullRolePerson.isAdmin())`.
 
 ### Step 4 — Build and run the Docker image
 
@@ -196,11 +212,33 @@ bash scripts/run-image.sh
 
 | Artifact                      | Version  | Provides                          |
 |-------------------------------|----------|-----------------------------------|
-| `rewrite-maven-plugin`        | 5.42.0   | Maven integration                 |
-| `rewrite-spring`              | 5.21.0   | Spring Boot 2→4 recipes           |
-| `rewrite-testing-frameworks`  | 2.21.0   | JUnit 4→5 recipes                 |
-| `rewrite-migrate-java`        | 2.26.0   | Java 17→25 migration recipes      |
-| `rewrite-static-analysis`     | 2.13.0   | EqualsAvoidsNull etc.             |
+| `rewrite-maven-plugin`        | 6.46.1   | Maven integration                 |
+| `rewrite-spring`               | 6.37.0   | Spring Boot 2→4 recipes           |
+| `rewrite-testing-frameworks`  | 3.44.0   | JUnit 4→5 recipes                 |
+| `rewrite-migrate-java`        | 3.42.0   | Java 17→25 migration recipes      |
+| `rewrite-static-analysis`     | 2.41.0   | EqualsAvoidsNull etc.             |
 
 > Check [https://docs.openrewrite.org](https://docs.openrewrite.org) for the
-> latest recipe versions before running in a real project.
+> latest recipe versions before running in a real project. These are pinned
+> deliberately (not "latest") because the fixed-version upgrade recipes
+> (`UpgradeToJava25`, `UpgradeSpringBoot_4_0`, …) only exist from certain
+> releases onward — bumping blindly can make Maven fail with
+> `Recipe(s) not found`, which is what broke this demo before these versions
+> were pinned.
+
+---
+
+## GitHub Actions + GitHub Pages report
+
+Pushing changes under `OpenRewrite/**` to `master` (or running the workflow
+manually) triggers [`.github/workflows/openrewrite.yml`](../.github/workflows/openrewrite.yml),
+which:
+
+1. Runs the project's existing (pre-migration) tests as a baseline.
+2. Applies all five recipes for real, in the ephemeral CI checkout — nothing is
+   pushed back to `master`.
+3. Runs the tests again against the migrated code.
+4. Renders the actual `git diff` plus the before/after test results as a static
+   HTML report and publishes it to GitHub Pages.
+
+Latest report: **https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/**

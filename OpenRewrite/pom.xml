@@ -14,7 +14,7 @@
           • JUnit        4.13.2
 
         After running scripts/run-openrewrite.sh:
-          • Spring Boot  4.1.0    (javax → jakarta, Security / Actuator updates, …)
+          • Spring Boot  4.0.x    (javax → jakarta, modular starters, Security / Actuator updates, …)
           • Java         25       (text blocks, pattern matching, sequenced collections, …)
           • JUnit        5        (@RunWith removed, @Before→@BeforeEach, Assert.*→Assertions.*)
           • Code reformatted (AutoFormat) + null-safe equals (EqualsAvoidsNull)
@@ -26,7 +26,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <!-- ⬇ Intentionally old — OpenRewrite will upgrade this to 4.1.0 -->
+        <!-- ⬇ Intentionally old — OpenRewrite will upgrade this to 4.0.x -->
         <version>2.7.18</version>
         <relativePath/>
     </parent>

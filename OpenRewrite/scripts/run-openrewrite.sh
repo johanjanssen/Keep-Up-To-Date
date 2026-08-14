@@ -35,13 +35,20 @@
 #       Deprecated API usages replaced with Java 25 equivalents.
 #       Artifact: org.openrewrite.recipe:rewrite-migrate-java
 #
-#  5. org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_1
-#       spring-boot-starter-parent: 2.7.18  ->  4.1.0
+#  5. org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
+#       spring-boot-starter-parent: 2.7.18  ->  4.0.x (latest Spring Boot 4.0 patch)
 #       javax.*  ->  jakarta.*  (Jakarta EE namespace migration)
+#       spring-boot-starter-web  ->  spring-boot-starter-webmvc (modular starters)
 #       Spring Security / Actuator / MVC configuration renames
 #       Property key renames across spring.* namespaces
-#       Chains through Spring Boot 3.0 / 3.1 / 3.2 / 3.3 / 4.0 / 4.1
+#       Chains through Spring Boot 3.0 / 3.1 / 3.2 / 3.3 / 3.4 / 3.5 / 4.0
 #       Artifact: org.openrewrite.recipe:rewrite-spring
+#
+#       NOTE: Spring Boot's own latest release may be newer than 4.0.x (e.g. 4.1.x) —
+#       OpenRewrite's recipe catalog is versioned separately and typically lags one
+#       release behind. Check https://docs.openrewrite.org/recipes/java/spring/boot4
+#       for a newer fixed-version recipe (UpgradeSpringBoot_4_1, …) before assuming
+#       4.0 is the ceiling.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -52,11 +59,16 @@ ROOT_DIR="$(dirname "$PROJECT_DIR")"
 MVNW="$ROOT_DIR/mvnw"
 
 # ── Versions ──────────────────────────────────────────────────────────────────
-PLUGIN_VERSION="5.42.0"
-STATIC_ANALYSIS_VERSION="2.13.0"
-TESTING_FRAMEWORKS_VERSION="2.21.0"
-MIGRATE_JAVA_VERSION="2.26.0"
-REWRITE_SPRING_VERSION="5.21.0"
+# Kept close to the latest available on Maven Central so the active recipes below
+# actually exist — rewrite-migrate-java only gained UpgradeToJava25 and
+# rewrite-spring only gained the boot4 package in fairly recent releases. If you
+# bump these, re-check the recipe names still exist:
+#   https://central.sonatype.com/artifact/org.openrewrite.recipe/rewrite-spring/versions
+PLUGIN_VERSION="6.46.1"
+STATIC_ANALYSIS_VERSION="2.41.0"
+TESTING_FRAMEWORKS_VERSION="3.44.0"
+MIGRATE_JAVA_VERSION="3.42.0"
+REWRITE_SPRING_VERSION="6.37.0"
 
 # ── Recipe library coordinates (comma-separated, NO spaces) ──────────────────
 ARTIFACT_COORDS="\
@@ -71,7 +83,7 @@ org.openrewrite.java.format.AutoFormat,\
 org.openrewrite.staticanalysis.EqualsAvoidsNull,\
 org.openrewrite.java.testing.junit5.JUnit4to5Migration,\
 org.openrewrite.java.migrate.UpgradeToJava25,\
-org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_1"
+org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"
 
 DRY_RUN="${DRY_RUN:-false}"
 
@@ -81,7 +93,7 @@ echo "  OpenRewrite Demo - Run Recipes"
 echo "============================================================"
 echo ""
 echo "  Starting state : Spring Boot 2.7.18 / Java 17 / JUnit 4"
-echo "  Target state   : Spring Boot 4.1.0  / Java 25 / JUnit 5"
+echo "  Target state   : Spring Boot 4.0.x  / Java 25 / JUnit 5"
 echo ""
 
 if [ ! -f "$MVNW" ]; then
@@ -105,7 +117,7 @@ echo "    1. org.openrewrite.java.format.AutoFormat"
 echo "    2. org.openrewrite.staticanalysis.EqualsAvoidsNull"
 echo "    3. org.openrewrite.java.testing.junit5.JUnit4to5Migration"
 echo "    4. org.openrewrite.java.migrate.UpgradeToJava25"
-echo "    5. org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_1"
+echo "    5. org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"
 echo ""
 echo "------------------------------------------------------------"
 echo ""
@@ -125,7 +137,8 @@ else
     echo "OK  Recipes applied."
     echo ""
     echo "  What changed:"
-    echo "    pom.xml           spring-boot-starter-parent 2.7.18 -> 4.1.0"
+    echo "    pom.xml           spring-boot-starter-parent 2.7.18 -> 4.0.x"
+    echo "                      spring-boot-starter-web -> spring-boot-starter-webmvc"
     echo "                      java.version 17 -> 25"
     echo "                      junit:junit + vintage-engine removed"
     echo "    *.java            javax.* imports -> jakarta.*"

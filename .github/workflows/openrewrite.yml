@@ -6,9 +6,23 @@ on:
     paths: ['OpenRewrite/**']
   workflow_dispatch:
 
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, compare-scans.yml,
+# this one) each publish their own subfolder to the same gh-pages branch. Each
+# workflow gets its OWN concurrency group (rather than sharing one) so this run
+# is never cancelled while queued behind an unrelated workflow's deploy —
+# GitHub cancels *queued* runs within a shared group even with
+# cancel-in-progress: false. The deploy step below still pushes to the shared
+# gh-pages branch, so it's wrapped in Wandalen/wretry.action to retry
+# automatically on the rare occasion it collides with another workflow's push.
+concurrency:
+  group: "gh-pages-deploy-openrewrite"
+  cancel-in-progress: false
+
 jobs:
   rewrite:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -18,6 +32,74 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Run OpenRewrite (dry-run)
+      - name: Run tests BEFORE migration (baseline)
+        run: |
+          ./mvnw -f OpenRewrite/pom.xml test 2>&1 | tee /tmp/before-tests.log
+          grep -E "^\[(INFO|ERROR)\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" /tmp/before-tests.log \
+            | tail -1 | sed -E 's/^\[(INFO|ERROR)\] //' > /tmp/before-tests-summary.txt
+          cat /tmp/before-tests-summary.txt
+
+      - name: Dry-run OpenRewrite (sanity check, no files changed)
         run: DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh
 
+      - name: Apply OpenRewrite recipes for real (this checkout only — nothing is pushed)
+        run: bash OpenRewrite/scripts/run-openrewrite.sh
+
+      - name: Capture the diff OpenRewrite made
+        run: git diff -- OpenRewrite > /tmp/openrewrite.diff
+
+      - name: Run tests AFTER migration
+        run: |
+          ./mvnw -f OpenRewrite/pom.xml test 2>&1 | tee /tmp/after-tests.log || true
+          grep -E "^\[(INFO|ERROR)\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" /tmp/after-tests.log \
+            | tail -1 | sed -E 's/^\[(INFO|ERROR)\] //' > /tmp/after-tests-summary.txt
+          cat /tmp/after-tests-summary.txt
+
+      - name: Generate HTML report
+        run: |
+          mkdir -p tmp/pages
+          python3 OpenRewrite/scripts/generate-html-report.py \
+            /tmp/openrewrite.diff \
+            tmp/pages/index.html \
+            --title "OpenRewrite demo — Spring Boot 2 to 4, Java 17 to 25, JUnit 4 to 5" \
+            --sb-before "2.7.18" --sb-after "4.0.x" \
+            --java-before "17" --java-after "25" \
+            --junit-before "JUnit 4" --junit-after "JUnit 5" \
+            --before-tests "$(cat /tmp/before-tests-summary.txt)" \
+            --after-tests "$(cat /tmp/after-tests-summary.txt)" \
+            --recipe "org.openrewrite.java.format.AutoFormat:Reformats every .java file to standard IntelliJ/Eclipse style" \
+            --recipe "org.openrewrite.staticanalysis.EqualsAvoidsNull:variable.equals(x) -> x.equals(variable), null-safe" \
+            --recipe "org.openrewrite.java.testing.junit5.JUnit4to5Migration:Full JUnit 4 -> JUnit 5 (Jupiter) migration" \
+            --recipe "org.openrewrite.java.migrate.UpgradeToJava25:java.version 17 -> 25, modern Java idioms (text blocks, …)" \
+            --recipe "org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0:spring-boot-starter-parent 2.7.18 -> 4.0.x, javax -> jakarta"
+          echo "## 🔧 OpenRewrite migration" >> $GITHUB_STEP_SUMMARY
+          echo "Spring Boot 2.7.18 -> 4.0.x, Java 17 -> 25, JUnit 4 -> 5." >> $GITHUB_STEP_SUMMARY
+          echo "Before tests: $(cat /tmp/before-tests-summary.txt)" >> $GITHUB_STEP_SUMMARY
+          echo "After tests:  $(cat /tmp/after-tests-summary.txt)" >> $GITHUB_STEP_SUMMARY
+
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (OpenRewrite/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages
+            destination_dir: OpenRewrite
+            keep_files: true
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite[/index.html]
+
+      - name: Upload diff as a workflow artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: openrewrite-diff
+          path: /tmp/openrewrite.diff
