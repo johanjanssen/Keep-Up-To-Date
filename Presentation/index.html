@@ -21,6 +21,8 @@
     <style>
         :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
         .reveal h1,.reveal h2,.reveal h3 { text-transform:none; }
+        /* Theme sets .reveal h2{font-size:24pt!important}; override needs !important too */
+        .reveal h2 { font-size:15pt!important; }
         .reveal table { font-size:0.58em; margin:0 auto; }
         .reveal table th { background:rgba(139,233,253,0.15); }
         .reveal table td,.reveal table th { padding:0.3em 0.65em; border:1px solid rgba(255,255,255,0.15); }
@@ -143,12 +145,12 @@
         <div class="medium">
             <p style="font-style:italic;color:#bd93f9;">"Projects don't drift maliciously — just one sprint at a time."</p>
             <ul style="margin-top:0.8em;">
-                <li class="fragment">Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</li>
-                <li class="fragment">You consciously chose a small fraction of them</li>
-                <li class="fragment">The rest came with the territory — and each carries potential CVEs</li>
+                <li>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</li>
+                <li>You consciously chose a small fraction of them</li>
+                <li>The rest came with the territory — and each carries potential CVEs</li>
             </ul>
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.8em;">
+        <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span><br>
             A typical Spring Boot app: <strong>50–80 direct</strong>, <strong>200–400 transitive</strong> dependencies.<br>
             <code>./mvnw dependency:tree | wc -l</code> — prepare to be surprised.
@@ -183,17 +185,17 @@
         <h2>The Compounding Cost of Delay</h2>
         <div class="medium">
             <ul>
-                <li class="fragment"><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</li>
-                <li class="fragment"><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</li>
-                <li class="fragment"><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</li>
+                <li><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</li>
+                <li><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</li>
+                <li><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</li>
             </ul>
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.8em;">
+        <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span><br>
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
             Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
         </div>
-        <p class="fragment medium" style="margin-top:0.6em;font-style:italic;color:#bd93f9;">
+        <p class="medium" style="margin-top:0.6em;font-style:italic;color:#bd93f9;">
             "If it hurts, do it more often." — Martin Fowler
         </p>
     </section>
@@ -211,7 +213,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="fragment medium" style="margin-top:0.8em;">
+        <p class="medium" style="margin-top:0.8em;">
             Industry benchmark: critical CVE → patched in production within <strong style="color:#ff5555;">72 hours</strong>.<br>
             You cannot hit that with manual quarterly updates.
         </p>
@@ -227,12 +229,12 @@
         <div class="medium">
             <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong> — not when they feel ready, but on a fixed schedule.</p>
             <ul style="margin-top:0.6em;">
-                <li class="fragment">Regular releases → smaller, manageable changes each time</li>
-                <li class="fragment"><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</li>
-                <li class="fragment">Non-LTS releases are production-quality for short-lived or internal services</li>
+                <li>Regular releases → smaller, manageable changes each time</li>
+                <li><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</li>
+                <li>Non-LTS releases are production-quality for short-lived or internal services</li>
             </ul>
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.8em;">
+        <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span>
             New release every <strong>6 months</strong> (March / September). LTS every 2 years.
             <div class="timeline" style="margin-top:0.5em;">
@@ -266,7 +268,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="fragment small" style="margin-top:0.5em;">💡 It matters less than you think — all are standards-compliant. Pick one and commit to updating it.</p>
+        <p class="small" style="margin-top:0.5em;">💡 It matters less than you think — all are standards-compliant. Pick one and commit to updating it.</p>
     </section>
 
     <section>
@@ -288,7 +290,7 @@
                 <small>Use automation to update the pin via PR.</small>
             </div>
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java tooling</span>
             Commit <code>.sdkmanrc</code> (<code>java=25.0.1-tem</code>) and <code>mvnw</code> / <code>gradlew</code> wrappers — everyone and CI run the exact same versions.
         </div>
@@ -304,9 +306,9 @@
         <div class="medium">
             <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast — and most of it is invisible to you.</p>
             <ul style="margin-top:0.6em;">
-                <li class="fragment">You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</li>
-                <li class="fragment">Each node is a potential CVE, a potential breaking change, a potential licence issue</li>
-                <li class="fragment">Without tooling, the graph is effectively unmanageable</li>
+                <li>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</li>
+                <li>Each node is a potential CVE, a potential breaking change, a potential licence issue</li>
+                <li>Without tooling, the graph is effectively unmanageable</li>
             </ul>
         </div>
     </section>
@@ -316,7 +318,7 @@
         <div class="medium">
             <p>A BOM declares a curated, tested set of dependency versions. Upgrade the BOM, get a tested, compatible stack upgrade — not dozens of independent version decisions.</p>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.6em;">
+        <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span> — Spring Boot parent POM
             <pre><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
@@ -340,7 +342,7 @@
 # [INFO] jackson-databind .............. 2.17.1 -> 2.18.2
 # [INFO] log4j-core .................... 2.0    -> 2.24.3  ← 🔴 CVE!</code></pre>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.4em;">
+        <div class="box box-blue medium" style="margin-top:0.4em;">
             <span class="java-pill">☕ Also useful</span>
             <pre><code class="language-bash">./mvnw versions:display-plugin-updates      # build plugins too
 ./mvnw versions:display-property-updates    # ${my.version} properties</code></pre>
@@ -353,7 +355,7 @@
         <div class="medium">
             <p>Don't just warn — <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin</span>
             <pre><code class="language-xml">&lt;rules&gt;
     &lt;requireJavaVersion&gt;&lt;version&gt;[21,)&lt;/version&gt;&lt;/requireJavaVersion&gt;
@@ -372,12 +374,12 @@
         <div class="medium">
             <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact — like a nutrition label for software.</p>
             <ul style="margin-top:0.5em;">
-                <li class="fragment">Required by US federal procurement (Executive Order 2021)</li>
-                <li class="fragment">EU Cyber Resilience Act — mandatory for regulated products</li>
-                <li class="fragment">Enables automated CVE matching across your entire fleet</li>
+                <li>Required by US federal procurement (Executive Order 2021)</li>
+                <li>EU Cyber Resilience Act — mandatory for regulated products</li>
+                <li>Enables automated CVE matching across your entire fleet</li>
             </ul>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ CycloneDX Maven Plugin</span>
             <pre><code class="language-bash">./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
 # Output: target/bom.json — attach to every release artifact</code></pre>
@@ -412,7 +414,7 @@
                 </ul>
             </div>
         </div>
-        <div class="fragment box box-blue small" style="margin-top:0.6em;">
+        <div class="box box-blue small" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span>
             Layer 1: OWASP Dependency Check scans <code>pom.xml</code>. Layer 2: Trivy / Grype scan the Docker image (OS pkgs + all JARs). A transitive JAR pulled in by a framework won't appear in Layer 1 if it's not declared.
         </div>
@@ -497,7 +499,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="fragment box box-blue small" style="margin-top:0.5em;">
+        <div class="box box-blue small" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
             On jre-temurin, Grype found <strong>48 CVEs Trivy missed</strong> and Trivy found <strong>12 CVEs Grype missed</strong> —
@@ -522,9 +524,9 @@
         <div class="medium">
             <p>Don't wait for a scheduled scan — get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
             <ul style="margin-top:0.6em;">
-                <li class="fragment"><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</li>
-                <li class="fragment">Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></li>
-                <li class="fragment">Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</li>
+                <li><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</li>
+                <li>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></li>
+                <li>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</li>
             </ul>
         </div>
     </section>
@@ -539,10 +541,10 @@
         <div class="medium">
             <p>Every containerised application is built on a base image. That base image is a dependency — one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
             <ol style="margin-top:0.6em;">
-                <li class="fragment">You wrote <code>FROM mybase:v2</code> six months ago</li>
-                <li class="fragment">That tag now points to a <strong>different image</strong> — rebuilt with OS patches</li>
-                <li class="fragment">Your CI uses the <strong>cached layer from six months ago</strong></li>
-                <li class="fragment">You are running vulnerable OS packages — <span class="tag-bad">and you don't know it</span></li>
+                <li>You wrote <code>FROM mybase:v2</code> six months ago</li>
+                <li>That tag now points to a <strong>different image</strong> — rebuilt with OS patches</li>
+                <li>Your CI uses the <strong>cached layer from six months ago</strong></li>
+                <li>You are running vulnerable OS packages — <span class="tag-bad">and you don't know it</span></li>
             </ol>
         </div>
     </section>
@@ -552,7 +554,7 @@
         <div class="medium">
             <p>The fewer OS packages in your image, the smaller the attack surface. Most application runtimes don't need a shell, a package manager, or system utilities.</p>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java image hierarchy</span>
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Strategy</th><th>Base</th><th>CVEs (Grype)</th><th>Size</th></tr></thead>
@@ -566,7 +568,7 @@
             </table>
             <p class="small" style="margin-top:0.3em;color:#8be9fd;">Live scan + <code>docker images</code> data — base images, not the app image.</p>
         </div>
-        <p class="small fragment" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
+        <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
     </section>
 
     <section>
@@ -596,9 +598,9 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
         <div class="medium">
             <p>As a project grows, the number of dependencies that need attention <strong>grows faster than the team's capacity to review them</strong>.</p>
             <ul style="margin-top:0.6em;">
-                <li class="fragment">Dependency bots watch registries continuously and open PRs automatically</li>
-                <li class="fragment">The policy (what to group, what to auto-merge, what needs review) lives in config — not in people's heads</li>
-                <li class="fragment">CI verifies each update before it lands — humans only intervene for breaking changes</li>
+                <li>Dependency bots watch registries continuously and open PRs automatically</li>
+                <li>The policy (what to group, what to auto-merge, what needs review) lives in config — not in people's heads</li>
+                <li>CI verifies each update before it lands — humans only intervene for breaking changes</li>
             </ul>
         </div>
     </section>
@@ -654,11 +656,11 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
       → all green + low-risk update
         → auto-merged in ~30 minutes
           → you never manually touched it ✅</code></pre>
-        <div class="fragment box box-green medium" style="margin-top:0.8em;">
+        <div class="box box-green medium" style="margin-top:0.8em;">
             💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
             Your job: make your test suite trustworthy enough to enable auto-merge.
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Demo</span>
             Gitea + Jenkins + Renovate, fully wired in Docker.
             Renovate opens real PRs; Jenkins builds them; result posted back to Gitea.
@@ -676,12 +678,12 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
         <div class="medium">
             <p>Dependency updates that break <em>behaviour</em> don't cause compilation errors. Without tests, they silently corrupt your application.</p>
             <ul style="margin-top:0.6em;">
-                <li class="fragment">Serialisation format changed in a patch version</li>
-                <li class="fragment">Date/time handling differs across library versions</li>
-                <li class="fragment">A transitive dependency removal removes a capability you relied on</li>
+                <li>Serialisation format changed in a patch version</li>
+                <li>Date/time handling differs across library versions</li>
+                <li>A transitive dependency removal removes a capability you relied on</li>
             </ul>
         </div>
-        <div class="fragment box box-blue medium" style="margin-top:0.6em;">
+        <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Example</span>
             <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted — all silently breaking JSON contracts.
         </div>
@@ -703,7 +705,7 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
                 </tbody>
             </table>
         </div>
-        <div class="fragment box box-blue small" style="margin-top:0.5em;">
+        <div class="box box-blue small" style="margin-top:0.5em;">
             <span class="java-pill">☕ Concrete targets</span> — every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
         </div>
     </section>
@@ -797,7 +799,7 @@ class UserRepositoryIntegrationTest {
         <div class="medium">
             <p>Code coverage in CI tells you what your tests exercise. Coverage from a <em>production agent</em> tells you what real users actually call — revealing removal candidates.</p>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo production agent</span>
             Attach the agent to the running JVM. After a representative period, generate a report.
             <table style="margin-top:0.4em;">
@@ -893,7 +895,7 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
   GET   /users/999                   404  ← orElse() branch covered
 ── /admin/diagnostics — intentionally SKIPPED ───────────────
    Will appear RED / 0% in the coverage report</code></pre>
-        <div class="fragment box box-red medium" style="margin-top:0.6em;">
+        <div class="box box-red medium" style="margin-top:0.6em;">
             <strong>Result:</strong> 3 of 10 methods across <code>HelloController</code> + <code>UserService</code> — <strong>30%</strong> — never execute under this traffic pattern.
             Report opens at <code>target/coverage-report/index.html</code>.
         </div>
@@ -915,7 +917,7 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
         <div class="medium">
             <p>When a framework or language version change requires code edits, automated migration tools can apply the changes — consistently and at scale across your whole codebase.</p>
         </div>
-        <div class="box box-blue medium fragment" style="margin-top:0.5em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OpenRewrite</span>
             Recipe-driven, AST-level refactoring. One command migrates the entire project.
             <table style="margin-top:0.4em;">
@@ -964,13 +966,13 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
     <h2>🏁 Key Takeaways</h2>
     <div class="medium">
         <ol>
-            <li class="fragment"><strong>Update incrementally and frequently</strong> — big jumps are big risks</li>
-            <li class="fragment"><strong>Pin versions, not floating tags</strong> — reproducibility ≠ security</li>
-            <li class="fragment"><strong>Scan both source and artifact</strong> — they find different vulnerabilities</li>
-            <li class="fragment"><strong>Automate with a bot</strong> — policy belongs in config, not in people's heads</li>
-            <li class="fragment"><strong>Tests make automation safe</strong> — a bot without tests is automated risk</li>
-            <li class="fragment"><strong>MTTP is your metric</strong> — CVE published → production in &lt; 72 hours</li>
-            <li class="fragment"><strong>Smaller images = smaller attack surface</strong> — distroless / scratch = 0 OS CVEs</li>
+            <li><strong>Update incrementally and frequently</strong> — big jumps are big risks</li>
+            <li><strong>Pin versions, not floating tags</strong> — reproducibility ≠ security</li>
+            <li><strong>Scan both source and artifact</strong> — they find different vulnerabilities</li>
+            <li><strong>Automate with a bot</strong> — policy belongs in config, not in people's heads</li>
+            <li><strong>Tests make automation safe</strong> — a bot without tests is automated risk</li>
+            <li><strong>MTTP is your metric</strong> — CVE published → production in &lt; 72 hours</li>
+            <li><strong>Smaller images = smaller attack surface</strong> — distroless / scratch = 0 OS CVEs</li>
         </ol>
     </div>
 </section>
