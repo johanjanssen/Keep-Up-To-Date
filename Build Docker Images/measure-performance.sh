@@ -30,9 +30,20 @@ SETTLE_SLEEP=3       # seconds to let all containers idle before memory snapshot
 ENDPOINT="/hello"
 PREFIX="hello-conference"
 
-# Derive tags from APP_IMAGES (strip "hello-conference:" prefix)
+# Images excluded from startup/memory measurement (still built & listed in the
+# size/package comparison, just not meaningful — or not desired — to time here).
+PERF_EXCLUDED_IMAGES=(
+    "hello-conference:jlink-tuned-distroless-base"
+)
+
+# Derive tags from APP_IMAGES (strip "hello-conference:" prefix), skipping excluded images
 TAGS=()
 for IMG in "${APP_IMAGES[@]}"; do
+    SKIP=0
+    for EXCLUDED in "${PERF_EXCLUDED_IMAGES[@]}"; do
+        [[ "${IMG}" == "${EXCLUDED}" ]] && { SKIP=1; break; }
+    done
+    [[ "${SKIP}" -eq 1 ]] && continue
     TAGS+=("${IMG#hello-conference:}")
 done
 
