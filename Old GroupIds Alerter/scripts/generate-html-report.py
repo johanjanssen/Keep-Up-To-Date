@@ -65,9 +65,7 @@ def index_pom_dependencies(pom_text):
 
 def build_after_block(before_block, old_ga, new_ga):
     """Rewrite a <dependency> block's groupId/artifactId to the proposed coordinate."""
-    old_group, _, old_artifact = old_ga.partition(":")
     new_group, _, new_artifact = new_ga.partition(":")
-    artifact_changed = bool(new_artifact) and new_artifact != old_artifact
 
     after = GROUP_RE.sub(f"<groupId>{new_group}</groupId>", before_block, count=1)
     if new_artifact:
@@ -75,12 +73,7 @@ def build_after_block(before_block, old_ga, new_ga):
 
     has_version = bool(VERSION_RE.search(after))
     note = None
-    if artifact_changed:
-        note = (
-            "The artifactId changed too — any inherited/managed version most likely does "
-            "NOT exist for the new coordinate. Pin an explicit, current version."
-        )
-    elif not has_version:
+    if not has_version:
         note = (
             "No explicit &lt;version&gt; here — it was inherited from the parent BOM, which "
             "does not manage the new coordinate. Add an explicit, current version."
@@ -89,25 +82,15 @@ def build_after_block(before_block, old_ga, new_ga):
 
 
 def render_finding(f, idx, pom_index):
-    old_block = pom_index.get(f["old"])
+    old_block = pom_index[f["old"]]
     anchor = f"finding-{idx}"
     context_html = (
         f'<p class="context">{html.escape(f["context"])}</p>' if f.get("context") else ""
     )
 
-    if old_block is None:
-        # Fallback: no matching pom.xml block found (e.g. groupId-only finding) —
-        # still show the coordinates the plugin reported.
-        body = f"""
-      <div class="coord-row">
-        <div class="coord before"><span class="tag">before</span><code>{html.escape(f["old"])}</code></div>
-        <div class="arrow">→</div>
-        <div class="coord after"><span class="tag">after</span><code>{html.escape(f["new"])}</code></div>
-      </div>"""
-    else:
-        after_block, note = build_after_block(old_block, f["old"], f["new"])
-        note_html = f'<p class="note">⚠ {note}</p>' if note else ""
-        body = f"""
+    after_block, note = build_after_block(old_block, f["old"], f["new"])
+    note_html = f'<p class="note">⚠ {note}</p>' if note else ""
+    body = f"""
       <div class="pom-row">
         <div class="pom-col">
           <div class="pom-label before-label">pom.xml — before</div>
@@ -126,17 +109,6 @@ def render_finding(f, idx, pom_index):
       {context_html}
       {body}
     </section>"""
-
-
-def render_finding_index(findings):
-    rows = []
-    for idx, f in enumerate(findings):
-        rows.append(
-            f'<li><a href="#finding-{idx}">{html.escape(f["old"])}</a>'
-            f'<span class="arrow-small">→</span>'
-            f'<span class="new-ga">{html.escape(f["new"])}</span></li>'
-        )
-    return "\n".join(rows)
 
 
 PAGE_TEMPLATE = """<!doctype html>
@@ -189,17 +161,6 @@ PAGE_TEMPLATE = """<!doctype html>
   .badge {{ display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }}
   .badge.warn {{ background: var(--warn-bg); color: var(--warn); }}
 
-  .finding-index {{ list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }}
-  .finding-index li {{
-    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.45rem 0.8rem; font-size: 0.86rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }}
-  .finding-index a {{ text-decoration: none; color: var(--del-fg); }}
-  .finding-index .new-ga {{ color: var(--add-fg); }}
-  .finding-index .arrow-small {{ color: var(--muted); font-family: -apple-system, sans-serif; }}
-
   .finding {{
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     margin-bottom: 1.2rem; padding: 1rem 1.2rem 1.2rem;
@@ -207,15 +168,6 @@ PAGE_TEMPLATE = """<!doctype html>
   .finding code {{ color: var(--del-fg); }}
   .finding h3 code:last-of-type {{ color: var(--add-fg); }}
   .context {{ color: var(--muted); font-size: 0.88rem; margin: 0 0 0.9rem; }}
-
-  .coord-row {{ display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }}
-  .coord {{ display: flex; align-items: center; gap: 0.5rem; }}
-  .coord .tag {{
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
-  }}
-  .coord code {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
-  .coord.after code {{ color: var(--add-fg); }}
-  .arrow {{ color: var(--muted); }}
 
   .pom-row {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }}
   @media (max-width: 800px) {{ .pom-row {{ grid-template-columns: 1fr; }} }}
@@ -264,9 +216,6 @@ PAGE_TEMPLATE = """<!doctype html>
   </div>
 
   <h2>Findings ({finding_count})</h2>
-  <ul class="finding-index">
-{finding_index_html}
-  </ul>
 
   {finding_sections_html}
 
@@ -298,6 +247,10 @@ def main():
     findings = parse_findings(log_text)
     pom_index = index_pom_dependencies(pom_text)
 
+    # Only keep findings that match an actual <dependency> block in pom.xml — those
+    # are the ones the report can show a real before/after pom.xml edit for.
+    findings = [f for f in findings if f["old"] in pom_index]
+
     if not findings:
         print("WARNING: no findings parsed from oga output — report will be empty.", file=sys.stderr)
 
@@ -305,7 +258,6 @@ def main():
         title=html.escape(args.title),
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         finding_count=len(findings),
-        finding_index_html=render_finding_index(findings) or "<li>(none)</li>",
         finding_sections_html="\n".join(
             render_finding(f, i, pom_index) for i, f in enumerate(findings)
         ),
