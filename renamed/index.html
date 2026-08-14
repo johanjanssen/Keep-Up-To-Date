@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Old GroupIds Alerter demo — groupIds that moved</title>
+<style>
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --add-bg: #E4F5E1; --add-fg: #1C5B26; --del-bg: #FBE7E7; --del-fg: #8C1F1F;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4; --ok: #1C5B26; --ok-bg: #E4F5E1; --warn: #8C5A00; --warn-bg: #FBF0DA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+      --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+      --warn: #E0B93D; --warn-bg: #332A10;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+    --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+    --warn: #E0B93D; --warn-bg: #332A10;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  a { color: var(--focus); }
+  h2 { font-size: 1.05rem; margin: 2.5rem 0 0.9rem; }
+  h3 { font-size: 1rem; margin: 0 0 0.5rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  h3 .sep { color: var(--muted); font-family: -apple-system, sans-serif; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .card .label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card .value { font-size: 1.4rem; margin-top: 0.25rem; font-weight: 600; }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+
+  .finding-index { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+  .finding-index li {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.45rem 0.8rem; font-size: 0.86rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .finding-index a { text-decoration: none; color: var(--del-fg); }
+  .finding-index .new-ga { color: var(--add-fg); }
+  .finding-index .arrow-small { color: var(--muted); font-family: -apple-system, sans-serif; }
+
+  .finding {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 1.2rem; padding: 1rem 1.2rem 1.2rem;
+  }
+  .finding code { color: var(--del-fg); }
+  .finding h3 code:last-of-type { color: var(--add-fg); }
+  .context { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.9rem; }
+
+  .coord-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .coord { display: flex; align-items: center; gap: 0.5rem; }
+  .coord .tag {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .coord code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .coord.after code { color: var(--add-fg); }
+  .arrow { color: var(--muted); }
+
+  .pom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 800px) { .pom-row { grid-template-columns: 1fr; } }
+  .pom-label {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .pom-block {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem; white-space: pre-wrap; word-break: break-word;
+    border-radius: 8px; padding: 0.7rem 0.9rem; margin: 0; overflow-x: auto;
+  }
+  .before-block { background: var(--del-bg); color: var(--del-fg); }
+  .after-block { background: var(--add-bg); color: var(--add-fg); }
+  .note { color: var(--warn); background: var(--warn-bg); border-radius: 8px; padding: 0.5rem 0.7rem;
+           font-size: 0.82rem; margin: 0.6rem 0 0; }
+
+  footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Old GroupIds Alerter demo — groupIds that moved</h1>
+  <p class="subtitle">
+    Every finding below is real output from
+    <code>biz.lermitage.oga:oga-maven-plugin:check</code> run against this demo's
+    actual <code>pom.xml</code> — the "before" block is the literal dependency
+    declaration; "after" is the same block rewritten to the coordinate the plugin
+    recommends. Generated 2026-08-14 09:18 UTC.
+  </p>
+
+  <h2>Summary</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label">Old groupIds found</div>
+      <div class="value">4</div>
+    </div>
+    <div class="card">
+      <div class="label">Plugin</div>
+      <div class="value" style="font-size: 0.95rem;">oga-maven-plugin:check</div>
+    </div>
+    <div class="card">
+      <div class="label">CI gate</div>
+      <div class="value"><span class="badge warn">would fail the build</span></div>
+    </div>
+  </div>
+
+  <h2>Findings (4)</h2>
+  <ul class="finding-index">
+<li><a href="#finding-0">com.graphql-java:graphql-java-tools</a><span class="arrow-small">→</span><span class="new-ga">com.graphql-java-kickstart:graphql-java-tools</span></li>
+<li><a href="#finding-1">javax.activation:javax.activation-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.activation:jakarta.activation-api</span></li>
+<li><a href="#finding-2">javax.validation:validation-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.validation:jakarta.validation-api</span></li>
+<li><a href="#finding-3">javax.xml.bind:jaxb-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.xml.bind:jakarta.xml.bind-api</span></li>
+  </ul>
+
+  
+    <section class="finding" id="finding-0">
+      <h3><code>com.graphql-java:graphql-java-tools</code> <span class="sep">→</span> <code>com.graphql-java-kickstart:graphql-java-tools</code></h3>
+      
+      
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;com.graphql-java&lt;/groupId&gt;
+            &lt;artifactId&gt;graphql-java-tools&lt;/artifactId&gt;
+            &lt;version&gt;5.2.4&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block after-block">&lt;dependency&gt;
+            &lt;groupId&gt;com.graphql-java-kickstart&lt;/groupId&gt;
+            &lt;artifactId&gt;graphql-java-tools&lt;/artifactId&gt;
+            &lt;version&gt;5.2.4&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+          
+        </div>
+      </div>
+    </section>
+
+    <section class="finding" id="finding-1">
+      <h3><code>javax.activation:javax.activation-api</code> <span class="sep">→</span> <code>jakarta.activation:jakarta.activation-api</code></h3>
+      <p class="context">Java EE new home is Jakarta EE, see https://wiki.eclipse.org/Jakarta_EE_Maven_Coordinates</p>
+      
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;javax.activation&lt;/groupId&gt;
+            &lt;artifactId&gt;javax.activation-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block after-block">&lt;dependency&gt;
+            &lt;groupId&gt;jakarta.activation&lt;/groupId&gt;
+            &lt;artifactId&gt;jakarta.activation-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="finding" id="finding-2">
+      <h3><code>javax.validation:validation-api</code> <span class="sep">→</span> <code>jakarta.validation:jakarta.validation-api</code></h3>
+      <p class="context">Java EE new home is Jakarta EE, see https://wiki.eclipse.org/Jakarta_EE_Maven_Coordinates</p>
+      
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;javax.validation&lt;/groupId&gt;
+            &lt;artifactId&gt;validation-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block after-block">&lt;dependency&gt;
+            &lt;groupId&gt;jakarta.validation&lt;/groupId&gt;
+            &lt;artifactId&gt;jakarta.validation-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="finding" id="finding-3">
+      <h3><code>javax.xml.bind:jaxb-api</code> <span class="sep">→</span> <code>jakarta.xml.bind:jakarta.xml.bind-api</code></h3>
+      <p class="context">Java EE new home is Jakarta EE, see https://wiki.eclipse.org/Jakarta_EE_Maven_Coordinates</p>
+      
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;javax.xml.bind&lt;/groupId&gt;
+            &lt;artifactId&gt;jaxb-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block after-block">&lt;dependency&gt;
+            &lt;groupId&gt;jakarta.xml.bind&lt;/groupId&gt;
+            &lt;artifactId&gt;jakarta.xml.bind-api&lt;/artifactId&gt;
+        &lt;/dependency&gt;</pre>
+          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+        </div>
+      </div>
+    </section>
+
+  <footer>
+    Built by the <a href="https://github.com/johanjanssen/Keep-Up-To-Date/actions/workflows/old-groupids-alerter.yml">Old GroupIds Alerter GitHub Action</a>
+    from <a href="https://github.com/johanjanssen/Keep-Up-To-Date/tree/master/Old%20GroupIds%20Alerter">Old GroupIds Alerter/</a>,
+    using <a href="https://github.com/jonathanlermitage/oga-maven-plugin">oga-maven-plugin</a>.
+    <a href="../">← back to Keep Up To Date</a>
+  </footer>
+</main>
+</body>
+</html>
