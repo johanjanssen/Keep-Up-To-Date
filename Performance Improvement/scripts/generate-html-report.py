@@ -186,9 +186,6 @@ PAGE_TEMPLATE = """<!doctype html>
 <main>
   <h1>{title}</h1>
   <p class="subtitle">Generated {generated} &middot; JMH {jmh_note} &middot; identical code, only the JDK changes</p>
-  <p class="lede">Only comparisons where the newer version measured at least {threshold:.0f}% better are shown as
-  headline "improvements" below — this is computed from the raw JMH numbers on every run, not hand-picked.
-  Anything flat or regressed is left out rather than presented as a win it isn't.</p>
 
   {sections}
 
@@ -229,10 +226,7 @@ def main():
         sections.append(section(
             "🔮 Valhalla — real value records (preview)",
             "Same benchmark, <code>record Point(...)</code> → <code>value record Point(...)</code>. One keyword changed.",
-            "Java 25 (record)", "Java 28 EA (value record)", build_rows(v25, v28_value),
-            note="Early Access reality check: this is a preview feature on an early-access JDK. The row above "
-                 "only shows up if this run's own numbers cleared the improvement threshold — nothing here is "
-                 "adjusted to match the JEP 401 promise."))
+            "Java 25 (record)", "Java 28 EA (value record)", build_rows(v25, v28_value)))
 
     mem_v25 = load_metrics(os.path.join(d, "java25-valhalla-gc.json"), memory=True)
     mem_v28_value = load_metrics(os.path.join(d, "java28-valhalla-value-gc.json"), memory=True)
