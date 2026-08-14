@@ -1,7 +1,7 @@
 # Runtime base: debian:12-slim  (Debian 12 Bookworm)
 # Native binary is dynamically linked against glibc + libz.so.1 (zlib).
 # distroless/base-debian12 lacks zlib; distroless/static lacks glibc entirely.
-FROM ghcr.io/graalvm/native-image-community:25@sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0 AS builder
+FROM ghcr.io/graalvm/native-image-community:25i2@sha256:7187b4a37ebd4055f7a5fb518f9882ad6e25331862633991cbe007a1f43d739d AS builder
 WORKDIR /workspace
 
 RUN microdnf install -y findutils --setopt=install_weak_deps=0 && \

@@ -10,7 +10,7 @@
 #   debian:12-slim                 Debian 12 Bookworm  (native w/ dynamic linking)
 #   almalinux/10-base              AlmaLinux 10.2  Lavender Lion
 #   almalinux:10-kitten-minimal    AlmaLinux Kitten 10  Lion Cub  (comparison only)
-#   graalvm/native-image-community GraalVM CE 25  (builder; pulled on first docker build)
+#   graalvm/native-image-community GraalVM CE 25.0.4 (25i2 interim build; builder, pulled on first docker build)
 set -euo pipefail
 
 source "$(dirname "$0")/../images.conf"
@@ -24,7 +24,7 @@ declare -A DIGESTS=(
     ["debian:12-slim"]="sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df"
     ["almalinux/10-base"]="sha256:44c3e178effb6173e8d29e08e3c76b6799f91defb93e4590125912bdbfd686b9"
     ["almalinux:10-kitten-minimal"]="sha256:515a829404b2b5d25d0da6f6c8359bcc83d54974c9ce829a8854ac3f792a20ed"
-    ["ghcr.io/graalvm/native-image-community:25"]="sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0"
+    ["ghcr.io/graalvm/native-image-community:25i2"]="sha256:7187b4a37ebd4055f7a5fb518f9882ad6e25331862633991cbe007a1f43d739d"
 )
 
 for IMG in "${BASE_IMAGES[@]}"; do
