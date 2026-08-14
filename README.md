@@ -32,6 +32,7 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 | [OWASP Dependency Check/](#owasp-dependency-check) | Maven dependency scanning against the NVD database | `bash "OWASP Dependency Check/scripts/run-check.sh"` |
 | [Compare Security Scans/](#compare-security-scans) | Run Grype + Trivy + OWASP DC and compare results side-by-side | `bash "Compare Security Scans/scripts/run-all.sh"` |
 | [OpenRewrite/](#openrewrite) | Automated migration: Spring Boot 2→4, Java 17→25, JUnit 4→5 | `bash OpenRewrite/scripts/run-openrewrite.sh` |
+| [Old GroupIds Alerter/](#old-groupids-alerter) | Flags `pom.xml` dependencies declared under groupIds that moved (e.g. `javax.*` → `jakarta.*`) | `bash "Old GroupIds Alerter/scripts/run-oga.sh"` |
 | [Testcontainers/](#testcontainers) | Integration testing with real PostgreSQL via `@ServiceConnection` | `bash Testcontainers/scripts/run-tests.sh` |
 | [JaCoCo/](#jacoco) | Production-agent code coverage — detect dead code in running applications | `bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"` |
 | [Renovate/](#renovate) | Local Gitea + Jenkins + Renovate bot — automated dependency update PRs | `bash Renovate/scripts/demo.sh` |
@@ -147,6 +148,21 @@ DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh   # preview only
 
 ---
 
+## Old GroupIds Alerter
+
+Checks `pom.xml` against a community-maintained list of dependencies that moved
+to a new groupId — e.g. `com.graphql-java:graphql-java-tools` →
+`com.graphql-java-kickstart:graphql-java-tools`, or the `javax.*` → `jakarta.*`
+Jakarta EE relocation — using the
+[Old GroupIds Alerter](https://github.com/jonathanlermitage/oga-maven-plugin) plugin.
+
+```bash
+bash "Old GroupIds Alerter/scripts/run-oga.sh"                # report only, build stays green
+STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"    # plugin default — build fails
+```
+
+---
+
 ## Testcontainers
 
 Integration tests with a real PostgreSQL container using Spring Boot's
@@ -197,6 +213,3 @@ bash run-all-demos.sh
 
 > ⚠ **This takes a long time** (native image builds alone can take 20+ minutes each).
 > It requires Docker, Java 25, jq, curl, and git. See the script header for details.
-
-```TODO
-- Add Old GroupIds Alerter (oga)

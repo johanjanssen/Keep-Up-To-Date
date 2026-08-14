@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Old GroupIds Alerter (OGA) Demo
+        ────────────────────────────────
+        The dependencies below are intentionally declared under groupIds that are
+        no longer maintained — each one has since moved to a new Maven
+        coordinate. None of this is exotic: it's the kind of drift that quietly
+        accumulates in any long-lived pom.xml as upstream projects relocate.
+
+          • com.graphql-java:graphql-java-tools   → com.graphql-java-kickstart:graphql-java-tools
+          • javax.xml.bind:jaxb-api                → jakarta.xml.bind:jakarta.xml.bind-api
+          • javax.validation:validation-api        → jakarta.validation:jakarta.validation-api
+          • javax.activation:javax.activation-api  → jakarta.activation:jakarta.activation-api
+
+        The javax.* → jakarta.* dependencies deliberately have NO <version> —
+        spring-boot-starter-parent:2.7.18 manages all three via its BOM
+        (Javax JAXB 2.3.1, Javax Validation 2.0.1.Final, Javax Activation 1.2.0),
+        which is exactly why they're easy to miss: nothing about a managed
+        dependency's version flags it as stale.
+
+        The Old GroupIds Alerter Maven Plugin (biz.lermitage.oga:oga-maven-plugin)
+        catches all four. See scripts/run-oga.sh.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- ⬇ Intentionally old — old enough that its BOM still manages the javax.* artifacts below -->
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>old-groupids-alerter-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>old-groupids-alerter-demo</name>
+    <description>Old GroupIds Alerter demo: pom.xml dependencies on groupIds that have since moved home</description>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            ⚠️  OLD GROUPIDS — for the Old GroupIds Alerter demo only.
+            None of these are used at runtime; they're declared purely so
+            oga-maven-plugin:check has something to flag. See scripts/run-oga.sh
+            and the GitHub Pages report published under /renamed.
+        -->
+
+        <!-- com.graphql-java moved its "kickstart" tooling to com.graphql-java-kickstart in 2019 -->
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java-tools</artifactId>
+            <version>5.2.4</version>
+        </dependency>
+
+        <!-- Java EE's old home; version 2.3.1 comes from the spring-boot-starter-parent BOM -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <!-- Same Jakarta EE relocation; version 2.0.1.Final comes from the BOM -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+
+        <!-- Same Jakarta EE relocation; version 1.2.0 comes from the BOM -->
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>javax.activation-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
