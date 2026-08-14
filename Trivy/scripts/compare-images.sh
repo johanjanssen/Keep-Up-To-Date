@@ -17,7 +17,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # shellcheck source=../../images.conf
 source "$ROOT_DIR/images.conf"
 
-TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:0.71.2}"
+TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:0.73.0}"
 TRIVY_CACHE_VOL="${TRIVY_CACHE_VOL:-trivy-db}"
 DOCKER_SOCK="/var/run/docker.sock"
 JSON_OUT=""
