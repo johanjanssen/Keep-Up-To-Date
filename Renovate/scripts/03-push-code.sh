@@ -97,8 +97,16 @@ fi
 echo ""
 
 # ── Push ──────────────────────────────────────────────────────────────────────
+# Pushed via a synthetic root commit (git commit-tree, no parents) rather than
+# `git push gitea main` directly. This checkout may be a shallow clone (e.g.
+# actions/checkout's default fetch-depth: 1 in CI); pushing the real 'main'
+# history in that case sends shallow-boundary info that Gitea rejects with
+# "shallow update not allowed". A parentless commit carries no such history,
+# so the push succeeds regardless of how this repo was cloned — and it also
+# keeps the demo repo on Gitea a clean single-commit history, as intended.
 echo "→ Pushing to Gitea …"
-git push gitea main --force
+ORPHAN_COMMIT=$(git commit-tree "main^{tree}" -m "$(git log -1 --format=%B main)")
+git push gitea "${ORPHAN_COMMIT}:refs/heads/main" --force
 echo ""
 
 echo "✅  Code pushed to ${GITEA_URL}/${ADMIN_USER}/${REPO_NAME}"
