@@ -1,5 +1,5 @@
 # Image tag:  hello-conference:jlink-cds-distroless-base
-# Base:       gcr.io/distroless/base-debian12
+# Base:       gcr.io/distroless/base-debian13
 #
 # Two production techniques layered on top of a minimal jlink JRE:
 #
@@ -113,7 +113,7 @@ RUN /jre-minimal/bin/java -Xshare:dump 2>&1 | tail -5 && \
 # archive is written to disk.
 # The exact same JRE binary (/jre-minimal/bin/java) is used here and at
 # runtime so the archive is guaranteed compatible.
-FROM debian:12-slim AS cds-builder
+FROM debian:13-slim AS cds-builder
 COPY --from=jre-builder /jre-minimal /jre
 COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar /app/app.jar
 WORKDIR /app
@@ -126,7 +126,7 @@ RUN /jre/bin/java \
         || { echo "❌ CDS archive not created"; exit 1; }
 
 # ── Stage 4: distroless runtime ───────────────────────────────
-FROM gcr.io/distroless/base-debian12@sha256:e7e678c88c59e70e105a46549bb3fbfb3d732ee3b4afd3a19fdab2e15afaa6b3
+FROM gcr.io/distroless/base-debian13@sha256:f4a335ca209e1d2ee873102c17c389ad0142e3d5b21aee2817e9cc9c01d87d20
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"

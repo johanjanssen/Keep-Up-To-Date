@@ -34,8 +34,8 @@
       "matchPackageNames": [
         "eclipse-temurin",
         "azul/zulu-openjdk-debian",
-        "gcr.io/distroless/base-debian12",
-        "gcr.io/distroless/static-debian12",
+        "gcr.io/distroless/base-debian13",
+        "gcr.io/distroless/static-debian13",
         "gitea/gitea"
       ],
       "matchUpdateTypes": ["major"],

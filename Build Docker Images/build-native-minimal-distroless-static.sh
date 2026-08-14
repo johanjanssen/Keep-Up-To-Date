@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:native-minimal-distroless-static  (runtime base: gcr.io/distroless/static-debian12)
+# Builds hello-conference:native-minimal-distroless-static  (runtime base: gcr.io/distroless/static-debian13)
 # Static musl binary + -Os optimisation.
 # ⚠  First build: ~20 minutes (musl + zlib compiled from source + native compile).
 #    Subsequent builds use cached toolchain layers and are much faster.

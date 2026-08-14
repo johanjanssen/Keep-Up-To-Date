@@ -43,8 +43,8 @@ bash scripts/compare-images.sh
 IMAGE                                               TOTAL  CRITICAL      HIGH    MEDIUM       LOW   UNKNOWN
 --------------------------------------------------  --------  --------  --------  --------  --------  --------
 eclipse-temurin:25-jre                                    47         3        12        24         8         0
-gcr.io/distroless/base-debian12                           17         0         4         8         5         0
-gcr.io/distroless/static-debian12                          0         0         0         0         0         0
+gcr.io/distroless/base-debian13                           17         0         4         8         5         0
+gcr.io/distroless/static-debian13                          0         0         0         0         0         0
 ```
 
 *(Exact counts vary by image build date and database version.)*

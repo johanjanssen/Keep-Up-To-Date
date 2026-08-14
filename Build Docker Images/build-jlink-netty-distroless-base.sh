@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:jlink-netty-distroless-base  (runtime base: gcr.io/distroless/base-debian12)
+# Builds hello-conference:jlink-netty-distroless-base  (runtime base: gcr.io/distroless/base-debian13)
 # Uses Spring WebFlux (Netty) instead of Spring MVC (Tomcat) and jdeps to detect
 # only the modules the application actually needs – yielding a smaller JRE than
 # the Tomcat-based jlink-distroless-base variant.

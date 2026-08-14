@@ -27,7 +27,7 @@ TOOL_COLORS = {"Grype":"#E65100","Trivy":"#1565C0"}
 def filename_to_image(fname):
     # Fallback only: images.conf's image_to_filename maps BOTH '/' and ':' to '_'
     # (tr '/:' '__'), so this reverse mapping is lossy/ambiguous (e.g.
-    # "gcr.io/distroless/base-debian12" and a hypothetical "gcr.io:distroless:..."
+    # "gcr.io/distroless/base-debian13" and a hypothetical "gcr.io:distroless:..."
     # would collide). Prefer the real name embedded in the JSON (ArtifactName /
     # source.target.userInput) — see load_trivy/load_grype below.
     base = os.path.splitext(os.path.basename(fname))[0]

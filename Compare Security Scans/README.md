@@ -53,7 +53,7 @@ Defined in `images.conf` at the project root (single source of truth).
 IMAGE                                              │  GRYPE (Tot/C/H/M/L/U)   │  TRIVY (Tot/C/H/M/L/U)   │ Unique in Trivy
 ───────────────────────────────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────
 eclipse-temurin:25-jre                             │    20    0    3   12    5    0 │    16    0    2   10    4    0 │ 3
-gcr.io/distroless/static-debian12                  │     0    0    0    0    0    0 │     0    0    0    0    0    0 │ -
+gcr.io/distroless/static-debian13                  │     0    0    0    0    0    0 │     0    0    0    0    0    0 │ -
 ```
 
 ### View 2: OS Packages vs Application Dependencies

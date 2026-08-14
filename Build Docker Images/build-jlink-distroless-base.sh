@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:jlink-distroless-base  (runtime base: gcr.io/distroless/base-debian12)
+# Builds hello-conference:jlink-distroless-base  (runtime base: gcr.io/distroless/base-debian13)
 # Uses jdeps to detect only the modules the application actually needs.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
