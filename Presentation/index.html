@@ -1152,19 +1152,19 @@ function buildCharts() {
     makeChart('chartImageSize', {
         type: 'bar',
         data: {
-            labels: ['jre-temurin','jlink-full','jlink-minimal','jlink-cds','jlink-tuned','crac-azul','native-debian','native-distroless','native-scratch'],
+            labels: ['jre-temurin','jlink-full','jlink-minimal','jlink-cds','crac-azul','native-debian','native-distroless','native-scratch'],
             datasets: [
                 {
                     label: 'Image Size (MB)',
-                    data: [518,264,189,245,189,362,229,97,91],
-                    backgroundColor: [C.red,C.orange,C.yellow,C.yellow,C.yellow,C.cyan,C.purple,C.green,C.green],
+                    data: [518,264,189,245,362,229,97,91],
+                    backgroundColor: [C.red,C.orange,C.yellow,C.yellow,C.cyan,C.purple,C.green,C.green],
                     borderRadius: 4,
                     yAxisID: 'ySize'
                 },
                 {
                     type: 'line',
                     label: 'CVEs (Grype)',
-                    data: [110,29,29,29,29,29,79,0,0],
+                    data: [110,29,29,29,29,79,0,0],
                     borderColor: C.pink,
                     backgroundColor: C.pink,
                     pointRadius: 4,

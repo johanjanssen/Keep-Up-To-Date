@@ -26,7 +26,7 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 | Directory | What it demonstrates | Quick Start |
 |---|---|---|
 | [Vulnerable Application/](#vulnerable-application) | Spring Boot app with **intentionally vulnerable** dependencies — the scan target | `./mvnw -f "Vulnerable Application/pom.xml" package` |
-| [Build Docker Images/](#build-docker-images) | 11 Docker image strategies (JRE, jlink, CRaC, GraalVM native) with size & startup benchmarks | `bash "Build Docker Images/build-all-images.sh"` |
+| [Build Docker Images/](#build-docker-images) | 10 Docker image strategies (JRE, jlink, CRaC, GraalVM native) with size & startup benchmarks | `bash "Build Docker Images/build-all-images.sh"` |
 | [Grype/](#grype) | Image vulnerability scanning with Grype (Anchore) | `bash Grype/scripts/compare-images.sh` |
 | [Trivy/](#trivy) | Image vulnerability scanning with Trivy (Aqua Security) | `bash Trivy/scripts/compare-images.sh` |
 | [OWASP Dependency Check/](#owasp-dependency-check) | Maven dependency scanning against the NVD database | `bash "OWASP Dependency Check/scripts/run-check.sh"` |
@@ -77,7 +77,6 @@ bash "Build Docker Images/measure-performance.sh"    # startup time + memory
 | `jlink-distroless-base` | jlink (minimal modules) | `distroless/base-debian13` |
 | `jlink-netty-distroless-base` | jlink (Netty-optimised) | `distroless/base-debian13` |
 | `jlink-cds-distroless-base` | jlink + CDS archive | `distroless/base-debian13` |
-| `jlink-tuned-distroless-base` | jlink + CDS + JVM tuning | `distroless/base-debian13` |
 | `crac-azul-distroless-base` | CRaC checkpoint/restore | `distroless/base-debian13` |
 | `native-debian-slim` | GraalVM native image | `debian:13-slim` |
 | `native-minimal-distroless-static` | GraalVM native (minimal) | `distroless/static-debian13` |

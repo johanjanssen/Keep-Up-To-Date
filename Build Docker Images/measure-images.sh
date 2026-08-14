@@ -14,7 +14,6 @@ declare -A BASE_FOR=(
     ["hello-conference:jlink-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:jlink-netty-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:jlink-cds-distroless-base"]="gcr.io/distroless/base-debian13"
-    ["hello-conference:jlink-tuned-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:crac-azul-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:native-debian-slim"]="debian:13-slim"
     ["hello-conference:native-minimal-distroless-static"]="gcr.io/distroless/static-debian13"
