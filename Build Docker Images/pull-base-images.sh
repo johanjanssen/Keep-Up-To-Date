@@ -7,14 +7,15 @@
 # empty Docker cache every run) it's a full pull regardless of how the FROM
 # line is written, so there's nothing to gain from digest-pinning there.
 #
-#   eclipse-temurin :25-jre/jdk    Temurin 25 (JRE / JDK)
-#   azul/zulu-openjdk:25-jdk-crac  Azul Zulu 25 JDK with CRaC patches (crac-azul-distroless-base build)
-#   distroless/base-debian13       Debian 13 Trixie
-#   distroless/static-debian13     Debian 13 Trixie  (static / native-minimal)
-#   debian:13-slim                 Debian 13 Trixie  (native w/ dynamic linking)
-#   almalinux/10-base              AlmaLinux 10  Lavender Lion
-#   almalinux:10-kitten-minimal    AlmaLinux Kitten 10  Lion Cub  (comparison only)
-#   graalvm/native-image-community GraalVM CE 25.0.4 (25i2 interim build; builder, pulled on first docker build)
+#   eclipse-temurin :25-jre/jdk     Temurin 25 (JRE / JDK)
+#   azul/zulu-openjdk:25-jdk-crac   Azul Zulu 25 JDK with CRaC patches (crac-azul-distroless-base build)
+#   distroless/base-debian13        Debian 13 Trixie
+#   distroless/static-debian13      Debian 13 Trixie  (static / native-minimal)
+#   debian:13-slim                  Debian 13 Trixie  (native w/ dynamic linking)
+#   almalinux/10-base               AlmaLinux 10  Lavender Lion
+#   almalinux/10-micro              AlmaLinux 10  Lavender Lion  (stripped-down, no package manager)
+#   almalinux:10-kitten-minimal     AlmaLinux Kitten 10  Lion Cub  (comparison only)
+#   graalvm/native-image-community  GraalVM CE 25.0.4 (25i2 interim build; builder, pulled on first docker build)
 set -euo pipefail
 
 source "$(dirname "$0")/../images.conf"
