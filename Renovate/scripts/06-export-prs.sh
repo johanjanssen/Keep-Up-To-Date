@@ -51,12 +51,22 @@ COUNT=$(echo "${PRS_JSON}" | jq 'length')
 echo "   ${COUNT} pull request(s) found."
 echo ""
 
-RESULT="[]"
+# Renovate PR bodies (changelog tables) and diffs (lockfile-style updates)
+# can both grow past the kernel's argv size limit (ARG_MAX), so neither is
+# ever passed to jq as a command-line argument below — each PR's body and
+# diff are written to a temp file and read back with --rawfile instead.
+# Entries are likewise appended one-per-line to a temp file and combined
+# with a single `jq -s` slurp at the end, rather than re-passing the
+# growing result array through --argjson on every loop iteration.
+ENTRIES_FILE="$(mktemp)"
+BODY_FILE="$(mktemp)"
+DIFF_FILE="$(mktemp)"
+trap 'rm -f "${ENTRIES_FILE}" "${BODY_FILE}" "${DIFF_FILE}"' EXIT
+
 for ROW in $(echo "${PRS_JSON}" | jq -r '.[] | @base64'); do
     _jq() { echo "${ROW}" | base64 -d | jq -r "${1}"; }
     NUMBER=$(_jq '.number')
     TITLE=$(_jq '.title')
-    BODY=$(_jq '.body // ""')
     BASE=$(_jq '.base.ref')
     HEAD=$(_jq '.head.ref')
     CREATED=$(_jq '.created_at')
@@ -64,27 +74,28 @@ for ROW in $(echo "${PRS_JSON}" | jq -r '.[] | @base64'); do
 
     echo "   → PR #${NUMBER}: ${TITLE}"
 
-    # Gitea supports GitHub-style ".diff" suffixes on the PR API endpoint.
-    DIFF=$(curl -sf \
-        -H "Authorization: token ${TOKEN}" \
-        "${GITEA_URL}/api/v1/repos/${ADMIN_USER}/${REPO_NAME}/pulls/${NUMBER}.diff" || echo "")
+    _jq '.body // ""' > "${BODY_FILE}"
 
-    ENTRY=$(jq -n \
+    # Gitea supports GitHub-style ".diff" suffixes on the PR API endpoint.
+    curl -sf \
+        -H "Authorization: token ${TOKEN}" \
+        "${GITEA_URL}/api/v1/repos/${ADMIN_USER}/${REPO_NAME}/pulls/${NUMBER}.diff" \
+        > "${DIFF_FILE}" || : > "${DIFF_FILE}"
+
+    jq -n \
         --argjson number "${NUMBER}" \
         --arg title "${TITLE}" \
-        --arg body "${BODY}" \
+        --rawfile body "${BODY_FILE}" \
         --arg base "${BASE}" \
         --arg head "${HEAD}" \
         --arg created "${CREATED}" \
         --argjson labels "${LABELS}" \
-        --arg diff "${DIFF}" \
+        --rawfile diff "${DIFF_FILE}" \
         '{number: $number, title: $title, body: $body, base: $base, head: $head,
-          created_at: $created, labels: $labels, diff: $diff}')
-
-    RESULT=$(echo "${RESULT}" | jq --argjson entry "${ENTRY}" '. + [$entry]')
+          created_at: $created, labels: $labels, diff: $diff}' >> "${ENTRIES_FILE}"
 done
 
-echo "${RESULT}" > "${OUTPUT}"
+jq -s '.' "${ENTRIES_FILE}" > "${OUTPUT}"
 echo ""
 echo "✅  Wrote ${COUNT} pull request(s) to ${OUTPUT}"
 echo ""
