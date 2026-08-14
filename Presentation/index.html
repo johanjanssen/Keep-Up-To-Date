@@ -785,6 +785,67 @@ class UserRepositoryIntegrationTest {
     </section>
 
     <section>
+        <h2>☕ Retrieve Coverage — via Port (TCP Agent)</h2>
+        <p class="subtitle">Dump live coverage while the app keeps running — no restart, multiple snapshots</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ JaCoCo TCP agent</span>
+            The agent opens a TCP server on the JVM. Connect a CLI client to it at any time to pull the
+            in-memory counters — the app never stops.
+            <pre><code class="language-bash"># 1 — Build the JAR (once per code change)
+bash "scripts/Retrieve Coverage From Port/build.sh"
+
+# 2 — Terminal 1: start the app WITH the agent (keep it running)
+java "-javaagent:agent.jar=output=tcpserver,port=6300,includes=com.example.*" \
+     -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
+
+# 3 — Terminal 2: exercise the endpoints
+bash "scripts/Retrieve Coverage From Port/exercise-endpoints.sh"
+
+# 4 — Terminal 2: dump live coverage from the running JVM
+java -jar jacoco-cli.jar dump --address localhost --port 6300 \
+     --destfile target/jacoco-live.exec --reset
+
+# 5 — Terminal 2: generate the HTML report
+java -jar jacoco-cli.jar report target/jacoco-live.exec \
+     --classfiles target/classes --sourcefiles src/main/java \
+     --html target/coverage-report</code></pre>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <code>--reset</code> clears the counters after each dump — repeat steps 3–5 to take fresh snapshots without restarting.
+        </p>
+    </section>
+
+    <section>
+        <h2>☕ Retrieve Coverage — via File (JVM Exit)</h2>
+        <p class="subtitle">Coverage flushes to disk when the JVM exits — no TCP hookup needed</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ JaCoCo file agent</span>
+            Simplest mode: the agent registers a shutdown hook and writes the exec file the moment the JVM exits.
+            Just stop the app and generate the report.
+            <pre><code class="language-bash"># 1 — Build the JAR (once per code change)
+bash "scripts/Retrieve Coverage From File/build.sh"
+
+# 2 — Terminal 1: start the app WITH the agent
+java "-javaagent:agent.jar=destfile=target/jacoco.exec,output=file,append=false,includes=com.example.*" \
+     -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
+
+# 3 — Terminal 2: exercise the endpoints
+bash "scripts/Retrieve Coverage From File/exercise-endpoints.sh"
+
+# 4 — Terminal 1: Ctrl+C to stop the app
+#     JaCoCo flushes coverage to target/jacoco.exec on JVM exit
+
+# 5 — Terminal 2: generate the HTML report
+java -jar jacoco-cli.jar report target/jacoco.exec \
+     --classfiles target/classes --sourcefiles src/main/java \
+     --html target/coverage-report</code></pre>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            No TCP port to manage — best for simple, one-shot runs (e.g. a CI job or a short manual session).
+        </p>
+    </section>
+
+    <section>
         <h2>🧪 JaCoCo — Demo Results</h2>
         <p class="subtitle"><code>run-demo.sh</code>: build → start → exercise → dump → report → stop</p>
         <div class="medium">
