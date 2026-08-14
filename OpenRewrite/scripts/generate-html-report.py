@@ -75,16 +75,6 @@ def render_file_section(f, idx):
     </details>"""
 
 
-def render_file_index(files):
-    rows = []
-    for idx, f in enumerate(files):
-        stat = f'<span class="stat-add">+{f["added"]}</span> <span class="stat-del">-{f["removed"]}</span>'
-        rows.append(
-            f'<li><a href="#file-{idx}">{html.escape(f["path"])}</a><span class="stats">{stat}</span></li>'
-        )
-    return "\n".join(rows)
-
-
 def parse_test_summary(s):
     """'Tests run: 18, Failures: 1, Errors: 0, Skipped: 0' -> dict, or None."""
     if not s:
@@ -120,7 +110,7 @@ PAGE_TEMPLATE = """<!doctype html>
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --add-bg: #E4F5E1; --add-fg: #1C5B26; --del-bg: #FBE7E7; --del-fg: #8C1F1F;
     --hunk-bg: #EEF1FC; --hunk-fg: #4353C4;
-    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --alt-row: #EEF1FC;
     --focus: #4353C4; --ok: #1C5B26; --ok-bg: #E4F5E1; --warn: #8C5A00; --warn-bg: #FBF0DA;
   }}
   @media (prefers-color-scheme: dark) {{
@@ -175,13 +165,6 @@ PAGE_TEMPLATE = """<!doctype html>
   .badge.muted {{ background: var(--alt-row); color: var(--muted); }}
   .note {{ color: var(--muted); font-size: 0.88rem; margin-top: 0.6rem; }}
 
-  .file-index {{ list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }}
-  .file-index li {{
-    display: flex; justify-content: space-between; gap: 1rem;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.45rem 0.8rem; font-size: 0.88rem;
-  }}
-  .file-index a {{ text-decoration: none; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
   .stats {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; white-space: nowrap; }}
   .stat-add {{ color: var(--add-fg); }}
   .stat-del {{ color: var(--del-fg); }}
@@ -192,11 +175,11 @@ PAGE_TEMPLATE = """<!doctype html>
   }}
   details.file summary {{
     cursor: pointer; list-style: none; padding: 0.7rem 1rem; display: flex;
-    justify-content: space-between; gap: 1rem; background: var(--header-bg); color: var(--header-fg);
+    justify-content: space-between; gap: 1rem; background: var(--surface); color: var(--text);
+    border-bottom: 1px solid var(--border);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88rem;
   }}
   details.file summary::-webkit-details-marker {{ display: none; }}
-  details.file summary .stats {{ color: var(--header-fg); opacity: 0.85; }}
   .diff {{
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.82rem; overflow-x: auto;
@@ -252,10 +235,6 @@ PAGE_TEMPLATE = """<!doctype html>
   <p class="note">{test_note}</p>
 
   <h2>Files changed ({file_count})</h2>
-  <ul class="file-index">
-{file_index_html}
-  </ul>
-
   {file_sections_html}
 
   <footer>
@@ -329,7 +308,6 @@ def main():
         before_badge=test_badge(before_summary),
         after_badge=test_badge(after_summary),
         test_note=test_note,
-        file_index_html=render_file_index(files),
         file_sections_html="\n".join(render_file_section(f, i) for i, f in enumerate(files)),
     )
 
