@@ -10,7 +10,11 @@ package com.example.openrewrite.model;
  *                                 {@code null}.  OpenRewrite rewrites it to
  *                                 {@code "admin".equals(role)}.</li>
  *   <li><b>UpgradeToJava25</b>  – The multi-line string in {@link #describe()} is a
- *                                 perfect candidate for a Java text block.</li>
+ *                                 perfect candidate for a Java text block. The template
+ *                                 is a pure-literal concatenation, interpolated via
+ *                                 String.format — UseTextBlocks only rewrites chains of
+ *                                 string literals, so any variable interleaved into the
+ *                                 concatenation itself would keep it from firing.</li>
  * </ul>
  */
 // ── AutoFormat: compact constructor / missing spaces ──────────────────────
@@ -40,9 +44,10 @@ return role.equals("admin")||role.equals("superuser");
 // BEFORE: ugly string concatenation
 // AFTER:  clean text block with """
 public String describe(){
-return "Name : " + name + "\n" +
-"Age  : " + age  + "\n" +
-"Role : " + role + "\n";
+String template = "Name : %s\n" +
+"Age  : %d\n" +
+"Role : %s\n";
+return String.format(template, name, age, role);
 }
 // ── AutoFormat: inconsistent spacing around operators ─────────────────────
 @Override
