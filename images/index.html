@@ -50,7 +50,7 @@
 <body>
 <main>
   <h1>Docker Image Size &amp; Performance Comparison</h1>
-  <p class="subtitle">Generated 2026-08-14 11:40 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
+  <p class="subtitle">Generated 2026-08-14 12:32 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
@@ -66,14 +66,6 @@
         <tbody>
           
         <tr>
-          <td class="image-name">eclipse-temurin:25-jre</td>
-          <td>360MB</td>
-          <td class="muted">–</td>
-          <td class="muted">–</td>
-          <td>106</td>
-        </tr>
-
-        <tr>
           <td class="image-name">eclipse-temurin:25-jdk</td>
           <td>438MB</td>
           <td class="muted">–</td>
@@ -82,11 +74,67 @@
         </tr>
 
         <tr>
+          <td class="image-name">eclipse-temurin:25-jdk-alpine</td>
+          <td>303MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">eclipse-temurin:25-jre</td>
+          <td>360MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>106</td>
+        </tr>
+
+        <tr>
           <td class="image-name">azul/zulu-openjdk:25-jdk-crac</td>
           <td>528MB</td>
           <td class="muted">–</td>
           <td class="muted">–</td>
           <td>103</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">azul/zulu-openjdk-alpine:25-latest</td>
+          <td>373MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">amazoncorretto:25-jdk</td>
+          <td>532MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>144</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">amazoncorretto:25-alpine-jdk</td>
+          <td>371MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">debian:13</td>
+          <td>120MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>78</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">debian:13-slim</td>
+          <td>78.6MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>78</td>
         </tr>
 
         <tr>
@@ -106,14 +154,6 @@
         </tr>
 
         <tr>
-          <td class="image-name">debian:13-slim</td>
-          <td>78.6MB</td>
-          <td class="muted">–</td>
-          <td class="muted">–</td>
-          <td>78</td>
-        </tr>
-
-        <tr>
           <td class="image-name">almalinux/10-base</td>
           <td>193MB</td>
           <td class="muted">–</td>
@@ -122,19 +162,19 @@
         </tr>
 
         <tr>
+          <td class="image-name">almalinux:10-minimal</td>
+          <td>74.1MB</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
+          <td>84</td>
+        </tr>
+
+        <tr>
           <td class="image-name">almalinux/10-micro</td>
           <td>18.7MB</td>
           <td class="muted">–</td>
           <td class="muted">–</td>
           <td class="muted">–</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">almalinux:10-kitten-minimal</td>
-          <td>74MB</td>
-          <td class="muted">–</td>
-          <td class="muted">–</td>
-          <td>84</td>
         </tr>
 
         <tr>
@@ -195,9 +235,9 @@
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base</td>
-          <td>254MB</td>
+          <td>259MB</td>
           <td class="muted">–</td>
-          <td>+219.4 MB</td>
+          <td>+223.7 MB</td>
           <td>9</td>
         </tr>
 
@@ -252,79 +292,79 @@
           
         <tr>
           <td class="image-name">hello-conference:jre-temurin</td>
-          <td>173.9MiB / 15.61GiB</td>
+          <td>170.1MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.784s</td>
-          <td>2436 ms</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">hello-conference:jlink-full-distroless-base</td>
-          <td>169MiB / 15.61GiB</td>
-          <td class="warmup-ok">OK</td>
-          <td>1.779s</td>
-          <td>2495 ms</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">hello-conference:jlink-distroless-base</td>
-          <td>163.4MiB / 15.61GiB</td>
-          <td class="warmup-ok">OK</td>
-          <td>1.704s</td>
+          <td>1.825s</td>
           <td>2499 ms</td>
         </tr>
 
         <tr>
-          <td class="image-name">hello-conference:jlink-netty-distroless-base</td>
-          <td>161.8MiB / 15.61GiB</td>
+          <td class="image-name">hello-conference:jlink-full-distroless-base</td>
+          <td>171.2MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.955s</td>
-          <td>2806 ms</td>
+          <td>1.782s</td>
+          <td>2510 ms</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-distroless-base</td>
+          <td>171.4MiB / 15.62GiB</td>
+          <td class="warmup-ok">OK</td>
+          <td>1.8s</td>
+          <td>2600 ms</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-netty-distroless-base</td>
+          <td>158MiB / 15.62GiB</td>
+          <td class="warmup-ok">OK</td>
+          <td>1.818s</td>
+          <td>2687 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-cds-distroless-base</td>
-          <td>180MiB / 15.61GiB</td>
+          <td>174.9MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.455s</td>
-          <td>2079 ms</td>
+          <td>1.441s</td>
+          <td>2063 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-tuned-distroless-base</td>
-          <td>192.4MiB / 15.61GiB</td>
+          <td>189.5MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.788s</td>
-          <td>2487 ms</td>
+          <td>1.869s</td>
+          <td>2615 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base</td>
-          <td>63.09MiB / 15.61GiB</td>
+          <td>70.34MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.106s</td>
-          <td>223 ms</td>
+          <td>0.111s</td>
+          <td>205 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-debian-slim</td>
-          <td>22.04MiB / 15.61GiB</td>
+          <td>21.73MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.056s</td>
+          <td>0.055s</td>
           <td>122 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-minimal-distroless-static</td>
-          <td>21.62MiB / 15.61GiB</td>
+          <td>21.41MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.059s</td>
-          <td>124 ms</td>
+          <td>0.065s</td>
+          <td>121 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-scratch</td>
-          <td>21.59MiB / 15.61GiB</td>
+          <td>21.59MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
           <td>0.066s</td>
           <td>123 ms</td>
@@ -332,9 +372,9 @@
 
         <tr>
           <td class="image-name">hello-conference:native-netty-scratch</td>
-          <td>16.55MiB / 15.61GiB</td>
+          <td>16.56MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.06s</td>
+          <td>0.054s</td>
           <td>123 ms</td>
         </tr>
         </tbody>
