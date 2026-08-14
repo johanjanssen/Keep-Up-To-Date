@@ -11,6 +11,12 @@ import java.util.ArrayList;
  *                     that may be null; recipe rewrites to literal.equals(var).
  * UpgradeToJava25   – getWelcomePage() builds HTML via string concatenation
  *                     with embedded newlines; recipe converts to a text block.
+ *                     (The template is built as a pure-literal concatenation
+ *                     and interpolated with String.format — UseTextBlocks only
+ *                     rewrites concatenations of string literals; if a variable
+ *                     like `name` is interleaved into the chain it leaves the
+ *                     whole expression alone, since text blocks can't embed
+ *                     expressions the way the original concatenation could.)
  */
 @Service
 public class GreetingService {
@@ -28,14 +34,15 @@ return "Hello, "+name+"!";
 }
 // ── UpgradeToJava25: multi-line concatenation → text block ────────────────
 public String getWelcomePage(String name){
-return "<!DOCTYPE html>\n"+
+String template="<!DOCTYPE html>\n"+
 "<html>\n"+
 "  <head><title>Welcome</title></head>\n"+
 "  <body>\n"+
-"    <h1>Welcome, "+name+"!</h1>\n"+
+"    <h1>Welcome, %s!</h1>\n"+
 "    <p>OpenRewrite demo application.</p>\n"+
 "  </body>\n"+
 "</html>\n";
+return String.format(template,name);
 }
 // ── EqualsAvoidsNull: person.getRole().equals("admin") ────────────────────
 public boolean canAccess(Person person,String resource){
