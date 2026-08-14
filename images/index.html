@@ -9,17 +9,19 @@
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --accent: #1565C0; --ok: #2E7D32; --warn: #B71C1C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
-    --focus: #4353C4;
+    --focus: #4353C4; --highlight-bg: #DCF3DE; --highlight-border: #2E7D32;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
       --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+      --highlight-bg: #1E3320; --highlight-border: #7FB855;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
     --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+    --highlight-bg: #1E3320; --highlight-border: #7FB855;
   }
   * { box-sizing: border-box; }
   body {
@@ -39,6 +41,7 @@
   thead th { position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }
   tbody tr:nth-child(even) { background: var(--alt-row); }
   tbody tr.not-built { opacity: 0.55; font-style: italic; }
+  tbody tr.size-under-100 { background: var(--highlight-bg); box-shadow: inset 3px 0 var(--highlight-border); }
   td.muted { color: var(--muted); }
   td.warmup-ok { color: var(--ok); font-weight: 700; }
   td.warmup-timeout { color: var(--warn); font-weight: 700; }
@@ -50,11 +53,11 @@
 <body>
 <main>
   <h1>Docker Image Size &amp; Performance Comparison</h1>
-  <p class="subtitle">Generated 2026-08-14 12:32 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
+  <p class="subtitle">Generated 2026-08-14 13:38 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
-    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image.</p>
+    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
     <div class="table-scroll">
       <table>
         <thead>
@@ -129,7 +132,7 @@
           <td>78</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">debian:13-slim</td>
           <td>78.6MB</td>
           <td class="muted">–</td>
@@ -137,7 +140,7 @@
           <td>78</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">gcr.io/distroless/base-debian13</td>
           <td>24.3MB</td>
           <td class="muted">–</td>
@@ -145,7 +148,7 @@
           <td>9</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">gcr.io/distroless/static-debian13</td>
           <td>2.21MB</td>
           <td class="muted">–</td>
@@ -161,7 +164,7 @@
           <td>147</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">almalinux:10-minimal</td>
           <td>74.1MB</td>
           <td class="muted">–</td>
@@ -169,7 +172,7 @@
           <td>84</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">almalinux/10-micro</td>
           <td>18.7MB</td>
           <td class="muted">–</td>
@@ -225,19 +228,19 @@
           <td>9</td>
         </tr>
 
-        <tr>
+        <tr class="not-built">
           <td class="image-name">hello-conference:jlink-tuned-distroless-base</td>
-          <td>116MB</td>
+          <td>NOT BUILT</td>
           <td class="muted">–</td>
-          <td>+87.3 MB</td>
-          <td>9</td>
+          <td class="muted">–</td>
+          <td class="muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base</td>
-          <td>259MB</td>
+          <td>264MB</td>
           <td class="muted">–</td>
-          <td>+223.7 MB</td>
+          <td>+228.7 MB</td>
           <td>9</td>
         </tr>
 
@@ -249,7 +252,7 @@
           <td>78</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">hello-conference:native-minimal-distroless-static</td>
           <td>58.8MB</td>
           <td class="muted">–</td>
@@ -257,7 +260,7 @@
           <td>5</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">hello-conference:native-scratch</td>
           <td>56.6MB</td>
           <td class="muted">–</td>
@@ -265,7 +268,7 @@
           <td class="muted">–</td>
         </tr>
 
-        <tr>
+        <tr class="size-under-100">
           <td class="image-name">hello-conference:native-netty-scratch</td>
           <td>89.2MB</td>
           <td class="muted">–</td>
@@ -292,90 +295,82 @@
           
         <tr>
           <td class="image-name">hello-conference:jre-temurin</td>
-          <td>170.1MiB / 15.62GiB</td>
+          <td>157.2MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.825s</td>
-          <td>2499 ms</td>
+          <td>1.72s</td>
+          <td>2394 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-full-distroless-base</td>
-          <td>171.2MiB / 15.62GiB</td>
+          <td>164.8MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.782s</td>
-          <td>2510 ms</td>
+          <td>1.788s</td>
+          <td>2491 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-distroless-base</td>
-          <td>171.4MiB / 15.62GiB</td>
+          <td>172.2MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.8s</td>
-          <td>2600 ms</td>
+          <td>1.793s</td>
+          <td>2514 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-netty-distroless-base</td>
-          <td>158MiB / 15.62GiB</td>
+          <td>155MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.818s</td>
-          <td>2687 ms</td>
+          <td>1.793s</td>
+          <td>2689 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-cds-distroless-base</td>
-          <td>174.9MiB / 15.62GiB</td>
+          <td>183.3MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.441s</td>
-          <td>2063 ms</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">hello-conference:jlink-tuned-distroless-base</td>
-          <td>189.5MiB / 15.62GiB</td>
-          <td class="warmup-ok">OK</td>
-          <td>1.869s</td>
-          <td>2615 ms</td>
+          <td>1.423s</td>
+          <td>1955 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base</td>
-          <td>70.34MiB / 15.62GiB</td>
+          <td>74.81MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.111s</td>
-          <td>205 ms</td>
+          <td>0.12s</td>
+          <td>221 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-debian-slim</td>
-          <td>21.73MiB / 15.62GiB</td>
+          <td>21.76MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.055s</td>
-          <td>122 ms</td>
+          <td>0.058s</td>
+          <td>123 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-minimal-distroless-static</td>
-          <td>21.41MiB / 15.62GiB</td>
+          <td>21.43MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.065s</td>
-          <td>121 ms</td>
+          <td>0.06s</td>
+          <td>124 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-scratch</td>
-          <td>21.59MiB / 15.62GiB</td>
+          <td>21.36MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.066s</td>
-          <td>123 ms</td>
+          <td>0.061s</td>
+          <td>124 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-netty-scratch</td>
-          <td>16.56MiB / 15.62GiB</td>
+          <td>16.58MiB / 15.62GiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.054s</td>
-          <td>123 ms</td>
+          <td>0.046s</td>
+          <td>124 ms</td>
         </tr>
         </tbody>
       </table>
