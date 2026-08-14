@@ -1,4 +1,4 @@
-# Runtime base: gcr.io/distroless/static-debian12  (Debian 12 Bookworm, ~2 MB)
+# Runtime base: gcr.io/distroless/static-debian13  (Debian 13 Trixie, ~2 MB)
 # Binary is statically linked against musl libc → zero shared-lib dependencies.
 # Techniques: musl static linking + -Os (size optimisation).
 # Note: UPX compression is intentionally NOT used here. UPX decompresses the
@@ -47,7 +47,7 @@ COPY src src
 RUN NATIVE_IMAGE_OPTIONS="--static --libc=musl -Os" \
     ./mvnw -Pnative native:compile -DskipTests --no-transfer-progress
 
-FROM gcr.io/distroless/static-debian12
+FROM gcr.io/distroless/static-debian13
 COPY --from=builder /workspace/target/HelloConference /HelloConference
 EXPOSE 8080
 ENTRYPOINT ["/HelloConference"]

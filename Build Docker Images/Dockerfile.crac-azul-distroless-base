@@ -1,5 +1,5 @@
 # Image tag:  hello-conference:crac-azul-distroless-base
-# Base:       gcr.io/distroless/base-debian12  (runtime)
+# Base:       gcr.io/distroless/base-debian13  (runtime)
 #             azul/zulu-openjdk:25-jdk-crac     (build + jlink)
 #
 # CRaC – Coordinated Restore at Checkpoint
@@ -114,7 +114,7 @@ RUN /jre-minimal/bin/java -Xshare:dump 2>&1 | tail -5 && \
     echo "Base CDS: $(du -sh /jre-minimal/lib/server/classes.jsa | cut -f1)"
 
 # Azul's JVM dynamically links libz.so.1 (Eclipse Temurin bundles it statically).
-# gcr.io/distroless/base-debian12 does not include zlib, so locate the library
+# gcr.io/distroless/base-debian13 does not include zlib, so locate the library
 # via ldconfig and export it to a fixed path for the COPY in Stage 3.
 RUN LIBZ=$(ldconfig -p 2>/dev/null | awk '/libz\.so\.1 /{print $NF; exit}') && \
     echo "Exporting ${LIBZ}" && \
@@ -124,7 +124,7 @@ RUN LIBZ=$(ldconfig -p 2>/dev/null | awk '/libz\.so\.1 /{print $NF; exit}') && \
 # build-crac-azul-distroless-base.sh runs this image with --privileged to create
 # the checkpoint, then docker commit bakes the checkpoint directory into the
 # final image.
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian13
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"

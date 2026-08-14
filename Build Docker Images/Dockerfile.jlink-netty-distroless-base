@@ -1,4 +1,4 @@
-# Runtime base: gcr.io/distroless/base-debian12  (Debian 12 Bookworm)
+# Runtime base: gcr.io/distroless/base-debian13  (Debian 13 Trixie)
 # Key improvement over jlink-distroless-base: Spring WebFlux (Netty) replaces Spring MVC (Tomcat).
 #
 #   Tomcat  – servlet engine, thread pools, request/response buffering, temp-file I/O
@@ -66,7 +66,7 @@ RUN set -eux; \
         --output /jre-minimal
 
 # ── Stage 3: distroless runtime ───────────────────────────────
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian13
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"

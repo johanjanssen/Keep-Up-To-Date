@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:native-debian-slim  (runtime base: debian:12-slim)
+# Builds hello-conference:native-debian-slim  (runtime base: debian:13-slim)
 # Dynamically-linked GraalVM native executable; needs glibc + libz at runtime.
 # ⚠  Native compilation takes 5-15 minutes.
 set -euo pipefail

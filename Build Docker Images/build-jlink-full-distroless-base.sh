@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:jlink-full-distroless-base  (runtime base: gcr.io/distroless/base-debian12)
+# Builds hello-conference:jlink-full-distroless-base  (runtime base: gcr.io/distroless/base-debian13)
 # Includes ALL JDK modules (no jdeps analysis) – equivalent to a full JRE.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

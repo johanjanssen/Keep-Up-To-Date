@@ -1,5 +1,5 @@
 # Image tag:  hello-conference:jlink-tuned-distroless-base
-# Base:       gcr.io/distroless/base-debian12
+# Base:       gcr.io/distroless/base-debian13
 #
 # All optimisations from jlink-cds-distroless-base EXCEPT AppCDS.
 # Use this variant when you cannot afford the ~1-2 min training run in CI,
@@ -86,7 +86,7 @@ RUN set -eux; \
         --output /jre-minimal
 
 # ── Stage 3: distroless runtime ───────────────────────────────
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian13
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"

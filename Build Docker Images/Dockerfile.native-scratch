@@ -1,7 +1,7 @@
 # Runtime base: scratch (0 bytes – the absolute minimum)
 # Improvements over native-minimal-distroless-static:
 #   1. strip --strip-all  removes ELF symbol tables/debug info after native compile
-#   2. FROM scratch       eliminates the ~2 MB distroless/static-debian12 base layer
+#   2. FROM scratch       eliminates the ~2 MB distroless/static-debian13 base layer
 #      WORKDIR /tmp       creates the /tmp directory that embedded Tomcat requires
 # ⚠  First build: ~20-25 min.  Subsequent source-only rebuilds use cached layers.
 

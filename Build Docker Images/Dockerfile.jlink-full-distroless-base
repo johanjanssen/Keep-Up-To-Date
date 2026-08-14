@@ -1,4 +1,4 @@
-# Runtime base: gcr.io/distroless/base-debian12  (Debian 12 Bookworm)
+# Runtime base: gcr.io/distroless/base-debian13  (Debian 13 Trixie)
 # jlink JRE is glibc-linked (Temurin) → needs glibc → distroless/base, not static
 
 # ── Stage 1: Maven build ──────────────────────────────────────
@@ -29,7 +29,7 @@ RUN MODULES=$(java --list-modules | sed 's/@.*//' | \
         --output /jre-full
 
 # ── Stage 3: distroless runtime ───────────────────────────────
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian13
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"
