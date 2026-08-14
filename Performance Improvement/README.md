@@ -1,8 +1,9 @@
 # 🚀 Performance Improvement — Java 17 vs 25 vs 28 EA (Valhalla)
 
 > **Demonstrate that upgrading Java gives you FREE performance gains — same code, faster execution, less memory.**
-> And be honest about the one part that isn't free (yet): Valhalla value types need a one-keyword code change,
-> and its performance payoff isn't fully realized in the current Java 28 EA preview build.
+> Plus the one part that needs a code change: Valhalla value types need a one-keyword opt-in (`record` →
+> `value record`) — and, in the current Java 28 EA preview, a field-width limit before the JVM will actually
+> flatten the array. Both are demonstrated and measured, not assumed from the JEP text.
 
 This module runs JMH benchmarks on **Java 17**, **Java 25**, and **Java 28 EA** (with Project Valhalla
 preview support) to show measurable, *verified* improvements in performance and memory consumption.
@@ -45,24 +46,37 @@ at least 3% better; anything flat or regressed is left out rather than presented
 ## 🔮 Valhalla: what's actually true right now
 
 `ValhallaBenchmark` and `ValhallaValueBenchmark` are **the same code**, except one uses
-`record Point(int x, int y) {}` and the other uses `value record Point(int x, int y) {}`.
+`record Point(short x, short y) {}` and the other uses `value record Point(short x, short y) {}`.
 That's the entire Valhalla story for application developers — same syntax, one keyword.
 
 The important thing this repo verified by actually running it, not by assuming the JEP text:
 
-**The `value` keyword alone doesn't guarantee a win yet, in this preview.** Every workflow run measures
-`ValhallaValueBenchmark` against `ValhallaBenchmark` twice — once for speed, once with `-prof gc` for
-bytes allocated per operation — so the "does array-flattening actually kick in this time" question is
-answered from live data on every run, not a remembered anecdote. Earlier local testing across two
-independent Valhalla-enabled JDK builds (mainline `openjdk:28-ea` and the dedicated
-`jdk.java.net/valhalla` early-access build) found the array-flattening optimization did not consistently
-engage: the `value record` array sometimes used **more** memory and ran **slower**, not less/faster. The
-language feature (JEP 401, Value Classes and Objects) works correctly here; the runtime optimization it
-depends on for the performance payoff is still catching up in this EA build. The published report only
-calls this section a win if the *current* run's numbers back it up.
+**The `value` keyword alone isn't enough yet — the record also has to fit a size limit.** Earlier
+versions of this benchmark used `record Point(int x, int y)` and measured *no* memory win: the `value
+record` array sometimes used more memory than the plain one, not less. Digging into why (Docker,
+`openjdk:28-ea-trixie`, `-XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal`) turned up the actual
+cause: this JVM's array-flattening only engages when a value record's fields, plus the 1-byte null
+marker every element in a plain (nullable) array needs, fit inside a single 8-byte word. Two `int`s are
+8 bytes on their own — one byte over the line — and never flatten, with or without every flattening flag
+(`UseArrayFlattening`, `UseFieldFlattening`, `UseAtomicValueFlattening`, `UseNullableValueFlattening`, …)
+forced on. Two `short`s are 4 bytes and flatten every time, with the JVM's *default* flags — no tuning
+needed. (A third-party write-up hit the same wall independently and used `short x, short y, short z`
+for the same reason — see [First look at Java Valhalla flattening](https://joemwangi985269.substack.com/p/first-look-at-java-valhalla-flattening).)
 
-The published report shows this run's real numbers, with that context attached, instead of a promised
-`3x less memory, 2-3x faster` figure that a curious audience member could disprove on their own laptop.
+With that one field-width change, every workflow run now measures `ValhallaValueBenchmark` against
+`ValhallaBenchmark` twice — once for speed, once with `-prof gc` for bytes allocated per operation — and
+both come back a real win, not a coin flip: **~60% less memory** (20 → 8 bytes per `Point`, exactly the
+"drop the object header" story JEP 401 promises) and **4-8x faster**, because summing/iterating flat
+memory has no pointer to chase. This is measured from live JMH data on every run, not a remembered
+anecdote or a number copied from the JEP — the published report only calls this section a win if the
+*current* run's numbers back it up, same as before.
+
+The language feature (JEP 401, Value Classes and Objects) and the runtime optimization it depends on
+both work correctly here — the catch was a today's-preview-build size ceiling on which records are
+flattenable, not a fundamental limitation of Valhalla. `Point` staying at two coordinates in `short`
+range (0-999 for `computeDistances`, and deliberately overflow-wrapped for `sumPointsRecord` — identical
+truncation on both sides of the comparison) keeps this an honest "one keyword changed" test rather than
+a differently-shaped benchmark on each side.
 
 ---
 
@@ -200,7 +214,9 @@ workflows for the same fix. **First-time setup:** the repo's Pages source needs 
 3. **Compact Object Headers** — now a stable product feature (JEP 519); meaningfully less heap for
    boxed values and small domain objects.
 4. **Valhalla (Java 28, preview)** — the language feature is real and demonstrated correctly (one
-   keyword: `value`). The performance payoff described in JEP 401 is not yet consistently realized in
-   the current early-access build — worth watching, not yet worth promising.
+   keyword: `value`), and this run shows the JEP 401 payoff for real: ~60% less memory and 4-8x faster
+   for a flattenable `Point`. The catch found and documented here: today's preview build only flattens
+   records that fit an 8-byte (fields + null marker) size ceiling — `short` fields qualify, `int` fields
+   don't, regardless of flags. Worth knowing before reaching for `value record` on a wider type.
 5. **Not everything about a new JDK is automatically faster** — two benchmarks were cut from this suite
    because measurement didn't back up the claim. That's the standard this report holds itself to.
