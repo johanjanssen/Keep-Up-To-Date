@@ -6,7 +6,7 @@
 # image size on disk but significantly increases runtime memory usage.
 # ⚠  First build: ~20 min (musl + zlib compiled from source + native compile).
 #    Docker caches every toolchain layer; reruns on source changes are fast.
-FROM ghcr.io/graalvm/native-image-community:25@sha256:0d936f32bb8acb5bc60c41b33e05f064d7a6aaf36b726538296c54949bd4a3c0 AS toolchain
+FROM ghcr.io/graalvm/native-image-community:25i2 AS toolchain
 
 RUN microdnf install -y \
         gcc make tar gzip curl findutils \
@@ -47,7 +47,7 @@ COPY src src
 RUN NATIVE_IMAGE_OPTIONS="--static --libc=musl -Os" \
     ./mvnw -Pnative native:compile -DskipTests --no-transfer-progress
 
-FROM gcr.io/distroless/static-debian13@sha256:9197324ba51d9cd071af8505989365c006adf9d6d2067eada25aef00abbb5278
+FROM gcr.io/distroless/static-debian13
 COPY --from=builder /workspace/target/HelloConference /HelloConference
 EXPOSE 8080
 ENTRYPOINT ["/HelloConference"]

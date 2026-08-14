@@ -41,7 +41,7 @@
 # ⚠  spring.context.exit=onRefresh requires Spring Boot 3.2+.
 
 # ── Stage 1: Maven build ──────────────────────────────────────
-FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /workspace
 
 COPY mvnw mvnw
@@ -53,7 +53,7 @@ COPY src src
 RUN ./mvnw package -DskipTests --no-transfer-progress
 
 # ── Stage 2: jlink – tightly scoped minimal JRE ───────────────
-FROM eclipse-temurin:25-jdk@sha256:dfc0093e3dbf43dae57827111c6e374f5b44fac19a9451584b2b336b81474d64 AS jre-builder
+FROM eclipse-temurin:25-jdk AS jre-builder
 WORKDIR /jlink-workspace
 
 COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
@@ -126,7 +126,7 @@ RUN /jre/bin/java \
         || { echo "❌ CDS archive not created"; exit 1; }
 
 # ── Stage 4: distroless runtime ───────────────────────────────
-FROM gcr.io/distroless/base-debian13@sha256:f4a335ca209e1d2ee873102c17c389ad0142e3d5b21aee2817e9cc9c01d87d20
+FROM gcr.io/distroless/base-debian13
 
 ENV JAVA_HOME=/jre
 ENV PATH="/jre/bin:${PATH}"

@@ -46,6 +46,7 @@ jobs:
             <h1>Keep Up To Date</h1>
             <ul>
               <li><a href="Presentation/">Presentation</a></li>
+              <li><a href="OpenRewrite/">OpenRewrite migration report</a></li>
               <li><a href="JaCoCo/">JaCoCo coverage demo</a></li>
               <li><a href="OWASP/">OWASP Dependency Check report</a></li>
               <li><a href="Scans/">Trivy vs Grype scan comparison</a></li>
