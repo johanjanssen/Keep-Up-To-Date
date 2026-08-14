@@ -38,7 +38,25 @@ bash Renovate/scripts/02-setup-gitea.sh     # create admin, repo, API token → 
 bash Renovate/scripts/03-push-code.sh       # git push HelloConference to Gitea
 bash Renovate/scripts/04-start-jenkins.sh   # build image, start Jenkins, create pipeline job
 bash Renovate/scripts/05-run-renovate.sh    # run Renovate → creates real PRs
+bash Renovate/scripts/06-export-prs.sh      # export the opened PRs (title/labels/diff) to JSON
 ```
+
+---
+
+## Live Report on GitHub Pages
+
+[`.github/workflows/renovate.yml`](../.github/workflows/renovate.yml) runs steps 1–3, 5, and 6
+above in CI (no Jenkins — it only needs Renovate to actually open PRs, not a build per PR),
+then renders the exported PRs into a static report with
+[`generate-html-report.py`](scripts/generate-html-report.py) and publishes it to
+**https://johanjanssen.github.io/Keep-Up-To-Date/renovate/**.
+
+Because the Gitea instance is ephemeral and torn down at the end of every run, the report embeds
+each PR's title, labels, description, and real unified diff directly — nothing links back to a
+live Gitea/Jenkins instance, and nothing on the page is hand-written; it's what Renovate actually
+did against this repository's own dependencies (Maven `pom.xml`s, Dockerfiles, `docker-compose.yml`,
+and `.github/workflows/*.yml`) the last time the workflow ran. It runs on every push to `Renovate/**`,
+weekly on a schedule, and on demand via `workflow_dispatch`.
 
 ---
 
@@ -95,6 +113,8 @@ Renovate/
 │   ├── 03-push-code.sh             commits and force-pushes project to Gitea
 │   ├── 04-start-jenkins.sh         builds Jenkins image, starts container, configures job
 │   ├── 05-run-renovate.sh          runs Renovate bot → opens PRs, triggers Jenkins builds
+│   ├── 06-export-prs.sh            exports opened PRs (title/labels/diff) to JSON — used by CI
+│   ├── generate-html-report.py     renders exported PRs into the GitHub Pages report
 │   └── reset-demo.sh               wipe everything for a clean re-run (run manually)
 └── renovate.json                   per-repo Renovate config (source of truth)
 

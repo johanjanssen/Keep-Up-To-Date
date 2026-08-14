@@ -78,6 +78,18 @@ echo ""
 # with http://localhost:3000/ (its ROOT_URL), which is unreachable inside
 # the container. "endpoint" tells Renovate to build the clone URL from
 # RENOVATE_ENDPOINT (http://gitea:3000/) instead.
+#
+# RENOVATE_GITHUB_COM_TOKEN authenticates Renovate's *lookups* against
+# github.com (github-actions manager, github-releases datasource, changelog
+# fetching) — unrelated to RENOVATE_TOKEN, which is the Gitea platform token.
+# Optional locally; in CI it's set to the workflow's GITHUB_TOKEN so scanning
+# this repo's .github/workflows/*.yml doesn't hit the 60 req/hour anonymous
+# GitHub API rate limit.
+GITHUB_COM_TOKEN_ARGS=()
+if [ -n "${RENOVATE_GITHUB_COM_TOKEN:-}" ]; then
+    GITHUB_COM_TOKEN_ARGS=(-e "RENOVATE_GITHUB_COM_TOKEN=${RENOVATE_GITHUB_COM_TOKEN}")
+fi
+
 docker run --rm \
     --network "${NETWORK}" \
     --name renovate-runner \
@@ -90,6 +102,7 @@ docker run --rm \
     -e RENOVATE_GIT_AUTHOR="Renovate Bot <renovate@example.com>" \
     -e RENOVATE_DEPENDENCY_DASHBOARD="false" \
     -e LOG_LEVEL="${LOG_LEVEL:-info}" \
+    "${GITHUB_COM_TOKEN_ARGS[@]}" \
     renovate/renovate:latest \
         ${DRY_RUN_ARGS} \
         "${ADMIN_USER}/${REPO_NAME}"
