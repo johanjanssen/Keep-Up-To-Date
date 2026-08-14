@@ -15,7 +15,7 @@ whitespace split would silently swallow those columns.
 Usage:
   python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> <output_html> [--title "..."]
 """
-import argparse, html, os
+import argparse, html, os, re
 from datetime import datetime, timezone
 
 # ── Column layouts (must mirror the printf format strings) ─────────────────
@@ -64,11 +64,31 @@ def cell(value, muted_values=("", "N/A", "-")):
     return f"<td>{html.escape(value)}</td>"
 
 
+# docker images --format "{{.Size}}" prints decimal (SI, 1000-based) units,
+# e.g. "45.2MB", "1.19GB", "512kB" — mirror that base here rather than 1024.
+SIZE_MULTIPLIERS_TO_MB = {"b": 1e-6, "kb": 1e-3, "mb": 1, "gb": 1e3, "tb": 1e6}
+
+
+def size_to_mb(size_str):
+    """Parse a docker image-size string into a value in MB, or None if unparseable."""
+    m = re.match(r"^([\d.]+)\s*([a-zA-Z]+)$", size_str.strip())
+    if not m:
+        return None
+    value, unit = float(m.group(1)), m.group(2).lower()
+    multiplier = SIZE_MULTIPLIERS_TO_MB.get(unit)
+    return value * multiplier if multiplier is not None else None
+
+
 def images_rows_html(rows):
     out = []
     for r in rows:
         built = r["image_size"] not in ("NOT BUILT", "")
-        css = "" if built else ' class="not-built"'
+        classes = [] if built else ["not-built"]
+        if built:
+            size_mb = size_to_mb(r["image_size"])
+            if size_mb is not None and size_mb < 100:
+                classes.append("size-under-100")
+        css = f' class="{" ".join(classes)}"' if classes else ""
         out.append(f"""
         <tr{css}>
           <td class="image-name">{html.escape(r['image'])}</td>
@@ -112,17 +132,19 @@ PAGE_TEMPLATE = """<!doctype html>
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --accent: #1565C0; --ok: #2E7D32; --warn: #B71C1C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
-    --focus: #4353C4;
+    --focus: #4353C4; --highlight-bg: #DCF3DE; --highlight-border: #2E7D32;
   }}
   @media (prefers-color-scheme: dark) {{
     :root:not([data-theme="light"]) {{
       --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
       --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+      --highlight-bg: #1E3320; --highlight-border: #7FB855;
     }}
   }}
   :root[data-theme="dark"] {{
     --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
     --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+    --highlight-bg: #1E3320; --highlight-border: #7FB855;
   }}
   * {{ box-sizing: border-box; }}
   body {{
@@ -142,6 +164,7 @@ PAGE_TEMPLATE = """<!doctype html>
   thead th {{ position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }}
   tbody tr:nth-child(even) {{ background: var(--alt-row); }}
   tbody tr.not-built {{ opacity: 0.55; font-style: italic; }}
+  tbody tr.size-under-100 {{ background: var(--highlight-bg); box-shadow: inset 3px 0 var(--highlight-border); }}
   td.muted {{ color: var(--muted); }}
   td.warmup-ok {{ color: var(--ok); font-weight: 700; }}
   td.warmup-timeout {{ color: var(--warn); font-weight: 700; }}
@@ -157,7 +180,7 @@ PAGE_TEMPLATE = """<!doctype html>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
-    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image.</p>
+    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
     <div class="table-scroll">
       <table>
         <thead>
