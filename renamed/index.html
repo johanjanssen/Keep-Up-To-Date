@@ -48,17 +48,6 @@
   .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
   .badge.warn { background: var(--warn-bg); color: var(--warn); }
 
-  .finding-index { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
-  .finding-index li {
-    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.45rem 0.8rem; font-size: 0.86rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-  .finding-index a { text-decoration: none; color: var(--del-fg); }
-  .finding-index .new-ga { color: var(--add-fg); }
-  .finding-index .arrow-small { color: var(--muted); font-family: -apple-system, sans-serif; }
-
   .finding {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     margin-bottom: 1.2rem; padding: 1rem 1.2rem 1.2rem;
@@ -66,15 +55,6 @@
   .finding code { color: var(--del-fg); }
   .finding h3 code:last-of-type { color: var(--add-fg); }
   .context { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.9rem; }
-
-  .coord-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .coord { display: flex; align-items: center; gap: 0.5rem; }
-  .coord .tag {
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
-  }
-  .coord code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .coord.after code { color: var(--add-fg); }
-  .arrow { color: var(--muted); }
 
   .pom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   @media (max-width: 800px) { .pom-row { grid-template-columns: 1fr; } }
@@ -103,7 +83,7 @@
     <code>biz.lermitage.oga:oga-maven-plugin:check</code> run against this demo's
     actual <code>pom.xml</code> — the "before" block is the literal dependency
     declaration; "after" is the same block rewritten to the coordinate the plugin
-    recommends. Generated 2026-08-14 09:18 UTC.
+    recommends. Generated 2026-08-14 09:35 UTC.
   </p>
 
   <h2>Summary</h2>
@@ -123,12 +103,6 @@
   </div>
 
   <h2>Findings (4)</h2>
-  <ul class="finding-index">
-<li><a href="#finding-0">com.graphql-java:graphql-java-tools</a><span class="arrow-small">→</span><span class="new-ga">com.graphql-java-kickstart:graphql-java-tools</span></li>
-<li><a href="#finding-1">javax.activation:javax.activation-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.activation:jakarta.activation-api</span></li>
-<li><a href="#finding-2">javax.validation:validation-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.validation:jakarta.validation-api</span></li>
-<li><a href="#finding-3">javax.xml.bind:jaxb-api</a><span class="arrow-small">→</span><span class="new-ga">jakarta.xml.bind:jakarta.xml.bind-api</span></li>
-  </ul>
 
   
     <section class="finding" id="finding-0">
@@ -174,7 +148,7 @@
             &lt;groupId&gt;jakarta.activation&lt;/groupId&gt;
             &lt;artifactId&gt;jakarta.activation-api&lt;/artifactId&gt;
         &lt;/dependency&gt;</pre>
-          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+          <p class="note">⚠ No explicit &lt;version&gt; here — it was inherited from the parent BOM, which does not manage the new coordinate. Add an explicit, current version.</p>
         </div>
       </div>
     </section>
@@ -197,7 +171,7 @@
             &lt;groupId&gt;jakarta.validation&lt;/groupId&gt;
             &lt;artifactId&gt;jakarta.validation-api&lt;/artifactId&gt;
         &lt;/dependency&gt;</pre>
-          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+          <p class="note">⚠ No explicit &lt;version&gt; here — it was inherited from the parent BOM, which does not manage the new coordinate. Add an explicit, current version.</p>
         </div>
       </div>
     </section>
@@ -220,7 +194,7 @@
             &lt;groupId&gt;jakarta.xml.bind&lt;/groupId&gt;
             &lt;artifactId&gt;jakarta.xml.bind-api&lt;/artifactId&gt;
         &lt;/dependency&gt;</pre>
-          <p class="note">⚠ The artifactId changed too — any inherited/managed version most likely does NOT exist for the new coordinate. Pin an explicit, current version.</p>
+          <p class="note">⚠ No explicit &lt;version&gt; here — it was inherited from the parent BOM, which does not manage the new coordinate. Add an explicit, current version.</p>
         </div>
       </div>
     </section>
