@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenRewrite demo — Spring Boot 2 to 4, Java 17 to 25, JUnit 4 to 5</title>
+<style>
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --add-bg: #E4F5E1; --add-fg: #1C5B26; --del-bg: #FBE7E7; --del-fg: #8C1F1F;
+    --hunk-bg: #EEF1FC; --hunk-fg: #4353C4;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4; --ok: #1C5B26; --ok-bg: #E4F5E1; --warn: #8C5A00; --warn-bg: #FBF0DA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+      --hunk-bg: #1E2130; --hunk-fg: #8891E8;
+      --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+      --warn: #E0B93D; --warn-bg: #332A10;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+    --hunk-bg: #1E2130; --hunk-fg: #8891E8;
+    --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+    --warn: #E0B93D; --warn-bg: #332A10;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  a { color: var(--focus); }
+  h2 { font-size: 1.05rem; margin: 2.5rem 0 0.9rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .card .label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card .value { font-size: 1.05rem; margin-top: 0.25rem; }
+  .card .value .arrow { color: var(--muted); margin: 0 0.3rem; }
+  .card .before { color: var(--del-fg); }
+  .card .after { color: var(--ok); font-weight: 600; }
+
+  .recipes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .recipes li {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.6rem 0.9rem; font-size: 0.9rem;
+  }
+  .recipes code { font-size: 0.85rem; }
+
+  .test-row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.muted { background: var(--alt-row); color: var(--muted); }
+  .note { color: var(--muted); font-size: 0.88rem; margin-top: 0.6rem; }
+
+  .file-index { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+  .file-index li {
+    display: flex; justify-content: space-between; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.45rem 0.8rem; font-size: 0.88rem;
+  }
+  .file-index a { text-decoration: none; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .stats { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; white-space: nowrap; }
+  .stat-add { color: var(--add-fg); }
+  .stat-del { color: var(--del-fg); }
+
+  details.file {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 1rem; overflow: hidden;
+  }
+  details.file summary {
+    cursor: pointer; list-style: none; padding: 0.7rem 1rem; display: flex;
+    justify-content: space-between; gap: 1rem; background: var(--header-bg); color: var(--header-fg);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88rem;
+  }
+  details.file summary::-webkit-details-marker { display: none; }
+  details.file summary .stats { color: var(--header-fg); opacity: 0.85; }
+  .diff {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem; overflow-x: auto;
+  }
+  .diff .line { display: flex; padding: 0 0.6rem; white-space: pre; }
+  .diff .sign { width: 1.2rem; flex: none; color: var(--muted); user-select: none; }
+  .diff .code { white-space: pre; }
+  .diff .add { background: var(--add-bg); color: var(--add-fg); }
+  .diff .del { background: var(--del-bg); color: var(--del-fg); }
+  .diff .ctx { color: var(--text); }
+  .diff .hunk { background: var(--hunk-bg); color: var(--hunk-fg); padding: 0.25rem 0.6rem; font-weight: 600; }
+
+  footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>OpenRewrite demo — Spring Boot 2 to 4, Java 17 to 25, JUnit 4 to 5</h1>
+  <p class="subtitle">
+    Recipes run by OpenRewrite against the demo project's actual source — every line below is a
+    real change the recipes made, not a mock-up.
+    Generated 2026-08-14 08:59 UTC.
+  </p>
+
+  <h2>Before → after</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label">Spring Boot</div>
+      <div class="value"><span class="before">2.7.18</span><span class="arrow">→</span><span class="after">4.0.x</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Java</div>
+      <div class="value"><span class="before">17</span><span class="arrow">→</span><span class="after">25</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Test framework</div>
+      <div class="value"><span class="before">JUnit 4</span><span class="arrow">→</span><span class="after">JUnit 5</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Files changed</div>
+      <div class="value">8 files, <span class="stat-add">+206</span> <span class="stat-del">-138</span></div>
+    </div>
+  </div>
+
+  <h2>Recipes applied</h2>
+  <ul class="recipes"><li><code>org.openrewrite.java.format.AutoFormat</code> — Reformats every .java file to standard IntelliJ/Eclipse style</li>
+<li><code>org.openrewrite.staticanalysis.EqualsAvoidsNull</code> — variable.equals(x) -&gt; x.equals(variable), null-safe</li>
+<li><code>org.openrewrite.java.testing.junit5.JUnit4to5Migration</code> — Full JUnit 4 -&gt; JUnit 5 (Jupiter) migration</li>
+<li><code>org.openrewrite.java.migrate.UpgradeToJava25</code> — java.version 17 -&gt; 25, modern Java idioms (text blocks, …)</li>
+<li><code>org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0</code> — spring-boot-starter-parent 2.7.18 -&gt; 4.0.x, javax -&gt; jakarta</li></ul>
+
+  <h2>Tests</h2>
+  <div class="test-row">
+    <div>Before migration: <span class="badge ok">18/18 passed</span></div>
+    <div>After migration: <span class="badge warn">17/18 passed, 1 failing</span></div>
+  </div>
+  <p class="note">One pre-existing test intentionally asserted the OLD buggy behaviour (a NullPointerException on a null role) — EqualsAvoidsNull just fixed that bug, so the test now fails and needs updating. That's expected: automated codemods still need a human to review tests that encoded the bug they fix.</p>
+
+  <h2>Files changed (8)</h2>
+  <ul class="file-index">
+<li><a href="#file-0">OpenRewrite/Dockerfile</a><span class="stats"><span class="stat-add">+2</span> <span class="stat-del">-2</span></span></li>
+<li><a href="#file-1">OpenRewrite/pom.xml</a><span class="stats"><span class="stat-add">+23</span> <span class="stat-del">-20</span></span></li>
+<li><a href="#file-2">OpenRewrite/src/main/java/com/example/openrewrite/OpenRewriteDemoApplication.java</a><span class="stats"><span class="stat-add">+5</span> <span class="stat-del">-1</span></span></li>
+<li><a href="#file-3">OpenRewrite/src/main/java/com/example/openrewrite/controller/GreetingController.java</a><span class="stats"><span class="stat-add">+24</span> <span class="stat-del">-18</span></span></li>
+<li><a href="#file-4">OpenRewrite/src/main/java/com/example/openrewrite/model/Person.java</a><span class="stats"><span class="stat-add">+41</span> <span class="stat-del">-26</span></span></li>
+<li><a href="#file-5">OpenRewrite/src/main/java/com/example/openrewrite/service/GreetingService.java</a><span class="stats"><span class="stat-add">+44</span> <span class="stat-del">-29</span></span></li>
+<li><a href="#file-6">OpenRewrite/src/test/java/com/example/openrewrite/GreetingServiceTest.java</a><span class="stats"><span class="stat-add">+27</span> <span class="stat-del">-19</span></span></li>
+<li><a href="#file-7">OpenRewrite/src/test/java/com/example/openrewrite/PersonTest.java</a><span class="stats"><span class="stat-add">+40</span> <span class="stat-del">-23</span></span></li>
+  </ul>
+
+  
+    <details class="file" id="file-0" open>
+      <summary><span class="path">OpenRewrite/Dockerfile</span><span class="stats"><span class="stat-add">+2</span> <span class="stat-del">-2</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -11,7 +11,7 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">#   bash scripts/run-image.sh       # run on http://localhost:8080</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"># ─────────────────────────────────────────────────────────────────────────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"># ── Stage 1: Build ────────────────────────────────────────────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">FROM eclipse-temurin:21-jdk-alpine AS builder</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">FROM eclipse-temurin:25-jdk-alpine AS builder</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">WORKDIR /workspace</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"># Copy Maven wrapper and pom first so dependency layer is cached</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">COPY .mvn/           .mvn/</span></div>
+<div class="hunk">@@ -23,7 +23,7 @@ RUN ./mvnw -B dependency:go-offline -q</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">COPY src/ src/</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">RUN ./mvnw -B clean package -DskipTests -q</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"># ── Stage 2: Runtime ──────────────────────────────────────────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">FROM eclipse-temurin:21-jre-alpine</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">FROM eclipse-temurin:25-jre-alpine</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">LABEL org.opencontainers.image.title=&quot;openrewrite-demo&quot;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">LABEL org.opencontainers.image.description=&quot;OpenRewrite migration demo — Spring Boot + JUnit 4 before rewrite&quot;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">LABEL org.opencontainers.image.base.name=&quot;eclipse-temurin:21-jre-alpine&quot;</span></div></div>
+    </details>
+
+    <details class="file" id="file-1" open>
+      <summary><span class="path">OpenRewrite/pom.xml</span><span class="stats"><span class="stat-add">+23</span> <span class="stat-del">-20</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -27,7 +27,7 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;!-- ⬇ Intentionally old — OpenRewrite will upgrade this to 4.0.x --&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;version&gt;2.7.18&lt;/version&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        &lt;version&gt;4.0.7&lt;/version&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;relativePath/&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;/parent&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div>
+<div class="hunk">@@ -39,13 +39,13 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;properties&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;!-- ⬇ Intentionally Java 17 — UpgradeToJava25 recipe bumps this to 25 --&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;java.version&gt;17&lt;/java.version&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        &lt;java.version&gt;25&lt;/java.version&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;/properties&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;dependencies&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;dependency&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            &lt;artifactId&gt;spring-boot-starter-webmvc&lt;/artifactId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;/dependency&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;dependency&gt;</span></div>
+<div class="hunk">@@ -53,23 +53,6 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">            &lt;scope&gt;test&lt;/scope&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;/dependency&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code"></span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;!--</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            JUnit 4 is kept intentionally so the demo starts with old-style tests.</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            run-openrewrite.sh migrates them to JUnit 5 (Jupiter).</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            junit-vintage-engine lets them run before the migration.</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        --&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;dependency&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;groupId&gt;junit&lt;/groupId&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;artifactId&gt;junit&lt;/artifactId&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;version&gt;4.13.2&lt;/version&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;scope&gt;test&lt;/scope&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;/dependency&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;dependency&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;groupId&gt;org.junit.vintage&lt;/groupId&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;artifactId&gt;junit-vintage-engine&lt;/artifactId&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">            &lt;scope&gt;test&lt;/scope&gt;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        &lt;/dependency&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;/dependencies&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;build&gt;</span></div>
+<div class="hunk">@@ -78,6 +61,26 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">                &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">            &lt;/plugin&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            &lt;plugin&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;executions&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                    &lt;execution&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                        &lt;id&gt;get-mockito-agent-path&lt;/id&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                        &lt;goals&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                            &lt;goal&gt;properties&lt;/goal&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                        &lt;/goals&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                    &lt;/execution&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;/executions&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            &lt;/plugin&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            &lt;plugin&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;configuration&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                    &lt;!--suppress MavenModelInspection --&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                    &lt;argLine&gt;-javaagent:${net.bytebuddy:byte-buddy-agent:jar}&lt;/argLine&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &lt;/configuration&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            &lt;/plugin&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        &lt;/plugins&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    &lt;/build&gt;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"></span></div></div>
+    </details>
+
+    <details class="file" id="file-2" open>
+      <summary><span class="path">OpenRewrite/src/main/java/com/example/openrewrite/OpenRewriteDemoApplication.java</span><span class="stats"><span class="stat-add">+5</span> <span class="stat-del">-1</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,10 +1,14 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.boot.SpringApplication;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.boot.autoconfigure.SpringBootApplication;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── AutoFormat ──────────────────────────────────────────────────────────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// The main method body and brace placement below is intentionally compact /</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// poorly formatted.  AutoFormat will expand it to the standard Java style.</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">@SpringBootApplication</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">public class OpenRewriteDemoApplication {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public static void main(String[] args){SpringApplication.run(OpenRewriteDemoApplication.class,args);}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public static void main(String[] args) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        SpringApplication.run(OpenRewriteDemoApplication.class, args);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+    <details class="file" id="file-3" open>
+      <summary><span class="path">OpenRewrite/src/main/java/com/example/openrewrite/controller/GreetingController.java</span><span class="stats"><span class="stat-add">+24</span> <span class="stat-del">-18</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,8 +1,10 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite.controller;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.model.Person;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.service.GreetingService;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.beans.factory.annotation.Autowired;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.web.bind.annotation.*;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">/**</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * REST controller — AutoFormat will fix missing spaces and inconsistent</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * brace / indentation style throughout.</span></div>
+<div class="hunk">@@ -15,22 +17,26 @@ import org.springframework.web.bind.annotation.*;</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">@RequestMapping(&quot;/api&quot;)</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">public class GreetingController {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// AutoFormat: @Autowired without surrounding whitespace</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@Autowired</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">private GreetingService greetingService;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@GetMapping(&quot;/greet&quot;)</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String greet(@RequestParam(defaultValue=&quot;World&quot;) String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return greetingService.greet(name);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@GetMapping(&quot;/welcome&quot;)</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String welcomePage(@RequestParam String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return greetingService.getWelcomePage(name);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@PostMapping(&quot;/access&quot;)</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean checkAccess(@RequestBody Person person,@RequestParam String resource){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return greetingService.canAccess(person,resource);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@GetMapping(&quot;/reserved&quot;)</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean isReserved(@RequestParam String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return greetingService.isReservedName(name);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @Autowired</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    private GreetingService greetingService;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @GetMapping(&quot;/greet&quot;)</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String greet(@RequestParam(defaultValue = &quot;World&quot;) String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return greetingService.greet(name);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @GetMapping(&quot;/welcome&quot;)</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String welcomePage(@RequestParam String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return greetingService.getWelcomePage(name);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @PostMapping(&quot;/access&quot;)</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean checkAccess(@RequestBody Person person, @RequestParam String resource) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return greetingService.canAccess(person, resource);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @GetMapping(&quot;/reserved&quot;)</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean isReserved(@RequestParam String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return greetingService.isReservedName(name);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+    <details class="file" id="file-4" open>
+      <summary><span class="path">OpenRewrite/src/main/java/com/example/openrewrite/model/Person.java</span><span class="stats"><span class="stat-add">+41</span> <span class="stat-del">-26</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,4 +1,5 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite.model;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">/**</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * Demo model class that intentionally contains code patterns that OpenRewrite will fix:</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> *</span></div>
+<div class="hunk">@@ -15,38 +16,52 @@ package com.example.openrewrite.model;</div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> */</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── AutoFormat: compact constructor / missing spaces ──────────────────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">public class Person {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">private String name;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">private int age;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">private String role;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public Person(String name,int age,String role){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">this.name=name;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">this.age=age;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">this.role=role;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String getName(){return name;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public int getAge(){return age;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String getRole(){return role;}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    private String name;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    private int age;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    private String role;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public Person(String name, int age, String role) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        this.name = name;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        this.age = age;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        this.role = role;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String getName() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return name;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public int getAge() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return age;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String getRole() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return role;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── EqualsAvoidsNull ──────────────────────────────────────────────────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// BEFORE: role.equals(&quot;admin&quot;)  →  NullPointerException when role is null</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// AFTER:  &quot;admin&quot;.equals(role)  →  null-safe</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean isAdmin(){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return role.equals(&quot;admin&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean isAdmin() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;admin&quot;.equals(role);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── EqualsAvoidsNull (chained OR) ─────────────────────────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean isPrivileged(){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return role.equals(&quot;admin&quot;)||role.equals(&quot;superuser&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean isPrivileged() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;admin&quot;.equals(role) || &quot;superuser&quot;.equals(role);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── UpgradeToJava25: multi-line string concatenation → text block ─────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// BEFORE: ugly string concatenation</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// AFTER:  clean text block with &quot;&quot;&quot;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String describe(){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return &quot;Name : &quot; + name + &quot;\n&quot; +</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;Age  : &quot; + age  + &quot;\n&quot; +</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;Role : &quot; + role + &quot;\n&quot;;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String describe() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;Name : &quot; + name + &quot;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;Age  : &quot; + age + &quot;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;Role : &quot; + role + &quot;\n&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── AutoFormat: inconsistent spacing around operators ─────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@Override</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String toString(){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return &quot;Person{name=&#x27;&quot;+name+&quot;&#x27;, age=&quot;+age+&quot;, role=&#x27;&quot;+role+&quot;&#x27;}&quot;;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @Override</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String toString() {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;Person{name=&#x27;&quot; + name + &quot;&#x27;, age=&quot; + age + &quot;, role=&#x27;&quot; + role + &quot;&#x27;}&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+    <details class="file" id="file-5" open>
+      <summary><span class="path">OpenRewrite/src/main/java/com/example/openrewrite/service/GreetingService.java</span><span class="stats"><span class="stat-add">+44</span> <span class="stat-del">-29</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,8 +1,10 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite.service;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.model.Person;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.stereotype.Service;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import java.util.List;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import java.util.ArrayList;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">/**</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * Business-logic service — intentional issues for each OpenRewrite recipe:</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> *</span></div>
+<div class="hunk">@@ -14,36 +16,49 @@ import java.util.ArrayList;</div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> */</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">@Service</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">public class GreetingService {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">private static final List&lt;String&gt; RESERVED_NAMES=new ArrayList&lt;&gt;();</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">static{</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">RESERVED_NAMES.add(&quot;admin&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">RESERVED_NAMES.add(&quot;root&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">RESERVED_NAMES.add(&quot;system&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    private static final List&lt;String&gt; RESERVED_NAMES = new ArrayList&lt;&gt;();</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    static{</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        RESERVED_NAMES.add(&quot;admin&quot;);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        RESERVED_NAMES.add(&quot;root&quot;);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        RESERVED_NAMES.add(&quot;system&quot;);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── EqualsAvoidsNull: name.equals(&quot;World&quot;) throws NPE when name is null ───</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String greet(String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">if(name.equals(&quot;World&quot;)){return &quot;Hello, World!&quot;;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">if(name.equals(&quot;admin&quot;)){return &quot;Hello, Administrator!&quot;;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return &quot;Hello, &quot;+name+&quot;!&quot;;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String greet(String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        if(&quot;World&quot;.equals(name)) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            return &quot;Hello, World!&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        if(&quot;admin&quot;.equals(name)) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            return &quot;Hello, Administrator!&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;Hello, &quot; + name + &quot;!&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── UpgradeToJava25: multi-line concatenation → text block ────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public String getWelcomePage(String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return &quot;&lt;!DOCTYPE html&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;&lt;html&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;  &lt;head&gt;&lt;title&gt;Welcome&lt;/title&gt;&lt;/head&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;  &lt;body&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;    &lt;h1&gt;Welcome, &quot;+name+&quot;!&lt;/h1&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;    &lt;p&gt;OpenRewrite demo application.&lt;/p&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;  &lt;/body&gt;\n&quot;+</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">&quot;&lt;/html&gt;\n&quot;;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public String getWelcomePage(String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return &quot;&lt;!DOCTYPE html&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;&lt;html&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;  &lt;head&gt;&lt;title&gt;Welcome&lt;/title&gt;&lt;/head&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;  &lt;body&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;    &lt;h1&gt;Welcome, &quot; + name + &quot;!&lt;/h1&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;    &lt;p&gt;OpenRewrite demo application.&lt;/p&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;  &lt;/body&gt;\n&quot; +</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">                &quot;&lt;/html&gt;\n&quot;;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">// ── EqualsAvoidsNull: person.getRole().equals(&quot;admin&quot;) ────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean canAccess(Person person,String resource){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">if(person.getRole().equals(&quot;admin&quot;)){return true;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">if(resource.equals(&quot;public&quot;)){return true;}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return false;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">public boolean isReservedName(String name){</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">return RESERVED_NAMES.contains(name);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">}</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean canAccess(Person person, String resource) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        if(&quot;admin&quot;.equals(person.getRole())) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            return true;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        if(&quot;public&quot;.equals(resource)) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            return true;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return false;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    public boolean isReservedName(String name) {</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        return RESERVED_NAMES.contains(name);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+    <details class="file" id="file-6" open>
+      <summary><span class="path">OpenRewrite/src/test/java/com/example/openrewrite/GreetingServiceTest.java</span><span class="stats"><span class="stat-add">+27</span> <span class="stat-del">-19</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,14 +1,14 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.model.Person;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.service.GreetingService;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Assert;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Before;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.After;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Test;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.runner.RunWith;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.AfterEach;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.Assertions;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.BeforeEach;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.Test;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.beans.factory.annotation.Autowired;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import org.springframework.boot.test.context.SpringBootTest;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.springframework.test.context.junit4.SpringRunner;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">/**</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * JUnit 4 integration test — JUnit4to5Migration recipe rewrites this to JUnit 5:</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> *</span></div>
+<div class="hunk">@@ -23,58 +23,66 @@ import org.springframework.test.context.junit4.SpringRunner;</div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * org.junit.Assert.assertFalse(…)      Assertions.assertFalse(…)</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * org.junit.Assert.assertNotNull(…)    Assertions.assertNotNull(…)</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> */</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">@RunWith(SpringRunner.class)</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">@SpringBootTest</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">public class GreetingServiceTest {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Autowired</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private GreetingService greetingService;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private String testName;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private Person testPerson;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    // ── JUnit4to5Migration: @Before → @BeforeEach ─────────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">    @Before</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @BeforeEach</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void setUp() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        testName = &quot;Alice&quot;;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        testPerson = new Person(&quot;Alice&quot;, 30, &quot;user&quot;);</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    // ── JUnit4to5Migration: @After → @AfterEach ───────────────────────────</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">    @After</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @AfterEach</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void tearDown() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        testName = null;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        testPerson = null;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    // ── JUnit4to5Migration: Assert.assertEquals → Assertions.assertEquals ─</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGreetWorld() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        String result = greetingService.greet(&quot;World&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertNotNull(result);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertEquals(&quot;Hello, World!&quot;, result);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertNotNull(result);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertEquals(&quot;Hello, World!&quot;, result);</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGreetWithName() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        String result = greetingService.greet(testName);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertNotNull(result);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(result.contains(testName));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertNotNull(result);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(result.contains(testName));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGreetAdmin() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertEquals(&quot;Hello, Administrator!&quot;, greetingService.greet(&quot;admin&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertEquals(&quot;Hello, Administrator!&quot;, greetingService.greet(&quot;admin&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testCanAccessAsAdmin() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        Person admin = new Person(&quot;Bob&quot;, 25, &quot;admin&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(greetingService.canAccess(admin, &quot;secret&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(greetingService.canAccess(admin, &quot;secret&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testCanAccessPublicResource() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(greetingService.canAccess(testPerson, &quot;public&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(greetingService.canAccess(testPerson, &quot;public&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testCannotAccessPrivateResource() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertFalse(greetingService.canAccess(testPerson, &quot;secret&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertFalse(greetingService.canAccess(testPerson, &quot;secret&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsReservedName() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(greetingService.isReservedName(&quot;admin&quot;));</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertFalse(greetingService.isReservedName(testName));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(greetingService.isReservedName(&quot;admin&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertFalse(greetingService.isReservedName(testName));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+    <details class="file" id="file-7" open>
+      <summary><span class="path">OpenRewrite/src/test/java/com/example/openrewrite/PersonTest.java</span><span class="stats"><span class="stat-add">+40</span> <span class="stat-del">-23</span></span></summary>
+      <div class="diff"><div class="hunk">@@ -1,8 +1,12 @@</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">package com.example.openrewrite;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">import com.example.openrewrite.model.Person;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Assert;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Before;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">import org.junit.Test;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.Assertions;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.BeforeEach;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import org.junit.jupiter.api.Test;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">import static org.junit.jupiter.api.Assertions.assertThrows;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">/**</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * Pure JUnit 4 unit test (no Spring context) — JUnit4to5Migration recipe</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code"> * rewrites this class to use JUnit 5 annotations and assertion methods.</span></div>
+<div class="hunk">@@ -14,65 +18,78 @@ public class PersonTest {</div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private Person person;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private Person adminPerson;</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    private Person nullRolePerson;</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">    @Before</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @BeforeEach</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void setUp() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        person      = new Person(&quot;Alice&quot;, 30, &quot;user&quot;);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        adminPerson = new Person(&quot;Bob&quot;,   25, &quot;admin&quot;);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        person = new Person(&quot;Alice&quot;, 30, &quot;user&quot;);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        adminPerson = new Person(&quot;Bob&quot;, 25, &quot;admin&quot;);</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        // EqualsAvoidsNull demo: nullRolePerson.isAdmin() used in testIsAdminWithNullRole</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        nullRolePerson = new Person(&quot;Charlie&quot;, 20, null);</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGetName() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertEquals(&quot;Alice&quot;, person.getName());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertEquals(&quot;Alice&quot;, person.getName());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGetAge() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertEquals(30, person.getAge());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertEquals(30, person.getAge());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testGetRole() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertEquals(&quot;user&quot;, person.getRole());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertEquals(&quot;user&quot;, person.getRole());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsAdminFalse() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertFalse(person.isAdmin());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertFalse(person.isAdmin());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsAdminTrue() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(adminPerson.isAdmin());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(adminPerson.isAdmin());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    // ── @Test(expected) → assertThrows (JUnit5) ───────────────────────────</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    // BEFORE migration: isAdmin() on a null role throws NPE because it calls</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    //   role.equals(&quot;admin&quot;) — EqualsAvoidsNull fixes this too.</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">    @Test(expected = NullPointerException.class)</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsAdminWithNullRoleThrowsNPE() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        // This test documents the BUG: after EqualsAvoidsNull migration,</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        // &quot;admin&quot;.equals(null) returns false instead of throwing.</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        nullRolePerson.isAdmin();</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        assertThrows(NullPointerException.class, () -&gt;</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            // This test documents the BUG: after EqualsAvoidsNull migration,</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            // &quot;admin&quot;.equals(null) returns false instead of throwing.</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">            nullRolePerson.isAdmin());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsPrivilegedAdmin() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(adminPerson.isPrivileged());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(adminPerson.isPrivileged());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testIsPrivilegedUser() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertFalse(person.isPrivileged());</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertFalse(person.isPrivileged());</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testDescribeContainsName() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        String desc = person.describe();</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertNotNull(desc);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(desc.contains(&quot;Alice&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertNotNull(desc);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(desc.contains(&quot;Alice&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testDescribeContainsAge() {</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(person.describe().contains(&quot;30&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(person.describe().contains(&quot;30&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line add"><span class="sign">+</span><span class="code"></span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    @Test</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    public void testToString() {</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">        String str = person.toString();</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertNotNull(str);</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(str.contains(&quot;Alice&quot;));</span></div>
+<div class="line del"><span class="sign">-</span><span class="code">        Assert.assertTrue(str.contains(&quot;user&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertNotNull(str);</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(str.contains(&quot;Alice&quot;));</span></div>
+<div class="line add"><span class="sign">+</span><span class="code">        Assertions.assertTrue(str.contains(&quot;user&quot;));</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">    }</span></div>
+<div class="line ctx"><span class="sign"> </span><span class="code">}</span></div></div>
+    </details>
+
+  <footer>
+    Built by the <a href="https://github.com/johanjanssen/Keep-Up-To-Date/actions/workflows/openrewrite.yml">OpenRewrite GitHub Action</a>
+    from <a href="https://github.com/johanjanssen/Keep-Up-To-Date/tree/master/OpenRewrite">OpenRewrite/</a>.
+    <a href="../">← back to Keep Up To Date</a>
+  </footer>
+</main>
+</body>
+</html>
