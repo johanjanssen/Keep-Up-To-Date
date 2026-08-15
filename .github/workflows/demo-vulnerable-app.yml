@@ -532,6 +532,18 @@ jobs:
         run: |
           S=$GITHUB_STEP_SUMMARY
           if docker logs vuln-app 2>&1 | grep -q "ESCALATION SUCCEEDED"; then
+            echo "### 🔓 Proof — running the exploit again, live, right now" >> $S
+            echo "" >> $S
+            echo "The compiled exploit is still sitting in the container as \`/tmp/pwnkit\` (see the" >> $S
+            echo "forensics step above). Not a log excerpt — let's run it again, live, against the" >> $S
+            echo "actual container, and watch it escalate from \`appuser\` to root in real time:" >> $S
+            echo "" >> $S
+            echo '```console' >> $S
+            echo '$ docker exec -w /tmp vuln-app ./pwnkit' >> $S
+            docker exec -w /tmp vuln-app ./pwnkit >> $S 2>&1 || true
+            echo '```' >> $S
+            echo "" >> $S
+
             cat >> $S << 'ESCALATED'
 
           ### 💡 Key takeaway
