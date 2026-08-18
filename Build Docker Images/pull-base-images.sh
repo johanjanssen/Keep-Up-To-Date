@@ -18,15 +18,18 @@
 #   graalvm/native-image-community  GraalVM CE 25.0.4 (25i2 interim build; builder, pulled on first docker build)
 set -euo pipefail
 
-source "$(dirname "$0")/../images.conf"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../images.conf"
 
 for IMG in "${BASE_IMAGES[@]}"; do
-    # "scratch" is a reserved pseudo-image built into the Docker daemon (an
-    # empty image with no registry manifest) — `docker pull scratch` always
-    # fails with "'scratch' is a reserved name". It's in BASE_IMAGES only so
-    # measure-images.sh can treat it as a 0-byte base; nothing to pull here.
-    if [[ "${IMG}" == "scratch" ]]; then
-        echo "  =  Skipping ${IMG} (reserved, built into the daemon) …"
+    # "scratch-probe:local" stands in for "scratch" — a reserved pseudo-image
+    # built into the Docker daemon (empty filesystem, no registry manifest),
+    # so `docker pull scratch` always fails with "reserved name". Building
+    # the one-line Dockerfile.scratch-probe is the only way to get a real,
+    # inspectable local image for it, so build it instead of pulling.
+    if [[ "${IMG}" == "scratch-probe:local" ]]; then
+        echo "  ⚙  Building ${IMG} (FROM scratch; not fetchable from a registry) …"
+        docker build -t "${IMG}" -f "${SCRIPT_DIR}/Dockerfile.scratch-probe" "${SCRIPT_DIR}"
         continue
     fi
     echo "  ↓  Pulling ${IMG} …"
