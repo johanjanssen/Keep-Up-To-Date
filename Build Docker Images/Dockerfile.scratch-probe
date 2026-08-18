@@ -1,0 +1,9 @@
+# Dockerfile.scratch-probe — nothing but "FROM scratch".
+#
+# "scratch" is a reserved pseudo-image built into the Docker daemon (an
+# empty filesystem with no registry manifest) — it can never be
+# `docker pull`ed. Building this empty Dockerfile is the only way to get a
+# real, locally-tagged image for it, so measure-images.sh / the Grype+Trivy
+# scan scripts can inspect and scan it exactly like every other base image
+# instead of assuming its size/package count.
+FROM scratch

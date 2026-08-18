@@ -7,7 +7,9 @@ source "$(dirname "$0")/../images.conf"
 IMAGES=("${ALL_IMAGES[@]}")
 
 # Runtime base image for each hello-conference application image
-# Use "scratch" for images built FROM scratch (base has 0 bytes → overhead = full size)
+# Use "scratch" for images built FROM scratch (base has 0 bytes → overhead = full size).
+# scratch-probe:local (see images.conf / Dockerfile.scratch-probe) shows up as its
+# own row below with its real measured size/packages, so it's not referenced here.
 declare -A BASE_FOR=(
     ["hello-conference:jre-temurin"]="eclipse-temurin:25-jre"
     ["hello-conference:jre-temurin-alpine"]="eclipse-temurin:25-jre-alpine"
@@ -29,6 +31,12 @@ declare -A BASE_FOR=(
 count_packages() {
     local IMG="$1"
     local COUNT
+
+    # A "FROM scratch" image with nothing else added has zero filesystem
+    # layers — genuinely 0 packages, not merely "couldn't be determined".
+    local LAYERS
+    LAYERS=$(docker inspect "${IMG}" --format '{{len .RootFS.Layers}}' 2>/dev/null || true)
+    [[ "${LAYERS}" == "0" ]] && { echo "0"; return; }
 
     # Debian / Ubuntu: dpkg-query outputs one line per installed package
     COUNT=$(docker run --rm --entrypoint "" "${IMG}" \
@@ -75,12 +83,7 @@ for IMG in "${IMAGES[@]}"; do
     BASE="${BASE_FOR[$IMG]:-}"
     if [[ -n "${BASE}" ]]; then
         APP_BYTES=$(docker inspect "${IMG}" --format '{{.Size}}' 2>/dev/null || echo 0)
-        # scratch has no image to inspect; treat its size as 0 bytes
-        if [[ "${BASE}" == "scratch" ]]; then
-            BASE_BYTES=0
-        else
-            BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null || echo 0)
-        fi
+        BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null || echo 0)
         if [[ "${APP_BYTES}" -gt 0 ]]; then
             OVERHEAD=$(awk "BEGIN { printf \"+%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
             if [[ "${IMG}" == "hello-conference:jre-temurin" || "${IMG}" == "hello-conference:jre-temurin-alpine" ]]; then
