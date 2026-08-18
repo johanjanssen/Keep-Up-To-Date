@@ -21,6 +21,14 @@ set -euo pipefail
 source "$(dirname "$0")/../images.conf"
 
 for IMG in "${BASE_IMAGES[@]}"; do
+    # "scratch" is a reserved pseudo-image built into the Docker daemon (an
+    # empty image with no registry manifest) — `docker pull scratch` always
+    # fails with "'scratch' is a reserved name". It's in BASE_IMAGES only so
+    # measure-images.sh can treat it as a 0-byte base; nothing to pull here.
+    if [[ "${IMG}" == "scratch" ]]; then
+        echo "  =  Skipping ${IMG} (reserved, built into the daemon) …"
+        continue
+    fi
     echo "  ↓  Pulling ${IMG} …"
     docker pull "${IMG}"
 done
