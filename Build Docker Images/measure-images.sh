@@ -48,8 +48,14 @@ count_packages() {
         rpm -qa 2>/dev/null | wc -l | tr -d ' ' || true)
     [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
 
-    # Distroless / no-shell: read dpkg metadata via docker cp (no running process needed).
-    # Try the traditional single status file first, then the modern per-package status.d/.
+    # Alpine: apk info outputs one line per installed package
+    COUNT=$(docker run --rm --entrypoint "" "${IMG}" \
+        apk info 2>/dev/null | wc -l | tr -d ' ' || true)
+    [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
+
+    # Distroless / no-shell: read package-manager metadata via docker cp (no running process needed).
+    # Try dpkg's traditional single status file first, then the modern per-package status.d/,
+    # then Alpine's apk installed db.
     local CID
     CID=$(docker create "${IMG}" /FAKE 2>/dev/null || docker create "${IMG}" 2>/dev/null || true)
     if [[ -n "${CID}" ]]; then
@@ -58,6 +64,10 @@ count_packages() {
         if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
             COUNT=$(docker cp "${CID}:/var/lib/dpkg/status.d" - 2>/dev/null \
                 | tar xO 2>/dev/null | grep -c '^Package:' || true)
+        fi
+        if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
+            COUNT=$(docker cp "${CID}:/lib/apk/db/installed" - 2>/dev/null \
+                | tar xO 2>/dev/null | grep -c '^P:' || true)
         fi
         docker rm -f "${CID}" >/dev/null 2>&1 || true
         [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
