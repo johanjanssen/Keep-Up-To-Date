@@ -43,6 +43,15 @@
             width:100%; height:440px; border:1px solid rgba(139,233,253,0.35);
             border-radius:8px; background:#fff;
         }
+        /* Live PlantUML embeds: the <img> src is built at load time from the
+           *current* contents of the referenced .puml file (see the
+           renderPuml script below), so editing the diagram source and
+           reloading the deck is enough to update the slide. */
+        .puml-wrap {
+            background:#fff; border:1px solid rgba(139,233,253,0.35);
+            border-radius:8px; padding:0.6em; margin:0.6em auto 0; text-align:center;
+        }
+        .puml-wrap img { max-width:100%; max-height:56vh; width:auto; height:auto; }
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; text-align:left; }
         .box { background:rgba(139,233,253,0.08); border:1px solid rgba(139,233,253,0.25); border-radius:8px; padding:0.7em; margin:0.4em 0; }
         .box-red   { background:rgba(255,85,85,0.1);   border-color:rgba(255,85,85,0.4); }
@@ -131,6 +140,7 @@
 
 <!-- ═══════════════════════ LAYER ANATOMY ═══════════════════════ -->
 <section>
+<section>
     <h2>🧱 Anatomy of a Container Image</h2>
     <p class="subtitle">Every layer this talk touches — in one picture</p>
     <div class="medium" style="max-width:760px;margin:0.4em auto 0;">
@@ -193,6 +203,23 @@
         Every image in <code>images.conf</code> follows the solid path. The dashed one is
         <code>native-scratch</code> / <code>native-netty-scratch</code> — no separate JVM layer, so the app lands directly on <code>scratch</code>.
     </p>
+</section>
+
+<section>
+    <h2>🧱 Same Anatomy, as PlantUML</h2>
+    <p class="subtitle">Rendered live from <code>architecture.puml</code> — edit the file, the slide updates</p>
+    <div class="puml-wrap">
+        <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
+    </div>
+</section>
+
+<section>
+    <h2>🧱 Anatomy, Annotated</h2>
+    <p class="subtitle">Rendered live from <code>architecture-example.puml</code></p>
+    <div class="puml-wrap">
+        <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+    </div>
+</section>
 </section>
 
 <!-- ═══════════════════════════════════════════════════
@@ -1109,6 +1136,7 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako_deflate.min.js"></script>
 
 <script>
 Reveal.initialize({
@@ -1307,6 +1335,72 @@ function tryRender(slide) {
 
 Reveal.on('ready',        e => tryRender(e.currentSlide));
 Reveal.on('slidechanged', e => tryRender(e.currentSlide));
+
+// ─── Live PlantUML rendering ────────────────────────────────────────────────
+//
+// <img data-puml-src="architecture.puml"> is rendered from the *current*
+// contents of that .puml file, not a pre-exported image: on first view we
+// fetch the source, deflate it and encode it with PlantUML's own base64
+// variant (the same scheme plantuml.com/plantuml-server use), then point
+// the <img> at the public PlantUML render server. Editing the .puml file
+// and reloading the deck is enough to update the slide — no export step.
+function pumlEncode6bit(b) {
+    if (b < 10) return String.fromCharCode(48 + b);
+    b -= 10;
+    if (b < 26) return String.fromCharCode(65 + b);
+    b -= 26;
+    if (b < 26) return String.fromCharCode(97 + b);
+    b -= 26;
+    if (b === 0) return '-';
+    if (b === 1) return '_';
+    return '?';
+}
+function pumlAppend3Bytes(b1, b2, b3) {
+    const c1 = b1 >> 2;
+    const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
+    const c3 = ((b2 & 0xF) << 2) | (b3 >> 6);
+    const c4 = b3 & 0x3F;
+    return pumlEncode6bit(c1 & 0x3F) + pumlEncode6bit(c2 & 0x3F) +
+           pumlEncode6bit(c3 & 0x3F) + pumlEncode6bit(c4 & 0x3F);
+}
+function pumlEncode64(data) {
+    let r = '';
+    for (let i = 0; i < data.length; i += 3) {
+        if (i + 2 === data.length)      r += pumlAppend3Bytes(data[i], data[i + 1], 0);
+        else if (i + 1 === data.length) r += pumlAppend3Bytes(data[i], 0, 0);
+        else                            r += pumlAppend3Bytes(data[i], data[i + 1], data[i + 2]);
+    }
+    return r;
+}
+
+const pumlEncodedCache = new Map(); // .puml path -> encoded string, so each file is fetched once
+async function renderPuml(img) {
+    const src = img.dataset.pumlSrc;
+    if (!src || img.dataset.pumlDone) return;
+    img.dataset.pumlDone = '1';
+    try {
+        let encoded = pumlEncodedCache.get(src);
+        if (!encoded) {
+            const res = await fetch(src, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const text       = await res.text();
+            const compressed = pako.deflateRaw(new TextEncoder().encode(text), { level: 9 });
+            encoded = pumlEncode64(compressed);
+            pumlEncodedCache.set(src, encoded);
+        }
+        img.src = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+    } catch (e) {
+        console.error('PlantUML render failed for', src, e);
+        img.alt = `Could not render ${src}: ${e.message}`;
+        img.dataset.pumlDone = ''; // allow a retry next time the slide is shown
+    }
+}
+function tryRenderPuml(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('img[data-puml-src]').forEach(renderPuml);
+}
+Reveal.on('ready',        e => tryRenderPuml(e.currentSlide));
+Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 </script>
 </body>
 </html>
