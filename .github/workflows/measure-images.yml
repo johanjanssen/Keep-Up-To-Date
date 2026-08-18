@@ -3,7 +3,7 @@ name: Measure Docker Images
 on:
   push:
     branches: [master]
-    paths: ['Build Docker Images/**']
+    paths: ['Build Docker Images/**', 'images.conf']
   workflow_dispatch:
 
 # Several workflows publish their own subfolder to the same gh-pages branch.

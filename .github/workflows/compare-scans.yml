@@ -3,7 +3,7 @@ name: Compare Security Scans
 on:
   push:
     branches: [master]
-    paths: ['Compare Security Scans/**']
+    paths: ['Compare Security Scans/**', 'images.conf']
   workflow_dispatch:
 
 # Several workflows (static.yml, jacoco.yml, owasp-dc.yml, this one) each
