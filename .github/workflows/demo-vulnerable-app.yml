@@ -16,7 +16,7 @@ jobs:
         working-directory: "Vulnerable Application Old Java"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "🏗️ Build images"
         run: |
@@ -136,7 +136,7 @@ jobs:
         working-directory: "Vulnerable Application Old Java"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "🏗️ Build & start"
         run: |
@@ -244,7 +244,7 @@ jobs:
         working-directory: "Vulnerable Application Old Java"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "🏗️ Build all images"
         run: |
@@ -376,7 +376,7 @@ jobs:
         working-directory: "Vulnerable Application Old Java"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "🏗️ Build images"
         run: |
@@ -582,7 +582,7 @@ jobs:
         working-directory: "Vulnerable Application Old Java"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "🏗️ Build all images"
         run: |
