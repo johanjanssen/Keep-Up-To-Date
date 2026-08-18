@@ -1,0 +1,35 @@
+@startuml
+' Layered view of a running container image:
+' Application -> Runtime -> Operating System, each layer bundling
+' its own extra content (library dependencies / OS packages).
+' Mirrors what images.conf / measure-images.sh compare across strategies.
+
+skinparam backgroundColor transparent
+skinparam roundCorner 12
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+
+skinparam rectangle {
+    BorderColor #33393f
+    FontColor #1c1f22
+}
+rectangle "Application" as App #A9CCE3
+rectangle "Dependencies\n(libraries, .jars, native libs)" as Deps #D4E6F1
+
+rectangle "Runtime" as Runtime #A9DFBF
+note right of Runtime
+  e.g. JVM (Temurin, Zulu),
+  GraalVM native-image,
+  or none (static/native binary)
+end note
+
+rectangle "Operating System" as OS #F5CBA7
+rectangle "OS Packages" as Pkgs #FAE5D3
+
+App -down-> Runtime : runs on
+Runtime -down-> OS : runs on
+
+App -right-> Deps : bundles
+OS -right-> Pkgs : has installed
+
+@enduml
