@@ -1,39 +1,15 @@
 @startuml
 !theme bluegray
+!pragma layout smetana
+skinparam backgroundColor transparent
 
-rectangle "Docker Image / Virtual machine" as vm #D7BDE2 {
-    note as Nvm
-        node, eclipse-temurin
-    end note
-
-    rectangle "Operating System packages" as os #F9E79F {
-        note as Nos
-            openssl, bash, vi
-        end note
-
-        rectangle "Runtime" as runtime #A9DFBF {
-                note as Nruntime
-                    Node.js, JVM
-                end note
-
-                rectangle "Application" as app #D4E6F1 {
-                        note as Napp
-                            Build artifact .jar
-                        end note
-
-                        rectangle "Application dependencies" as deps #F5CBA7 {
-                                note as Ndeps
-                                    Spring Boot, Log4j
-                                end note
-                        }
-                }
+rectangle "Docker Image / Virtual machine\n<size:11><i>node, eclipse-temurin</i></size>" as vm #D7BDE2 {
+    rectangle "OS packages & runtime\n<size:11><i>openssl, bash, vi, Node.js, JVM</i></size>" as os #F9E79F {
+        rectangle "Application\n<size:11><i>Build artifact jar file</i></size>" as app #D4E6F1 {
+            rectangle "Application dependencies\n<size:11><i>Spring Boot, Log4j</i></size>" as deps #F5CBA7 {
+            }
         }
     }
 }
-
-Nvm -[hidden]d-> os
-Nos -[hidden]d-> runtime
-Nruntime -[hidden]d-> app
-Napp -[hidden]d-> deps
 
 @enduml
