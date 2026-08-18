@@ -48,8 +48,14 @@ count_packages() {
         rpm -qa 2>/dev/null | wc -l | tr -d ' ' || true)
     [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
 
-    # Distroless / no-shell: read dpkg metadata via docker cp (no running process needed).
-    # Try the traditional single status file first, then the modern per-package status.d/.
+    # Alpine: apk info outputs one line per installed package
+    COUNT=$(docker run --rm --entrypoint "" "${IMG}" \
+        apk info 2>/dev/null | wc -l | tr -d ' ' || true)
+    [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
+
+    # Distroless / no-shell: read package-manager metadata via docker cp (no running process needed).
+    # Try dpkg's traditional single status file first, then the modern per-package status.d/,
+    # then Alpine's apk installed db.
     local CID
     CID=$(docker create "${IMG}" /FAKE 2>/dev/null || docker create "${IMG}" 2>/dev/null || true)
     if [[ -n "${CID}" ]]; then
@@ -58,6 +64,10 @@ count_packages() {
         if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
             COUNT=$(docker cp "${CID}:/var/lib/dpkg/status.d" - 2>/dev/null \
                 | tar xO 2>/dev/null | grep -c '^Package:' || true)
+        fi
+        if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
+            COUNT=$(docker cp "${CID}:/lib/apk/db/installed" - 2>/dev/null \
+                | tar xO 2>/dev/null | grep -c '^P:' || true)
         fi
         docker rm -f "${CID}" >/dev/null 2>&1 || true
         [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
@@ -82,8 +92,17 @@ for IMG in "${IMAGES[@]}"; do
     APP_RUNTIME_SIZE=""
     BASE="${BASE_FOR[$IMG]:-}"
     if [[ -n "${BASE}" ]]; then
-        APP_BYTES=$(docker inspect "${IMG}" --format '{{.Size}}' 2>/dev/null || echo 0)
-        BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null || echo 0)
+        # NOTE: the `|| echo 0` fallback must sit OUTSIDE the command substitution.
+        # `docker inspect` on an unresolvable ref (e.g. our "scratch" placeholder)
+        # can still print a blank line to stdout before it errors out; with the
+        # fallback nested inside $(...) that blank line and the "0" both get
+        # captured, leaving a literal embedded newline in the variable (e.g.
+        # "$'\n0'") that breaks the awk arithmetic below. Keeping `||` outside
+        # the substitution discards any such partial stdout on failure.
+        APP_BYTES=$(docker inspect "${IMG}" --format '{{.Size}}' 2>/dev/null) || APP_BYTES=0
+        BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null) || BASE_BYTES=0
+        [[ "${APP_BYTES}" =~ ^[0-9]+$ ]] || APP_BYTES=0
+        [[ "${BASE_BYTES}" =~ ^[0-9]+$ ]] || BASE_BYTES=0
         if [[ "${APP_BYTES}" -gt 0 ]]; then
             OVERHEAD=$(awk "BEGIN { printf \"+%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
             if [[ "${IMG}" == "hello-conference:jre-temurin" || "${IMG}" == "hello-conference:jre-temurin-alpine" ]]; then

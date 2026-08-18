@@ -114,6 +114,9 @@ for i in "${!TAGS[@]}"; do
 
     MEM=$(docker stats --no-stream --format "{{.MemUsage}}" "${NAME}" 2>/dev/null \
           || echo "N/A")
+    # {{.MemUsage}} is "used / limit" (limit = host's total memory, not
+    # container-specific) — drop the " / limit" part, we only want used.
+    MEM="${MEM%% / *}"
 
     # Spring Boot logs "Started XxxApplication in 1.234 seconds"
     RAW=$(docker logs "${NAME}" 2>&1 \
