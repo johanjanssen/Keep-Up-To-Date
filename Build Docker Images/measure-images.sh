@@ -92,8 +92,17 @@ for IMG in "${IMAGES[@]}"; do
     APP_RUNTIME_SIZE=""
     BASE="${BASE_FOR[$IMG]:-}"
     if [[ -n "${BASE}" ]]; then
-        APP_BYTES=$(docker inspect "${IMG}" --format '{{.Size}}' 2>/dev/null || echo 0)
-        BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null || echo 0)
+        # NOTE: the `|| echo 0` fallback must sit OUTSIDE the command substitution.
+        # `docker inspect` on an unresolvable ref (e.g. our "scratch" placeholder)
+        # can still print a blank line to stdout before it errors out; with the
+        # fallback nested inside $(...) that blank line and the "0" both get
+        # captured, leaving a literal embedded newline in the variable (e.g.
+        # "$'\n0'") that breaks the awk arithmetic below. Keeping `||` outside
+        # the substitution discards any such partial stdout on failure.
+        APP_BYTES=$(docker inspect "${IMG}" --format '{{.Size}}' 2>/dev/null) || APP_BYTES=0
+        BASE_BYTES=$(docker inspect "${BASE}" --format '{{.Size}}' 2>/dev/null) || BASE_BYTES=0
+        [[ "${APP_BYTES}" =~ ^[0-9]+$ ]] || APP_BYTES=0
+        [[ "${BASE_BYTES}" =~ ^[0-9]+$ ]] || BASE_BYTES=0
         if [[ "${APP_BYTES}" -gt 0 ]]; then
             OVERHEAD=$(awk "BEGIN { printf \"+%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
             if [[ "${IMG}" == "hello-conference:jre-temurin" || "${IMG}" == "hello-conference:jre-temurin-alpine" ]]; then
