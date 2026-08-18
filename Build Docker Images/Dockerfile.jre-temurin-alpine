@@ -1,0 +1,17 @@
+# Runtime base: eclipse-temurin:25-jre-alpine  (Temurin 25.0.3+9 / Alpine 3)
+FROM eclipse-temurin:25-jdk-alpine AS builder
+WORKDIR /workspace
+
+COPY mvnw mvnw
+COPY .mvn .mvn
+COPY pom.xml pom.xml
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q --no-transfer-progress 2>/dev/null || true
+
+COPY src src
+RUN ./mvnw package -DskipTests --no-transfer-progress
+
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+COPY --from=builder /workspace/target/HelloConference-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

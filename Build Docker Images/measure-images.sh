@@ -10,6 +10,7 @@ IMAGES=("${ALL_IMAGES[@]}")
 # Use "scratch" for images built FROM scratch (base has 0 bytes → overhead = full size)
 declare -A BASE_FOR=(
     ["hello-conference:jre-temurin"]="eclipse-temurin:25-jre"
+    ["hello-conference:jre-temurin-alpine"]="eclipse-temurin:25-jre-alpine"
     ["hello-conference:jlink-full-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:jlink-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:jlink-netty-distroless-base"]="gcr.io/distroless/base-debian13"
@@ -82,7 +83,7 @@ for IMG in "${IMAGES[@]}"; do
         fi
         if [[ "${APP_BYTES}" -gt 0 ]]; then
             OVERHEAD=$(awk "BEGIN { printf \"+%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
-            if [[ "${IMG}" == "hello-conference:jre-temurin" ]]; then
+            if [[ "${IMG}" == "hello-conference:jre-temurin" || "${IMG}" == "hello-conference:jre-temurin-alpine" ]]; then
                 APP_SIZE="${OVERHEAD}"
             else
                 APP_RUNTIME_SIZE="${OVERHEAD}"

@@ -33,6 +33,7 @@ if [[ ${#FAILED[@]} -gt 0 ]]; then
 fi
 
 run_step "build-jre-temurin.sh"
+run_step "build-jre-temurin-alpine.sh"
 run_step "build-jlink-distroless-base.sh"
 run_step "build-jlink-full-distroless-base.sh"
 run_step "build-jlink-netty-distroless-base.sh"
