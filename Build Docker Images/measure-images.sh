@@ -6,10 +6,10 @@ source "$(dirname "$0")/../images.conf"
 
 IMAGES=("${ALL_IMAGES[@]}")
 
-# Runtime base image for each hello-conference application image.
-# Images built FROM scratch use scratch-probe:local (see images.conf /
-# Dockerfile.scratch-probe) — a locally-built, inspectable stand-in for the
-# reserved "scratch" pseudo-image, so its size is measured, not assumed.
+# Runtime base image for each hello-conference application image
+# Use "scratch" for images built FROM scratch (base has 0 bytes → overhead = full size).
+# scratch-probe:local (see images.conf / Dockerfile.scratch-probe) shows up as its
+# own row below with its real measured size/packages, so it's not referenced here.
 declare -A BASE_FOR=(
     ["hello-conference:jre-temurin"]="eclipse-temurin:25-jre"
     ["hello-conference:jre-temurin-alpine"]="eclipse-temurin:25-jre-alpine"
@@ -20,8 +20,8 @@ declare -A BASE_FOR=(
     ["hello-conference:crac-azul-distroless-base"]="gcr.io/distroless/base-debian13"
     ["hello-conference:native-debian-slim"]="debian:13-slim"
     ["hello-conference:native-minimal-distroless-static"]="gcr.io/distroless/static-debian13"
-    ["hello-conference:native-scratch"]="scratch-probe:local"
-    ["hello-conference:native-netty-scratch"]="scratch-probe:local"
+    ["hello-conference:native-scratch"]="scratch"
+    ["hello-conference:native-netty-scratch"]="scratch"
 )
 
 # ── Package counter ───────────────────────────────────────────
