@@ -128,13 +128,6 @@ PAGE_TEMPLATE = """<!doctype html>
   <p class="subtitle">Generated {generated} &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; counts are unique CVEs (deduplicated by CVE ID)</p>
 
   <section>
-    <h2>Charts</h2>
-    <div class="charts">
-      {chart_barplot_img}
-    </div>
-  </section>
-
-  <section>
     <h2>Severity Comparison — Grype vs Trivy</h2>
     <p class="legend">
       <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
@@ -162,6 +155,13 @@ PAGE_TEMPLATE = """<!doctype html>
           {rows}
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Charts</h2>
+    <div class="charts">
+      {chart_barplot_img}
     </div>
   </section>
 
