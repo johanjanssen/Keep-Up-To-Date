@@ -69,6 +69,26 @@ count_packages() {
             COUNT=$(docker cp "${CID}:/lib/apk/db/installed" - 2>/dev/null \
                 | tar xO 2>/dev/null | grep -c '^P:' || true)
         fi
+        # AlmaLinux/RHEL "micro" variants ship no rpm binary AND use the modern
+        # SQLite-backed rpmdb (not the old Berkeley-DB file the strategies above
+        # would grep), so those two checks find nothing here even though the
+        # database is very much present. Pull rpmdb.sqlite out directly and
+        # count its Packages table with python3 (already a repo dependency via
+        # generate-html-report.py).
+        if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
+            local TMP_DB
+            TMP_DB=$(mktemp)
+            if docker cp "${CID}:/usr/lib/sysimage/rpm/rpmdb.sqlite" "${TMP_DB}" 2>/dev/null; then
+                COUNT=$(python3 -c "
+import sqlite3, sys
+try:
+    print(sqlite3.connect(sys.argv[1]).execute('SELECT COUNT(*) FROM Packages').fetchone()[0])
+except Exception:
+    print(0)
+" "${TMP_DB}" 2>/dev/null || true)
+            fi
+            rm -f "${TMP_DB}"
+        fi
         docker rm -f "${CID}" >/dev/null 2>&1 || true
         [[ "${COUNT}" =~ ^[0-9]+$ ]] && [[ "${COUNT}" -gt 0 ]] && { echo "${COUNT}"; return; }
     fi
@@ -81,9 +101,10 @@ printf "%-50s  %-12s  %-12s  %-18s  %s\n" "IMAGE" "IMAGE SIZE" "APP SIZE" "APP+R
 printf "%-50s  %-12s  %-12s  %-18s  %s\n" \
     "--------------------------------------------------" "------------" "------------" "------------------" "--------"
 for IMG in "${IMAGES[@]}"; do
+    DISPLAY_NAME=$(image_display_name "${IMG}")
     SIZE=$(docker images "${IMG}" --format "{{.Size}}")
     if [[ -z "${SIZE}" ]]; then
-        printf "%-50s  %-12s  %-12s  %-18s  %s\n" "${IMG}" "NOT BUILT" "" "" "N/A"
+        printf "%-50s  %-12s  %-12s  %-18s  %s\n" "${DISPLAY_NAME}" "NOT BUILT" "" "" "N/A"
         continue
     fi
 
@@ -114,7 +135,7 @@ for IMG in "${IMAGES[@]}"; do
     fi
 
     PKGS=$(count_packages "${IMG}")
-    printf "%-50s  %-12s  %-12s  %-18s  %s\n" "${IMG}" "${SIZE}" "${APP_SIZE}" "${APP_RUNTIME_SIZE}" "${PKGS}"
+    printf "%-50s  %-12s  %-12s  %-18s  %s\n" "${DISPLAY_NAME}" "${SIZE}" "${APP_SIZE}" "${APP_RUNTIME_SIZE}" "${PKGS}"
 done
 echo ""
 
