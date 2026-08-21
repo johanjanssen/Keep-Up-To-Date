@@ -51,6 +51,7 @@ jobs:
               <li><a href="JaCoCo/">JaCoCo coverage demo</a></li>
               <li><a href="OWASP/">OWASP Dependency Check report</a></li>
               <li><a href="Scans/">Trivy vs Grype scan comparison</a></li>
+              <li><a href="vulnerable/">Vulnerable App — live exploit demos</a></li>
               <li><a href="images/">Docker image size &amp; performance comparison</a></li>
               <li><a href="testcontainers/">Testcontainers integration test results</a></li>
               <li><a href="Benchmarks/">Java 17 vs 25 vs 28 EA performance benchmarks</a></li>

