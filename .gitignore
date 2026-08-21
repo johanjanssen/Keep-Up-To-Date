@@ -172,3 +172,10 @@ buildNumber.properties
 **/__pycache__
 
 .claude/
+
+### Vulnerable App demo (CI-generated, never committed) ###
+# demo-log.md accumulates a job's transcript across its steps (see
+# "Vulnerable Application Old Java/scripts/demo-log.sh"); NN-*.md are the
+# per-job copies uploaded as artifacts for the /vulnerable Pages report.
+Vulnerable Application Old Java/demo-log.md
+Vulnerable Application Old Java/[0-9][0-9]-*.md

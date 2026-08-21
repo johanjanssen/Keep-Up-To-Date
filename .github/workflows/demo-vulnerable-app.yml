@@ -114,7 +114,10 @@ jobs:
 
       - name: "📤 Save summary for GitHub Pages"
         if: always()
-        run: cp "$GITHUB_STEP_SUMMARY" 01-log4shell.md || true
+        run: |
+          source scripts/demo-log.sh
+          cp "$S" 01-log4shell.md 2>/dev/null || true
+          cat "$S" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
       - name: "🧹 Cleanup"
         if: always()
@@ -214,7 +217,10 @@ jobs:
 
       - name: "📤 Save summary for GitHub Pages"
         if: always()
-        run: cp "$GITHUB_STEP_SUMMARY" 02-jackson.md || true
+        run: |
+          source scripts/demo-log.sh
+          cp "$S" 02-jackson.md 2>/dev/null || true
+          cat "$S" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
       - name: "🧹 Cleanup"
         if: always()
@@ -342,7 +348,10 @@ jobs:
 
       - name: "📤 Save summary for GitHub Pages"
         if: always()
-        run: cp "$GITHUB_STEP_SUMMARY" 03-full-chain.md || true
+        run: |
+          source scripts/demo-log.sh
+          cp "$S" 03-full-chain.md 2>/dev/null || true
+          cat "$S" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
       - name: "🧹 Cleanup"
         if: always()
@@ -385,7 +394,7 @@ jobs:
 
       - name: "📖 Demo 4 — Scenario"
         run: |
-          S=$GITHUB_STEP_SUMMARY
+          source scripts/demo-log.sh
           cat >> "$S" << 'HEADER'
           ## 💀 Demo 4 — "We Run As Non-Root" Is Not the Whole Story
 
@@ -563,7 +572,10 @@ jobs:
 
       - name: "📤 Save summary for GitHub Pages"
         if: always()
-        run: cp "$GITHUB_STEP_SUMMARY" 04-privilege-escalation.md || true
+        run: |
+          source scripts/demo-log.sh
+          cp "$S" 04-privilege-escalation.md 2>/dev/null || true
+          cat "$S" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
       - name: "🧹 Cleanup"
         if: always()
@@ -642,7 +654,10 @@ jobs:
 
       - name: "📤 Save summary for GitHub Pages"
         if: always()
-        run: cp "$GITHUB_STEP_SUMMARY" 05-scan-compare.md || true
+        run: |
+          source scripts/demo-log.sh
+          cp "$S" 05-scan-compare.md 2>/dev/null || true
+          cat "$S" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
       - name: "⬆️ Upload summary artifact"
         if: always()

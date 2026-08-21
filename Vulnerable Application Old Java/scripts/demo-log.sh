@@ -14,8 +14,23 @@
 # summary (so the finished page reads as a clean "command → result" transcript).
 #
 # Sourced (not executed) from each step: `source scripts/demo-log.sh`.
+#
+# Why $S is NOT $GITHUB_STEP_SUMMARY: that env var points to a file that's unique to
+# EACH STEP — GitHub creates a fresh one per step and only concatenates them for
+# display in the Actions UI afterward. Each demo job here spans several steps
+# ("Fire the exploit", "Watching it happen", "Forensics", ...), so if $S were
+# $GITHUB_STEP_SUMMARY directly, every step's writes would land in a different file
+# that the next step can't see, and the final "Save summary for GitHub Pages" step
+# — which just does `cp "$S" NN-slug.md` — would only ever capture its own empty
+# contribution, not the transcript built up over the whole job. (This is exactly
+# what happened before this fix: the published /vulnerable page rendered empty
+# sections.) A plain file in the job's workspace persists across steps of the same
+# job like any other file docker/curl/etc. touch, so that's what $S points to
+# instead; the "Save summary" step separately copies it into that step's own
+# $GITHUB_STEP_SUMMARY too, so the Actions UI's own Summary tab still shows the
+# full transcript, not just this file's slice of it.
 
-S="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
+S="${DEMO_LOG_FILE:-demo-log.md}"
 
 # run_live <label> <command...>
 # Prints "$ <label>" then runs <command...> as normal argv (quote arguments the usual
