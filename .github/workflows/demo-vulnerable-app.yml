@@ -452,7 +452,8 @@ jobs:
 
           Polling `docker logs` on both running containers, once a second, printing each
           milestone the instant it appears — this is the real order of events, not a canned
-          transcript:
+          transcript. Each milestone shows two lines: the **raw line the container actually
+          printed** (proof this is really happening), then what it means:
           WATCH_INTRO
           echo '```console' >> "$S"
 
@@ -468,15 +469,22 @@ jobs:
           declare -A SEEN
           DONE=0
 
-          # Each milestone line is `tee`d, not just redirected — so this loop's progress
-          # is visible live in the Actions log while it's still running, not only in the
-          # rendered summary after the fact.
+          # Each milestone is `tee`d, not just redirected — so this loop's progress is
+          # visible live in the Actions log while it's still running, not only in the
+          # rendered summary after the fact. The RAW line is the actual `docker logs`
+          # output that matched — not the friendly LABEL — so what's on screen is real
+          # command output, not narration standing in for it.
           for i in $(seq 1 20); do
             for m in "${MARKERS[@]}"; do
               IFS='|' read -r CONTAINER PATTERN LABEL <<< "$m"
-              if [ -z "${SEEN[$m]:-}" ] && docker logs "$CONTAINER" 2>&1 | grep -qF "$PATTERN"; then
+              if [ -n "${SEEN[$m]:-}" ]; then continue; fi
+              RAW=$(docker logs "$CONTAINER" 2>&1 | grep -F "$PATTERN" | head -1) || true
+              if [ -n "$RAW" ]; then
                 SEEN[$m]=1
-                printf '[+%02ds] %s\n' "$i" "$LABEL" | tee -a "$S"
+                {
+                  printf '[+%02ds] %s: %s\n' "$i" "$CONTAINER" "$(echo "$RAW" | sed 's/^ *//')"
+                  printf '[+%02ds]   └─ %s\n' "$i" "$LABEL"
+                } | tee -a "$S"
               fi
             done
             BANNERS=$(docker logs vuln-app 2>&1 | grep -c "══════" || true)
