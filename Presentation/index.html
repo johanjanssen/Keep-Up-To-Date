@@ -99,21 +99,29 @@
     </p>
 </section>
 
+<section>
+    <img src="pictures/QuestionMark.svg" class="r-stretch">
+</section>
+
+<section>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+        <img src="pictures/Concept.jpg" style="width: 45%;" alt="First image" class="r-stretch">
+        <img src="pictures/Example.jpg" style="width: 45%;" alt="Second image" class="r-stretch">
+    </div>
+</section>
+
+<section>
+    <img src="pictures/Java.svg"class="r-stretch">
+</section>
+
 <!-- ═══════════════════════ FOLLOW ALONG ═══════════════════════ -->
 <section>
-    <h2>👀 Follow Along — Every Example Is Live</h2>
-    <p class="subtitle">All demos, workflows, and reports in this talk live in one public repo</p>
-    <a class="browser-mock" href="https://github.com/johanjanssen/Keep-Up-To-Date" target="_blank">
-        <div class="browser-mock-bar">
-            <div class="browser-mock-dots"><span></span><span></span><span></span></div>
-            <div class="browser-mock-url">🔒 github.com/johanjanssen/Keep-Up-To-Date</div>
-        </div>
-        <img src="https://opengraph.githubassets.com/1/johanjanssen/Keep-Up-To-Date" loading="lazy" alt="Keep-Up-To-Date repository preview">
-    </a>
-    <p style="margin-top:0.8em;">
-        <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://github.com/johanjanssen/Keep-Up-To-Date" target="_blank">↗ github.com/johanjanssen/Keep-Up-To-Date</a>
-    </p>
-    <p class="small" style="margin-top:0.5em;color:#8be9fd;">Scripts, workflow definitions, and the live GitHub Pages reports shown later all come straight from this repo — clone it and run along.</p>
+    <h2>Follow along on GitHub</h2>
+    <p class="subtitle">Presentation:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/" target="_blank">↗ johanjanssen.github.io/Keep-Up-To-Date/Presentation/</a>
+
+    <p class="subtitle">Sourcecode, scripts, demos, builds:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://github.com/johanjanssen/Keep-Up-To-Date" target="_blank">↗ github.com/johanjanssen/Keep-Up-To-Date</a>
 </section>
 
 <!-- ═══════════════════════ AGENDA ═══════════════════════ -->
@@ -121,18 +129,45 @@
     <h2>Agenda</h2>
     <div class="two-col medium">
         <div><ol>
-            <li>🚨 The problem or actually the solution! show security issues, performance improvements and lots of packages</li>
-            <li>☕ But, but,  ... AI</li>
-            <li>Minimize attack surface JDK/JRE / remove stuff</li>
-            <li>📦 Dependencies: Manual → Automated</li>
-            <li>🔍 Security Scanning — Two Layers</li>
+            <li>The problem or actually the solution! show security issues, performance improvements and lots of packages. What's your situation?</li>
+            <li>But, but,  ... AI</li>
+            <li>Update or remove?</li>
+            <li>Minimizing OS level dependencies Minimize attack surface JDK/JRE / remove stuff, small Docker image</li>
+            <li>Minimizing code dependencies example mvn dependency:analyze <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.11.0</version> <!-- Use the latest version -->
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <!-- Example: Tell Maven to ignore an unused database driver -->
+                        <ignoredUnusedDeclaredDependency>org.postgresql:postgresql</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
+            </plugin></li>
+            <li>Minimizing source code Jacoco/Azul</li>
+            <li>Native images and Coordinated Restore at Checkpoint (CRaC) tradeoff</li>
         </ol></div>
         <div><ol start="5">
-            <li>🐳 Container Images: The Layer You Forgot</li>
-            <li>🤖 Renovate — Automate Everything</li>
-            <li>🧪 Making Updates Safe with Tests</li>
-            <li>🏁 Key Takeaways &amp; Tools</li>
+            <li>Updating OS level dependencies Dependabot/Renovate also Dockerfile FROM statements</li>
+            <li>Updating code dependencies Old GroupIds Alerter (OGA)</li>
+            <li>Updating source code OpenRewrite smaller example</li>
+            <li>Key takeaways and conclusion</li>
+            <li>TODO: "Docker Image Size & Performance Comparison" has multiple distroless in the overview, make sure which ones is used.</li>
         </ol></div>
+    </div>
+</section>
+
+<section>
+    <h2>How's your situation?</h2>
+    <div class="medium">
+        <ul style="margin-top:0.8em;">
+            <li>Do you know what operating system (version) you're using?</li>
+            <li>Do you know which operating system packages you're using?</li>
+            <li>Do you know which libraries you're packaging in your application?</li>
+            <li>How many known security vulnerabilities does your application have?</li>
+            <li>Do you remove dead code and unused operating system packages and libraries?</li>
+            <li>How often do you / your team upgrade the versions of the software you're using?</li>
+        </ul>
     </div>
 </section>
 
@@ -204,16 +239,14 @@
 </section>
 
 <section>
-    <h2>🧱 Same Anatomy, as PlantUML</h2>
-    <p class="subtitle">Rendered live from <code>architecture.puml</code> — edit the file, the slide updates</p>
+    <h2>Dependencies</h2>
     <div class="puml-wrap">
         <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
     </div>
 </section>
 
 <section>
-    <h2>🧱 Anatomy, Annotated</h2>
-    <p class="subtitle">Rendered live from <code>architecture-example.puml</code></p>
+    <h2>Dependencies example</h2>
     <div class="puml-wrap">
         <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
     </div>
