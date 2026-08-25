@@ -13,6 +13,33 @@
     </section>
 
     <section>
+        <h2>☕ Ride the Release Train</h2>
+        <div class="medium">
+            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong> — not when they feel ready, but on a fixed schedule.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Regular releases → smaller, manageable changes each time</li>
+                <li><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</li>
+                <li>Non-LTS releases are production-quality for short-lived or internal services</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span>
+            New release every <strong>6 months</strong> (March / September). LTS every 2 years.
+            <div class="timeline" style="margin-top:0.5em;">
+                <div class="tl-item">Java 8<br><small>LTS 2014</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 11<br><small>LTS 2018</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 17<br><small>LTS 2021</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 21<br><small>LTS 2023 🧵</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-now">Java 25<br><small>LTS Sep 2025 ⚡</small></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
         <h2>Update FROM in Dockerfiles</h2>
     </section>
 
@@ -42,6 +69,83 @@
     </section>
 
     <section>
+        <h2>🤖 Manual Updates Don't Scale</h2>
+        <div class="medium">
+            <p>As a project grows, the number of dependencies that need attention <strong>grows faster than the team's capacity to review them</strong>.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Dependency bots watch registries continuously and open PRs automatically</li>
+                <li>The policy (what to group, what to auto-merge, what needs review) lives in config — not in people's heads</li>
+                <li>CI verifies each update before it lands — humans only intervene for breaking changes</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Renovate vs Dependabot</h2>
+        <table class="medium">
+            <thead><tr><th>Feature</th><th>Dependabot</th><th>Renovate</th></tr></thead>
+            <tbody>
+            <tr><td>Maven / Gradle</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+            <tr><td>Docker base images</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+            <tr><td>CI workflow versions</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+            <tr><td>Maven Wrapper version</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+            <tr><td>Grouping updates</td><td>Limited</td><td class="tag-good">Full control</td></tr>
+            <tr><td>Self-hosted</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+            <tr><td>Config in repo</td><td class="tag-bad">❌</td><td class="tag-good">✅ <code>renovate.json</code></td></tr>
+            <tr><td>Stability days / merge confidence</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Policy as Code</h2>
+        <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo — not in a wiki, not in a person's memory.</p></div>
+        <pre><code class="language-json">{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "description": "Group related updates — one PR, one review",
+      "matchPackagePatterns": ["^org.springframework"],
+      "groupName": "Spring Framework",
+      "schedule": ["every weekend"]
+    },
+    {
+      "description": "Auto-merge low-risk patch updates for test libs",
+      "matchDepTypes": ["test"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true   // immediate: security patch + green CI = merged
+  }
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>The Automation Flywheel</h2>
+        <pre><code class="language-text">Bot detects new version
+  → opens PR with changelog and diff
+    → CI: build + unit tests + integration tests + image scan
+      → all green + low-risk update
+        → auto-merged in ~30 minutes
+          → you never manually touched it ✅</code></pre>
+        <div class="box box-green medium" style="margin-top:0.8em;">
+            💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
+            Your job: make your test suite trustworthy enough to enable auto-merge.
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Demo</span>
+            Gitea + Jenkins + Renovate, fully wired in Docker.
+            Renovate opens real PRs; Jenkins builds them; result posted back to Gitea.
+            <pre><code class="language-bash">bash Renovate/scripts/demo.sh</code></pre>
+        </div>
+    </section>
+</section>
+
+
+<section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
         <p class="subtitle">Keeping the base image &amp; runtime version current — across ecosystems</p>
         <table class="small">

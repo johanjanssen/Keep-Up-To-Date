@@ -1,19 +1,5 @@
 <section>
     <section>
-        <h2>Dependencies</h2>
-        <div class="puml-wrap">
-            <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
-        </div>
-    </section>
-
-    <section>
-        <h2>Dependencies Example</h2>
-        <div class="puml-wrap">
-            <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
-        </div>
-    </section>
-
-    <section>
         <h2>📦 The Dependency Graph Problem</h2>
         <div class="medium">
             <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast — and most of it is invisible to you.</p>
@@ -38,6 +24,29 @@
 &lt;/parent&gt;</code></pre>
             Also upgrades: Jackson · Tomcat · Netty · Hibernate · Micrometer · Logback …<br>
             <span class="tag-good">All versions tested together by the Spring team.</span>
+        </div>
+    </section>
+
+    <section>
+        <h2>SBOM — Know What You Ship</h2>
+        <div class="medium">
+            <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact — like a nutrition label for software.</p>
+            <ul style="margin-top:0.5em;">
+                <li>Required by US federal procurement (Executive Order 2021)</li>
+                <li>EU Cyber Resilience Act — mandatory for regulated products</li>
+                <li>Enables automated CVE matching across your entire fleet</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Tools to create SBOM</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <ul>
+                <li>CycloneDX Maven Plugin: mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</li>
+                <li>Trivy: trivy image --format cyclonedx --output sbom.json</li>
+                <li>Syft: syft . -o cyclonexd-json</li>
+            </ul>
         </div>
     </section>
 
@@ -88,23 +97,6 @@
         &lt;/excludes&gt;
     &lt;/bannedDependencies&gt;
 &lt;/rules&gt;</code></pre>
-        </div>
-    </section>
-
-    <section>
-        <h2>SBOM — Know What You Ship</h2>
-        <div class="medium">
-            <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact — like a nutrition label for software.</p>
-            <ul style="margin-top:0.5em;">
-                <li>Required by US federal procurement (Executive Order 2021)</li>
-                <li>EU Cyber Resilience Act — mandatory for regulated products</li>
-                <li>Enables automated CVE matching across your entire fleet</li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ CycloneDX Maven Plugin</span>
-            <pre><code class="language-bash">./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
-# Output: target/bom.json — attach to every release artifact</code></pre>
         </div>
     </section>
 

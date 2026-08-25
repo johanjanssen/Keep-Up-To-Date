@@ -1,5 +1,32 @@
 <section>
     <section>
+        <h2>How to find dead code?</h2>
+        <ul>
+            <li>IDE can help with simple cases</li>
+            <li>What if, for example, a REST endpoint is no longer used?</li>
+                <ul>
+                    <li>The REST endpoint can be removed</li>
+                    <li>The code called by the REST endpoint can be removed</li>
+                    <li>Maybe libraries can be removed</li>
+                </ul>
+            <li>But how do we know in a large application?</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Advanced ways to find dead code</h2>
+        <ul>
+            <li>Commercial tools like Azul Code Inventory can measure code usage in production with real load</li>
+            <li>Using a Jacoco agent attached to your application</li>
+                <ul>
+                    <li>Recording on production has more performance overhead</li>
+                    <li>Can be used with acceptance tests on a test environment</li>
+                </ul>
+        </ul>
+    </section>
+
+
+    <section>
         <h2>☕ Retrieve Coverage — via Port (TCP Agent)</h2>
         <p class="subtitle">Dump live coverage while the app keeps running — no restart, multiple snapshots</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">

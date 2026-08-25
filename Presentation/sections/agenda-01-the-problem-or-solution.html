@@ -1,5 +1,18 @@
 <section>
     <section>
+        <h2>Dependencies</h2>
+        <div class="puml-wrap">
+            <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
+        </div>
+    </section>
+
+    <section>
+        <h2>Dependencies Example</h2>
+        <div class="puml-wrap">
+            <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+        </div>
+    </section>
+    <section>
         <h2>How's Your Situation?</h2>
         <div class="medium">
             <ul style="margin-top:0.8em;">
@@ -11,14 +24,6 @@
                 <li>How often do you / your team upgrade the versions of the software you're using?</li>
             </ul>
         </div>
-    </section>
-
-    <section>
-        <h2>Log4j Vulnerability (Log4Shell)</h2>
-        <ul>
-            <li>Cost billions of dollars in remediation, lost productivity, and subsequent cyberattacks</li>
-            <li>Fixing the issue consumed up to 12% of total annual budgets for IT, application development, and security departments</li>
-        </ul>
     </section>
 
     <section>
@@ -132,6 +137,46 @@
     </section>
 
     <section>
+        <img src="pictures/Talk_to_the_hand.jpg.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>Concrete examples</h2>
+        <ul>
+            <li>Performance benefit</li>
+            <li>Vulnerable application</li>
+            <li>Known vulnerabilities</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
+        <p class="subtitle">Same code, same hardware — JMH benchmarks across Java 25 → 28 EA</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🔮 Java 25 → 28 EA — Valhalla preview</span>
+            Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
+            Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong> — but only once fields are narrow enough to fit the JVM's current flattening size limit.
+        </div>
+        <pre><code class="language-bash">docker run --rm -v "$(pwd)/results:/results" bench:java25 "\.ValhallaBenchmark\."       # record
+docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchmark\."  # value record</code></pre>
+        <p class="small" style="margin-top:0.6em;">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml" target="_blank">▶ Run Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Performance Benchmarks — Full Report</h2>
+        <p class="subtitle">Live overview tables, published to GitHub Pages after every run</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
         <h2>🔍 Two Layers of Scanning</h2>
         <p class="subtitle">They find different things — you need both</p>
         <div class="two-col medium" style="margin-top:0.8em;">
@@ -179,8 +224,7 @@
 # jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
         </div>
         <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml" target="_blank">▶ Run Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
         </p>
     </section>
 
@@ -204,10 +248,7 @@
             </div>
         </div>
         <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml" target="_blank">▶ Grype</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml/badge.svg" alt="" style="vertical-align:middle;margin-right:0.5em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml" target="_blank">▶ Trivy</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" target="_blank">▶ Trivy vs Grype comparison</a>
         </p>
     </section>
 
@@ -274,12 +315,20 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
+        <h2>Log4j Vulnerability (Log4Shell)</h2>
+        <ul>
+            <li>Cost billions of dollars in remediation, lost productivity, and subsequent cyberattacks</li>
+            <li>Fixing the issue consumed up to 12% of total annual budgets for IT, application development, and security departments</li>
+        </ul>
+    </section>
+
+    <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
         <p class="subtitle">Source-level vulnerability scanning across ecosystems</p>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
             <tbody>
-                <tr><td>OWASP Dependency-Check</td><td>Java (experimental: .NET, Node, Python)</td><td>Source-manifest CVE scanning against the NVD</td></tr>
+                <tr><td>OWASP Dependency-Check</td><td>Java, Node, Golang, .NET, Node, Python and many more (some experimental)</td><td>Source-manifest CVE scanning against the NVD</td></tr>
                 <tr><td>pip-audit</td><td>Python</td><td>Official PyPA scanner, uses OSV + PyPI advisory data</td></tr>
                 <tr><td>npm audit / yarn audit</td><td>Node.js</td><td>Built into the package manager</td></tr>
                 <tr><td>govulncheck</td><td>Go</td><td>Official Go team tool; call-graph aware, fewer false positives</td></tr>
