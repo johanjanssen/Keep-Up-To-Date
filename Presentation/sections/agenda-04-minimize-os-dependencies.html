@@ -6,7 +6,7 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h1>Minimize OS Dependencies</h1>
+        <h2>Small Docker image</h2>
     </section>
     <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
@@ -44,19 +44,7 @@
     </section>
 
     <section>
-        <h2>🎬 Demo: Build All Images</h2>
-        <pre><code class="language-bash">bash "Build Docker Images/build-all-images.sh"    # build all 11 variants
-bash "Build Docker Images/measure-images.sh"       # size + package counts
-bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code></pre>
-        <p class="small" style="margin-top:0.8em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml" target="_blank">▶ Run Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml/badge.svg" alt="" style="vertical-align:middle;">
-        </p>
-    </section>
-
-    <section>
         <h2>🔍 Build Docker Images — Full Report</h2>
-        <p class="subtitle">Live image size &amp; package tables, published to GitHub Pages after every run</p>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
         </div>
