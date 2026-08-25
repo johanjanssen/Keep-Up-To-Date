@@ -7,7 +7,7 @@ Produces:
 Usage:
   python3 generate-charts.py <trivy_dir> <grype_dir> <output_dir> [--title "..."] [--prefix scan]
 """
-import json, sys, os, glob, argparse
+import json, sys, os, glob, argparse, subprocess
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -18,6 +18,8 @@ rcParams["figure.dpi"]         = 150
 rcParams["savefig.dpi"]        = 150
 rcParams["savefig.bbox"]       = "tight"
 rcParams["savefig.pad_inches"] = 0.20
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT  = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 BG_COLOR   = "#F8F9FC"
 GRID_COLOR = "#DDE1EA"
 TEXT_COLOR = "#1A1D23"
@@ -75,6 +77,26 @@ def load_grype(path):
             counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
     return name, counts, cross_ids
+def load_image_order(repo_root=REPO_ROOT):
+    # images.conf (bash) is the single source of truth for image order too —
+    # read ALL_IMAGES directly (by asking bash to source it) so every report
+    # table/chart lists images in the same order they're pulled/built/scanned
+    # in, instead of a sort-by-CVE-count order that reshuffles rows every run.
+    # Mirrors load_java_base_image_names() in
+    # Compare Security Scans/scripts/generate-html-report.py.
+    images_conf = os.path.join(repo_root, "images.conf")
+    script = 'source "$1"; printf "%s\\n" "${ALL_IMAGES[@]}"'
+    try:
+        result = subprocess.run(
+            ["bash", "-c", script, "bash", images_conf],
+            capture_output=True, text=True, check=True,
+        )
+        return [line for line in result.stdout.splitlines() if line]
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
+        # Wrong-but-safe fallback: unlisted images just fall back to sorting
+        # by Trivy total, same as before this ordering existed.
+        print(f"  WARN could not read ALL_IMAGES from {images_conf}: {e}")
+        return []
 def load_all(trivy_dir, grype_dir):
     # Keyed by filename stem (stable join key — identical between the trivy/grype
     # dirs since both are produced by the same images.conf#image_to_filename).
@@ -111,7 +133,11 @@ def load_all(trivy_dir, grype_dir):
             len(grype_ids - trivy_ids),   # unique to Grype: found by Grype, not by Trivy
             len(trivy_ids - grype_ids),   # unique to Trivy: found by Trivy, not by Grype
         ))
-    items.sort(key=lambda x: x[2]["_total"], reverse=True)
+    order = load_image_order()
+    order_index = {name: i for i, name in enumerate(order)}
+    # images.conf order first; images not listed there (shouldn't normally
+    # happen) sort after all known ones, by Trivy total desc as before.
+    items.sort(key=lambda x: (order_index.get(x[0], len(order)), -x[2]["_total"]))
     return items
 def draw_barplot(items, title, out_path):
     if not items:
