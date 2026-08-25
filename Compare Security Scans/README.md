@@ -1,16 +1,21 @@
 # Compare Security Scans
 
-Scans all Docker images with **Grype** and **Trivy**, then produces two comparison views:
+Scans all Docker images with **Grype**, **Trivy**, and **OSV-Scanner**, then produces two comparison views:
 
-1. **Severity count comparison** — Grype vs Trivy side-by-side (TOTAL/CRITICAL/HIGH/MEDIUM/LOW/UNKNOWN) with unique-in-Trivy indicator
+1. **Severity count comparison** — Grype, Trivy, and OSV-Scanner side-by-side (TOTAL/CRITICAL/HIGH/MEDIUM/LOW/UNKNOWN each), plus a per-tool "Unique" column (a CVE that scanner found and neither of the other two did)
 2. **OS vs Application breakdown** — OS-level package vulnerabilities and application-level (JAR/language) vulnerabilities shown separately, including OWASP DC results
+
+OSV-Scanner is included as a third, independent data source — matched against
+[OSV.dev](https://osv.dev) rather than Grype's/Trivy's own vulnerability feeds.
+Its severity data is patchier for some OS ecosystems (notably Debian, which OSV
+carries with no severity rating at all) — see [`OSV/README.md`](../OSV/README.md).
 
 ---
 
 ## Quick Start
 
 ```bash
-# Run the full pipeline (both scanners + comparison)
+# Run the full pipeline (all three scanners + comparison)
 bash "Compare Security Scans/scripts/run-all.sh"
 ```
 
@@ -22,6 +27,7 @@ bash "Compare Security Scans/scripts/run-all.sh"
 # Scan with each tool independently:
 bash "Compare Security Scans/scripts/scan-grype.sh"
 bash "Compare Security Scans/scripts/scan-trivy.sh"
+bash "Compare Security Scans/scripts/scan-osv.sh"
 
 # Generate comparison tables from existing results:
 bash "Compare Security Scans/scripts/compare.sh"
@@ -47,13 +53,13 @@ Defined in `images.conf` at the project root (single source of truth).
 
 ## Output
 
-### View 1: Grype vs Trivy — Severity Count Comparison
+### View 1: Grype vs Trivy vs OSV-Scanner — Severity Count Comparison
 
 ```
-IMAGE                                              │  GRYPE (Tot/C/H/M/L/U)   │  TRIVY (Tot/C/H/M/L/U)   │ Unique in Trivy
-───────────────────────────────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────
-eclipse-temurin:25-jre                             │    20    0    3   12    5    0 │    16    0    2   10    4    0 │ 3
-gcr.io/distroless/static-debian13                  │     0    0    0    0    0    0 │     0    0    0    0    0    0 │ -
+IMAGE                                              │  GRYPE (Tot/C/H/M/L/U)   │  TRIVY (Tot/C/H/M/L/U)   │   OSV (Tot/C/H/M/L/U)    │ Unique Grype │ Unique Trivy │ Unique OSV
+─────────────────────────────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────────────────────┼──────────────┼──────────────┼────────────
+eclipse-temurin:25-jre                             │    96    0    2   87    7    0 │    60    0    8   47    4    1 │    98    0    0   81    8    9 │ 1            │ 11           │ 18
+gcr.io/distroless/static-debian13                  │     0    0    0    0    0    0 │     0    0    0    0    0    0 │     0    0    0    0    0    0 │ -            │ -            │ -
 ```
 
 ### View 2: OS Packages vs Application Dependencies
@@ -72,11 +78,13 @@ Compare Security Scans/
 │   ├── run-all.sh          ← master script — runs all steps
 │   ├── scan-grype.sh       ← delegates to Grype/scripts/
 │   ├── scan-trivy.sh       ← delegates to Trivy/scripts/
+│   ├── scan-osv.sh         ← delegates to OSV/scripts/
 │   └── compare.sh          ← parse results: 2 comparison views
 └── target/
     └── results/             ← generated (gitignored)
         ├── grype/           ← JSON output per image
-        └── trivy/           ← JSON output per image
+        ├── trivy/           ← JSON output per image
+        └── osv/             ← JSON output per image
 ```
 
 ---
@@ -85,5 +93,6 @@ Compare Security Scans/
 
 - **Grype and Trivy** scan OS packages + language deps (image-level)
 - They use different vulnerability databases — differences are expected
-- Using **both** gives the most comprehensive picture
+- **OSV-Scanner** adds a third, independent database (OSV.dev) with its own full severity breakdown — but many of its OS-level findings carry no severity rating at all (see [`OSV/README.md`](../OSV/README.md))
+- Using **multiple tools** gives the most comprehensive picture
 - **Distroless and scratch images** consistently show fewer (or zero) vulnerabilities
