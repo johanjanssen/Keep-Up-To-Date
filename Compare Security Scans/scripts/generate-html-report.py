@@ -119,7 +119,7 @@ def severity_table_html(subtitle, rows_html):
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Unique in Grype</th><th>Unique in Trivy</th><th>Unique in OSV</th>
+            <th>Grype</th><th>Trivy</th><th>OSV</th>
           </tr>
         </thead>
         <tbody>
