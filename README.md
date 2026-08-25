@@ -62,7 +62,8 @@ under its own subfolder so no workflow's output overwrites another's:
 | [`/images/`](https://johanjanssen.github.io/Keep-Up-To-Date/images/) | Build Docker Images — base OS & Java runtime image size comparison |
 | [`/custom-images/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-images/) | Build Docker Images — hello-conference image size & startup performance comparison |
 | [`/Benchmarks/`](https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/) | Performance Improvement — Java 17 vs 25 vs 28 EA benchmarks |
-| [`/Scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/Scans/) | Compare Security Scans — Trivy vs Grype vs OWASP DC |
+| [`/image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/) | Compare Security Scans — base OS & Java runtime images, Trivy vs Grype |
+| [`/custom-image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/) | Compare Security Scans — hello-conference images, Trivy vs Grype |
 | [`/OWASP/`](https://johanjanssen.github.io/Keep-Up-To-Date/OWASP/) | OWASP Dependency Check |
 | [`/OpenRewrite/`](https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/) | OpenRewrite migration recipes |
 | [`/renamed/`](https://johanjanssen.github.io/Keep-Up-To-Date/renamed/) | Old GroupIds Alerter |

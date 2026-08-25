@@ -61,39 +61,32 @@ jobs:
           cat /tmp/compare-output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Generate presentation charts
+      - name: Generate HTML reports
         run: |
           pip install matplotlib numpy -q
-          python3 "Compare Security Scans/scripts/generate-charts.py" \
-            "Compare Security Scans/target/results/trivy" \
-            "Compare Security Scans/target/results/grype" \
-            "Compare Security Scans/target/results/charts" \
-            --title "Container Image CVE Comparison — Trivy vs Grype" \
-            --prefix scan
-        continue-on-error: true
-
-      - name: Generate HTML report
-        run: |
           python3 "Compare Security Scans/scripts/generate-html-report.py" \
             "Compare Security Scans/target/results/trivy" \
             "Compare Security Scans/target/results/grype" \
-            "Compare Security Scans/target/results/charts" \
-            /tmp/compare-output.txt \
             "Compare Security Scans/target/results/html/index.html" \
-            --title "Container Image CVE Comparison — Trivy vs Grype"
+            "Compare Security Scans/target/results/html-custom/index.html" \
+            --title "Container Image CVE Comparison — Trivy vs Grype" \
+            --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype"
 
-      - name: Prepare Pages directory
+      - name: Prepare Pages directories
         run: |
-          mkdir -p tmp/pages
+          mkdir -p tmp/pages tmp/pages-custom
           cp "Compare Security Scans/target/results/html/index.html" tmp/pages/
+          cp "Compare Security Scans/target/results/html-custom/index.html" tmp/pages-custom/
 
-      # Published as its own subfolder (destination_dir + keep_files) rather than
-      # actions/deploy-pages: this repo has multiple workflows publishing to the
-      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
-      # run (it also requires an environment: github-pages block on the job, which
-      # is where "Missing environment" comes from) — peaceiris pushes to the
-      # gh-pages branch and destination_dir scopes each workflow to its own folder.
-      - name: Deploy to GitHub Pages (Scans/ subfolder)
+      # Published as their own subfolders (destination_dir + keep_files) rather
+      # than actions/deploy-pages: this repo has multiple workflows publishing to
+      # the same Pages site, and actions/deploy-pages replaces the ENTIRE site on
+      # every run (it also requires an environment: github-pages block on the job,
+      # which is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own
+      # folder. Base images and hello-conference images are split into separate
+      # pages, so each gets its own deploy step.
+      - name: Deploy to GitHub Pages (image-scans/ subfolder)
         uses: Wandalen/wretry.action@v3
         with:
           action: peaceiris/actions-gh-pages@v4
@@ -102,10 +95,24 @@ jobs:
           with: |
             github_token: ${{ secrets.GITHUB_TOKEN }}
             publish_dir: tmp/pages
-            destination_dir: Scans
+            destination_dir: image-scans
             keep_files: true
 
-      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/Scans/index.html
+      # Now the base-images report is available under https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/index.html
+
+      - name: Deploy to GitHub Pages (custom-image-scans/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages-custom
+            destination_dir: custom-image-scans
+            keep_files: true
+
+      # Now the hello-conference report is available under https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/index.html
 
       - name: Upload comparison data
         uses: actions/upload-artifact@v4
@@ -113,10 +120,3 @@ jobs:
         with:
           name: scan-comparison-data
           path: Compare Security Scans/target/results/
-
-      - name: Upload chart — comparison barplot
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: chart-scan-barplot
-          path: Compare Security Scans/target/results/charts/scan-barplot.png
