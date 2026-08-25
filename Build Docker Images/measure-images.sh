@@ -65,20 +65,31 @@ count_packages() {
             COUNT=$(docker cp "${CID}:/var/lib/dpkg/status.d" - 2>/dev/null \
                 | tar xO 2>/dev/null | grep -c '^Package:' || true)
         fi
+        # Alpine symlinks /lib -> /usr/lib, so its apk db lives under /lib/apk/db/
+        # on the paths that matter here; BellSoft's Alpaquita Linux (musl base
+        # images) doesn't carry that symlink and keeps its apk db directly under
+        # /var/lib/apk/db/ instead, so both locations are tried.
         if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
             COUNT=$(docker cp "${CID}:/lib/apk/db/installed" - 2>/dev/null \
                 | tar xO 2>/dev/null | grep -c '^P:' || true)
         fi
-        # AlmaLinux/RHEL "micro" variants ship no rpm binary AND use the modern
-        # SQLite-backed rpmdb (not the old Berkeley-DB file the strategies above
-        # would grep), so those two checks find nothing here even though the
-        # database is very much present. Pull rpmdb.sqlite out directly and
-        # count its Packages table with python3 (already a repo dependency via
-        # generate-html-report.py).
+        if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
+            COUNT=$(docker cp "${CID}:/var/lib/apk/db/installed" - 2>/dev/null \
+                | tar xO 2>/dev/null | grep -c '^P:' || true)
+        fi
+        # AlmaLinux/RHEL "micro" variants and UBI-micro ship no rpm binary AND
+        # use the modern SQLite-backed rpmdb (not the old Berkeley-DB file the
+        # strategies above would grep), so those checks find nothing here even
+        # though the database is very much present. Pull rpmdb.sqlite out
+        # directly and count its Packages table with python3 (already a repo
+        # dependency via generate-html-report.py). The file lives under
+        # /usr/lib/sysimage/rpm/ on AlmaLinux but directly under /var/lib/rpm/
+        # on UBI, so both locations are tried.
         if [[ ! "${COUNT}" =~ ^[0-9]+$ ]] || [[ "${COUNT}" -eq 0 ]]; then
             local TMP_DB
             TMP_DB=$(mktemp)
-            if docker cp "${CID}:/usr/lib/sysimage/rpm/rpmdb.sqlite" "${TMP_DB}" 2>/dev/null; then
+            if docker cp "${CID}:/usr/lib/sysimage/rpm/rpmdb.sqlite" "${TMP_DB}" 2>/dev/null \
+                || docker cp "${CID}:/var/lib/rpm/rpmdb.sqlite" "${TMP_DB}" 2>/dev/null; then
                 COUNT=$(python3 -c "
 import sqlite3, sys
 try:

@@ -79,18 +79,43 @@ def size_to_mb(size_str):
     return value * multiplier if multiplier is not None else None
 
 
-def images_rows_html(rows):
+def split_base_app(rows):
+    """hello-conference:* rows are app images built FROM the other (base) rows;
+    they're the only ones with app_size/app_runtime_size populated (see
+    BASE_FOR in measure-images.sh), so splitting on that prefix keeps each
+    table's columns meaningful instead of mixing base and app concerns."""
+    base_rows = [r for r in rows if not r["image"].startswith("hello-conference:")]
+    app_rows = [r for r in rows if r["image"].startswith("hello-conference:")]
+    return base_rows, app_rows
+
+
+def row_classes(r):
+    built = r["image_size"] not in ("NOT BUILT", "")
+    classes = [] if built else ["not-built"]
+    if built:
+        size_mb = size_to_mb(r["image_size"])
+        if size_mb is not None and size_mb < 100:
+            classes.append("size-under-100")
+    return f' class="{" ".join(classes)}"' if classes else ""
+
+
+def base_rows_html(rows):
     out = []
     for r in rows:
-        built = r["image_size"] not in ("NOT BUILT", "")
-        classes = [] if built else ["not-built"]
-        if built:
-            size_mb = size_to_mb(r["image_size"])
-            if size_mb is not None and size_mb < 100:
-                classes.append("size-under-100")
-        css = f' class="{" ".join(classes)}"' if classes else ""
         out.append(f"""
-        <tr{css}>
+        <tr{row_classes(r)}>
+          <td class="image-name">{html.escape(r['image'])}</td>
+          {cell(r['image_size'])}
+          {cell(r['packages'])}
+        </tr>""")
+    return "\n".join(out)
+
+
+def app_rows_html(rows):
+    out = []
+    for r in rows:
+        out.append(f"""
+        <tr{row_classes(r)}>
           <td class="image-name">{html.escape(r['image'])}</td>
           {cell(r['image_size'])}
           {cell(r['app_size'])}
@@ -156,6 +181,7 @@ PAGE_TEMPLATE = """<!doctype html>
   .subtitle {{ color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }}
   section {{ margin-bottom: 3rem; }}
   h2 {{ font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
+  h3 {{ font-size: 0.95rem; color: var(--muted); margin: 1.75rem 0 0; text-transform: uppercase; letter-spacing: 0.04em; }}
   p.hint {{ color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 1rem; }}
   .table-scroll {{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }}
   table {{ border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); font-variant-numeric: tabular-nums; }}
@@ -180,6 +206,24 @@ PAGE_TEMPLATE = """<!doctype html>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
+
+    <h3>Base Images</h3>
+    <p class="hint">Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Image Size</th><th>Packages</th>
+          </tr>
+        </thead>
+        <tbody>
+          {base_rows}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>hello-conference Images</h3>
     <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
     <div class="table-scroll">
       <table>
@@ -190,7 +234,7 @@ PAGE_TEMPLATE = """<!doctype html>
           </tr>
         </thead>
         <tbody>
-          {images_rows}
+          {app_rows}
         </tbody>
       </table>
     </div>
@@ -239,12 +283,14 @@ def main():
 
     images_rows = parse_table(images_text, IMAGES_COLS)
     perf_rows = parse_table(perf_text, PERF_COLS)
-    print(f"  images: {len(images_rows)} rows   performance: {len(perf_rows)} rows")
+    base_rows, app_rows = split_base_app(images_rows)
+    print(f"  images: {len(base_rows)} base + {len(app_rows)} app rows   performance: {len(perf_rows)} rows")
 
     out = PAGE_TEMPLATE.format(
         title=html.escape(args.title),
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        images_rows=images_rows_html(images_rows) if images_rows else '<tr><td colspan="5">No results.</td></tr>',
+        base_rows=base_rows_html(base_rows) if base_rows else '<tr><td colspan="3">No results.</td></tr>',
+        app_rows=app_rows_html(app_rows) if app_rows else '<tr><td colspan="5">No results.</td></tr>',
         perf_rows=perf_rows_html(perf_rows) if perf_rows else '<tr><td colspan="5">No results.</td></tr>',
     )
 
