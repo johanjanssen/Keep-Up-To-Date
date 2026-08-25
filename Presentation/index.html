@@ -211,43 +211,10 @@ function buildCharts() {
         }
     });
 
-    // Image size vs CVE count — live data: docker images (size) + compare.sh (Grype CVEs)
-    makeChart('chartImageSize', {
-        type: 'bar',
-        data: {
-            labels: ['jre-temurin','jlink-full-debian','jlink-minimal-debian','jlink-cds-debian','crac-azul-debian','native-debian','native-distroless-debian','native-scratch'],
-            datasets: [
-                {
-                    label: 'Image Size (MB)',
-                    data: [518,264,189,245,362,229,97,91],
-                    backgroundColor: [C.red,C.orange,C.yellow,C.yellow,C.cyan,C.purple,C.green,C.green],
-                    borderRadius: 4,
-                    yAxisID: 'ySize'
-                },
-                {
-                    type: 'line',
-                    label: 'CVEs (Grype)',
-                    data: [110,29,29,29,29,79,0,0],
-                    borderColor: C.pink,
-                    backgroundColor: C.pink,
-                    pointRadius: 4,
-                    tension: 0.2,
-                    yAxisID: 'yCves'
-                }
-            ]
-        },
-        options: {
-            plugins: {
-                legend: { display: true, labels: { color: C.fg, font: { size: 12 } } },
-                title:  { display: true, text: 'Image size (MB) vs CVE count — live data', color: C.fg, font: { size: 13 } }
-            },
-            scales: {
-                x:     { ...axis({ font: { size: 10 } }), grid: { display: false } },
-                ySize: { ...axis(), position: 'left',  title: { display: true, text: 'MB',  color: C.fg } },
-                yCves: { ...axis(), position: 'right', title: { display: true, text: 'CVEs', color: C.fg }, grid: { display: false } }
-            }
-        }
-    });
+    // Note: the "Image Size vs CVE Count" charts (base / Java / hello-conference
+    // images) are no longer hardcoded here — see the "Live Image Size vs CVE
+    // Count charts" block below buildCharts(), which fetches real numbers from
+    // chart-data/*.json and renders chartBaseImages / chartJavaImages / chartAppImages.
 
     // Plain horizontal bar example
     makeChart('chartExample', {
@@ -311,6 +278,155 @@ function tryRender(slide) {
 
 Reveal.on('ready',        e => tryRender(e.currentSlide));
 Reveal.on('slidechanged', e => tryRender(e.currentSlide));
+
+// ─── Live "Image Size vs CVE Count" charts ─────────────────────────────────
+//
+// Three groups — generic OS base images, Java JRE/JDK/GraalVM base images,
+// and hello-conference app images — mirroring images.conf's own
+// BASE_IMAGES_GENERIC / BASE_IMAGES_JAVA / APP_IMAGES split (the single
+// source of truth every report in this repo already reads from).
+//
+// Data comes from two GitHub Actions workflows that publish JSON to the same
+// gh-pages chart-data/ folder (see .github/workflows/measure-images.yml and
+// compare-scans.yml):
+//   image-sizes.json  — Build Docker Images/scripts/generate-html-report.py
+//   cve-counts.json   — Compare Security Scans/scripts/generate-html-report.py
+// Both are already grouped generic/java/app AND already ordered the same way
+// as images.conf's arrays (the Python that produces them reads that order
+// directly) — so merging is a simple by-name lookup, not a re-sort.
+//
+// This fetch is kicked off immediately (not gated on slide visibility) so
+// the data is normally ready well before a live talk reaches this slide.
+// renderGroupCharts() is re-run on every slide change and whenever the fetch
+// settles, and only builds a chart once its canvas is both visible
+// (offsetWidth > 0 — same sharp-canvas requirement as makeChart) and not
+// already built, so a slow network never produces a blurry 0-width chart —
+// it just renders next time the slide is (re-)shown. If the data can't be
+// loaded (or a group is empty), the canvas is hidden and replaced with a
+// short message rather than ever showing fabricated numbers.
+const CHART_DATA_BASE_URL = 'https://johanjanssen.github.io/Keep-Up-To-Date/chart-data/';
+let liveChartData = null;   // { generic:[...], java:[...], app:[...] } once loaded
+let liveChartFailed = false;
+
+const GROUP_CHART_SPECS = [
+    { id: 'chartBaseImages', key: 'generic', countEl: 'baseImageCount',
+      title: 'Base OS images — size (MB) vs CVE count (Grype) — live data' },
+    { id: 'chartJavaImages', key: 'java', countEl: 'javaImageCount',
+      title: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs CVE count (Grype) — live data' },
+    { id: 'chartAppImages', key: 'app', countEl: 'appImageCount',
+      title: 'hello-conference app images — size (MB) vs CVE count (Grype) — live data' },
+];
+
+function mergeSizeAndCveGroup(sizeRows, cveRows) {
+    const cveByName = new Map((cveRows || []).map(r => [r.name, r.cves]));
+    return (sizeRows || []).map(r => ({
+        name: r.name,
+        size_mb: r.size_mb,
+        cves: cveByName.has(r.name) ? cveByName.get(r.name) : null
+    }));
+}
+
+// Bars are colored by that image's own CVE count (not by size) — same
+// good/warn/bad severity read as the tag-good/tag-warn/tag-bad table cells
+// earlier in this chapter, just applied per-bar instead of per-row.
+function sizeBarColor(cves) {
+    if (cves === null || cves === undefined) return C.purple; // unknown — no matching scan yet
+    if (cves === 0)   return C.green;
+    if (cves < 30)    return C.yellow;
+    if (cves < 80)    return C.orange;
+    return C.red;
+}
+
+function buildGroupChartConfig(rows, titleText) {
+    return {
+        type: 'bar',
+        data: {
+            labels: rows.map(r => r.name),
+            datasets: [
+                {
+                    label: 'Image Size (MB)',
+                    data: rows.map(r => r.size_mb),
+                    backgroundColor: rows.map(r => sizeBarColor(r.cves)),
+                    borderRadius: 4,
+                    yAxisID: 'ySize'
+                },
+                {
+                    type: 'line',
+                    label: 'CVEs (Grype)',
+                    data: rows.map(r => r.cves),
+                    borderColor: C.pink,
+                    backgroundColor: C.pink,
+                    pointRadius: 4,
+                    tension: 0.2,
+                    spanGaps: true,
+                    yAxisID: 'yCves'
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                legend: { display: true, labels: { color: C.fg, font: { size: 12 } } },
+                title:  { display: true, text: titleText, color: C.fg, font: { size: 12 } }
+            },
+            scales: {
+                x:     { ...axis({ font: { size: 9 } }), grid: { display: false } },
+                ySize: { ...axis(), position: 'left',  title: { display: true, text: 'MB',  color: C.fg } },
+                yCves: { ...axis(), position: 'right', title: { display: true, text: 'CVEs', color: C.fg }, grid: { display: false } }
+            }
+        }
+    };
+}
+
+function showChartFallback(canvas) {
+    if (canvas.dataset.fallbackShown) return;
+    canvas.dataset.fallbackShown = '1';
+    canvas.style.display = 'none';
+    const msg = document.createElement('p');
+    msg.className = 'small';
+    msg.style.color = '#dc322f';
+    msg.textContent = '⚠ Live chart data isn’t available right now — see the latest "Measure Docker Images" / "Compare Security Scans" workflow runs for current numbers.';
+    canvas.insertAdjacentElement('afterend', msg);
+}
+
+function renderGroupCharts() {
+    if (!liveChartData && !liveChartFailed) return; // fetch still in flight
+    GROUP_CHART_SPECS.forEach(spec => {
+        const canvas = document.getElementById(spec.id);
+        if (!canvas || canvas._chart || !canvas.offsetWidth) return; // not on this slide, not visible, or already built
+        const rows = liveChartData && liveChartData[spec.key];
+        if (!rows || !rows.length) {
+            showChartFallback(canvas);
+            return;
+        }
+        makeChart(spec.id, buildGroupChartConfig(rows, spec.title));
+        const countEl = document.getElementById(spec.countEl);
+        if (countEl) countEl.textContent = rows.length;
+    });
+}
+
+async function loadLiveChartData() {
+    try {
+        const [sizesRes, cvesRes] = await Promise.all([
+            fetch(CHART_DATA_BASE_URL + 'image-sizes.json', { cache: 'no-store' }),
+            fetch(CHART_DATA_BASE_URL + 'cve-counts.json',  { cache: 'no-store' })
+        ]);
+        if (!sizesRes.ok || !cvesRes.ok) throw new Error(`HTTP ${sizesRes.status}/${cvesRes.status}`);
+        const [sizes, cves] = await Promise.all([sizesRes.json(), cvesRes.json()]);
+        liveChartData = {
+            generic: mergeSizeAndCveGroup(sizes.generic, cves.generic),
+            java:    mergeSizeAndCveGroup(sizes.java,    cves.java),
+            app:     mergeSizeAndCveGroup(sizes.app,     cves.app)
+        };
+    } catch (e) {
+        console.error('Live chart data unavailable:', e);
+        liveChartFailed = true;
+    }
+    renderGroupCharts();
+}
+loadLiveChartData();
+
+Reveal.on('ready',        renderGroupCharts);
+Reveal.on('slidechanged', renderGroupCharts);
 
 // ─── Live PlantUML rendering ────────────────────────────────────────────────
 //

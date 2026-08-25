@@ -69,13 +69,15 @@ jobs:
             "Build Docker Images/target/results/html/index.html" \
             "Build Docker Images/target/results/html-custom/index.html" \
             --title "Docker Image Size & Performance Comparison" \
-            --custom-title "hello-conference Image & Performance Comparison"
+            --custom-title "hello-conference Image & Performance Comparison" \
+            --json-out "Build Docker Images/target/results/image-sizes.json"
 
       - name: Prepare Pages directories
         run: |
-          mkdir -p tmp/pages tmp/pages-custom
+          mkdir -p tmp/pages tmp/pages-custom tmp/pages-chart-data
           cp "Build Docker Images/target/results/html/index.html" tmp/pages/
           cp "Build Docker Images/target/results/html-custom/index.html" tmp/pages-custom/
+          cp "Build Docker Images/target/results/image-sizes.json" tmp/pages-chart-data/
 
       # Published as their own subfolders (destination_dir + keep_files) rather
       # than actions/deploy-pages: this repo has multiple workflows publishing to
@@ -113,6 +115,27 @@ jobs:
             keep_files: true
 
       # Now the hello-conference report is available under https://johanjanssen.github.io/Keep-Up-To-Date/custom-images[/index.html]
+
+      # chart-data/ is shared with the Compare Security Scans workflow below —
+      # this step contributes image-sizes.json, that one contributes
+      # cve-counts.json, into the SAME destination_dir. keep_files: true (plus
+      # publish_dir here containing only image-sizes.json) means this deploy
+      # never touches cve-counts.json, whichever workflow last wrote it.
+      # Presentation/index.html fetches both files client-side and merges them
+      # by image name to drive the live "Image Size vs CVE Count" charts.
+      - name: Deploy to GitHub Pages (chart-data/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages-chart-data
+            destination_dir: chart-data
+            keep_files: true
+
+      # Now available at https://johanjanssen.github.io/Keep-Up-To-Date/chart-data/image-sizes.json
 
       - name: Upload measurement data
         uses: actions/upload-artifact@v4
