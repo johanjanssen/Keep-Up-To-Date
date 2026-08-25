@@ -24,8 +24,11 @@ empty field between two delimiters parses as "" rather than disappearing.
 Usage:
   python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> <output_html> [--title "..."]
 """
-import argparse, html, os, re
+import argparse, html, os, re, subprocess
 from datetime import datetime, timezone
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
 # ── Field layouts (must mirror the printf field ORDER in the two shell
 # scripts — widths don't need to match since fields are "|"-delimited, not
@@ -102,25 +105,37 @@ def split_base_app(rows):
     return base_rows, app_rows
 
 
-# Keyword match (case-insensitive substring) rather than an explicit image
-# allowlist, so a new Java base image added to images.conf lands in the right
-# table without this file needing a matching update. "java" itself catches
-# gcr.io/distroless/java25-debian13, which carries none of the other keywords.
-JAVA_IMAGE_KEYWORDS = ("jdk", "jre", "graalvm", "openjdk", "corretto", "liberica", "semeru", "zulu", "temurin", "java")
+# images.conf (bash) is the single source of truth for which base images are
+# "generic OS" vs "Java runtime" — both this report and the Compare Security
+# Scans report read BASE_IMAGES_JAVA from it directly (by asking bash to
+# source the file and print the array) rather than each guessing from the
+# image name with its own keyword list. Add a new Java base image to
+# BASE_IMAGES_JAVA in images.conf and every report picks it up automatically.
+def load_java_base_image_names(repo_root=REPO_ROOT):
+    images_conf = os.path.join(repo_root, "images.conf")
+    script = 'source "$1"; printf "%s\\n" "${BASE_IMAGES_JAVA[@]}"'
+    try:
+        result = subprocess.run(
+            ["bash", "-c", script, "bash", images_conf],
+            capture_output=True, text=True, check=True,
+        )
+        return set(line for line in result.stdout.splitlines() if line)
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
+        # Report generation shouldn't hard-fail just because the categorisation
+        # couldn't be loaded — fall back to treating every base image as
+        # "generic" (a wrong-but-safe default: nothing is misplaced into the
+        # Java table, everything just lands in the plainer one instead).
+        print(f"  WARN could not read BASE_IMAGES_JAVA from {images_conf}: {e}")
+        return set()
 
 
-def is_java_image(image_name):
-    lower = image_name.lower()
-    return any(keyword in lower for keyword in JAVA_IMAGE_KEYWORDS)
-
-
-def split_generic_java(base_rows):
+def split_generic_java(base_rows, java_image_names):
     """Split base images into 'normal' OS images (debian, alpine, ubuntu, …)
     and Java-runtime images (anything bundling a JDK, JRE, or GraalVM) so the
     size/package comparison stays meaningful for each audience instead of
     mixing e.g. alpine:3 in with eclipse-temurin:25-jdk."""
-    java_rows = [r for r in base_rows if is_java_image(r["image"])]
-    generic_rows = [r for r in base_rows if not is_java_image(r["image"])]
+    java_rows = [r for r in base_rows if r["image"] in java_image_names]
+    generic_rows = [r for r in base_rows if r["image"] not in java_image_names]
     return generic_rows, java_rows
 
 
@@ -335,7 +350,7 @@ def main():
     images_rows = parse_table(images_text, IMAGES_FIELDS)
     perf_rows = parse_table(perf_text, PERF_FIELDS)
     base_rows, app_rows = split_base_app(images_rows)
-    generic_base_rows, java_base_rows = split_generic_java(base_rows)
+    generic_base_rows, java_base_rows = split_generic_java(base_rows, load_java_base_image_names())
     print(f"  images: {len(generic_base_rows)} generic base + {len(java_base_rows)} java base + "
           f"{len(app_rows)} app rows   performance: {len(perf_rows)} rows")
 
