@@ -1,4 +1,64 @@
 <section>
-    <h1>Core Features</h1>
-    <p>This content comes from the features file.</p>
+    <h1 style="font-size:1.45em;line-height:1.2;">Keeping Your Code, Dependencies,<br>and Runtime Up to Date</h1>
+    <p class="subtitle">Practical strategies for modern software teams</p>
+    <p style="margin-top:1.5em;font-size:0.78em;">
+        <strong>Johan Janssen</strong><br>
+        <span style="font-size:0.75em;color:#bd93f9;">Software developer / architect at ASML</span>
+    </p>
+</section>
+
+<section>
+    <img src="pictures/QuestionMark.svg" class="r-stretch">
+</section>
+
+<section>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+        <img src="pictures/Concept.jpg" style="width: 45%;" alt="First image" class="r-stretch">
+        <img src="pictures/Example.jpg" style="width: 45%;" alt="Second image" class="r-stretch">
+    </div>
+</section>
+
+<section>
+    <img src="pictures/Java.svg"class="r-stretch">
+</section>
+
+<section>
+    <h2>Follow along on GitHub</h2>
+    <p class="subtitle">Presentation:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/" target="_blank">↗ johanjanssen.github.io/Keep-Up-To-Date/Presentation/</a>
+
+    <p class="subtitle">Sourcecode, scripts, demos, builds:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://github.com/johanjanssen/Keep-Up-To-Date" target="_blank">↗ github.com/johanjanssen/Keep-Up-To-Date</a>
+</section>
+
+<section>
+    <h2>Agenda</h2>
+    <div class="two-col medium">
+        <div><ol>
+            <li>The problem or actually the solution! show security issues, performance improvements and lots of packages. What's your situation?</li>
+            <li>But, but,  ... AI</li>
+            <li>Update or remove?</li>
+            <li>Minimizing OS level dependencies Minimize attack surface JDK/JRE / remove stuff, small Docker image</li>
+            <li>Minimizing code dependencies example mvn dependency:analyze <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.11.0</version> <!-- Use the latest version -->
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <!-- Example: Tell Maven to ignore an unused database driver -->
+                        <ignoredUnusedDeclaredDependency>org.postgresql:postgresql</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
+            </plugin></li>
+            <li>Minimizing source code Jacoco/Azul</li>
+            <li>Native images and Coordinated Restore at Checkpoint (CRaC) tradeoff</li>
+        </ol></div>
+        <div><ol start="8">
+            <li>Updating OS level dependencies Dependabot/Renovate also Dockerfile FROM statements</li>
+            <li>Updating code dependencies Old GroupIds Alerter (OGA) / Renovate https://docs.renovatebot.com/presets-replacements/</li>
+            <li>Updating source code OpenRewrite smaller example</li>
+            <li>Testing — why it's the precondition for safely updating or removing anything</li>
+            <li>Key takeaways and conclusion</li>
+        </ol></div>
+    </div>
 </section>
