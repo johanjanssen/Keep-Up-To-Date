@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate two self-contained static HTML severity-comparison reports
-(Grype vs Trivy) from Trivy/Grype JSON scan results:
+(Grype vs Trivy vs OSV-Scanner) from Trivy/Grype/OSV-Scanner JSON scan results:
 
   - a "base images" report (generic OS images + Java runtime images) — the
     general-purpose comparison, published at /image-scans
@@ -11,7 +11,7 @@ Generate two self-contained static HTML severity-comparison reports
 Meant to be published as-is to GitHub Pages — no external assets, no build step.
 
 Usage:
-  python3 generate-html-report.py <trivy_dir> <grype_dir> \\
+  python3 generate-html-report.py <trivy_dir> <grype_dir> <osv_dir> \\
       <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."]
 """
 import argparse, html, importlib.util, os, subprocess
@@ -71,7 +71,7 @@ def summary_rows_html(items):
         return f'<td class="num total {tool_class}">{count}</td>' if count else '<td class="num muted">–</td>'
 
     rows = []
-    for img, g, t, unique_grype, unique_trivy in items:
+    for img, g, t, o, unique_grype, unique_trivy, unique_osv in items:
         rows.append(f"""
         <tr>
           <td class="image-name">{html.escape(img)}</td>
@@ -85,8 +85,14 @@ def summary_rows_html(items):
           {sev_cell(t['HIGH'], 'high')}
           {sev_cell(t['MEDIUM'], 'med')}
           {sev_cell(t['LOW'], 'low')}
+          <td class="num total osv">{o['_total']}</td>
+          {sev_cell(o['CRITICAL'], 'crit')}
+          {sev_cell(o['HIGH'], 'high')}
+          {sev_cell(o['MEDIUM'], 'med')}
+          {sev_cell(o['LOW'], 'low')}
           {unique_cell(unique_grype, 'grype')}
           {unique_cell(unique_trivy, 'trivy')}
+          {unique_cell(unique_osv, 'osv')}
         </tr>""")
     return "\n".join(rows)
 
@@ -101,13 +107,15 @@ def severity_table_html(subtitle, rows_html):
             <th class="image-col"></th>
             <th colspan="5" class="grype-hdr">Grype</th>
             <th colspan="5" class="trivy-hdr">Trivy</th>
-            <th colspan="2" class="unique-hdr">Unique</th>
+            <th colspan="5" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
             <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Unique in Grype</th><th>Unique in Trivy</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in Grype</th><th>Unique in Trivy</th><th>Unique in OSV</th>
           </tr>
         </thead>
         <tbody>
@@ -122,7 +130,7 @@ def severity_table_html(subtitle, rows_html):
 PAGE_STYLE = """
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
-    --grype: #E65100; --trivy: #1565C0;
+    --grype: #E65100; --trivy: #1565C0; --osv: #00796B;
     --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
@@ -159,10 +167,12 @@ PAGE_STYLE = """
   thead tr.group th { font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
   th.grype-hdr { background: #BF360C; color: #fff; }
   th.trivy-hdr { background: #0D47A1; color: #fff; }
+  th.osv-hdr   { background: #00695C; color: #fff; }
   th.unique-hdr { background: #37474F; color: #fff; }
   tbody tr:nth-child(even) { background: var(--alt-row); }
   td.total.grype { font-weight: 700; color: var(--grype); }
   td.total.trivy { font-weight: 700; color: var(--trivy); }
+  td.total.osv   { font-weight: 700; color: var(--osv); }
   td.crit { color: var(--crit); font-weight: 600; }
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
@@ -216,43 +226,46 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("trivy_dir")
     parser.add_argument("grype_dir")
+    parser.add_argument("osv_dir", help="OSV-Scanner JSON results dir")
     parser.add_argument("base_output_html", help="Output path for the base-images report (published at /image-scans)")
     parser.add_argument("custom_output_html", help="Output path for the hello-conference report (published at /custom-image-scans)")
-    parser.add_argument("--title", default="Container Image CVE Comparison — Trivy vs Grype")
-    parser.add_argument("--custom-title", default="hello-conference Image CVE Comparison — Trivy vs Grype")
+    parser.add_argument("--title", default="Container Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
+    parser.add_argument("--custom-title", default="hello-conference Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
     args = parser.parse_args()
 
-    items = gc.load_all(args.trivy_dir, args.grype_dir)
+    items = gc.load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
     if not items:
         print("  No JSON results found — writing placeholder pages.")
 
     generic_items, java_items, app_items = split_three(items, load_java_base_image_names())
     print(f"  images: {len(generic_items)} generic base + {len(java_items)} java base + {len(app_items)} app rows")
 
-    no_results = '<tr><td colspan="13">No results.</td></tr>'
+    no_results = '<tr><td colspan="19">No results.</td></tr>'
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    subtitle_common = (
+        f"Generated {generated} &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and "
+        f'<strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; '
+        f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
+        f'"Unique in X" = found by X but by neither of the other two tools &middot; '
+    )
 
-    base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy</h2>" + \
+    base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("Base Images", summary_rows_html(generic_items) if generic_items else no_results) + \
         severity_table_html("Java Runtime Images (JDK / JRE / GraalVM)", summary_rows_html(java_items) if java_items else no_results) + \
         "\n  </section>\n"
     base_page = render_page(
         title=html.escape(args.title),
-        subtitle=f"Generated {generated} &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; "
-                  f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
-                  f'see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a>',
+        subtitle=subtitle_common + 'see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a>',
         section=base_section,
     )
     write_html(args.base_output_html, base_page)
 
-    custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy</h2>" + \
+    custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("hello-conference Images", summary_rows_html(app_items) if app_items else no_results) + \
         "\n  </section>\n"
     custom_page = render_page(
         title=html.escape(args.custom_title),
-        subtitle=f"Generated {generated} &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; "
-                  f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
-                  f'see also <a href="../image-scans/">base image CVE comparison</a>',
+        subtitle=subtitle_common + 'see also <a href="../image-scans/">base image CVE comparison</a>',
         section=custom_section,
     )
     write_html(args.custom_output_html, custom_page)

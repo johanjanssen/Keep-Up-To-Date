@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# compare.sh — Parse results from Grype, Trivy, and OWASP and produce comparison views:
-#   1. Severity count comparison (Grype + Trivy) with coverage indicator
+# compare.sh — Parse results from Grype, Trivy, OSV-Scanner, and OWASP and produce comparison views:
+#   1. Severity count comparison — Grype, Trivy, and OSV-Scanner side-by-side, each with
+#      a "unique" column (a CVE that tool found and neither of the other two did)
 #   2. OS-level vs Application-level vulnerability breakdown
 #
-# Run after: scan-grype.sh, scan-trivy.sh, and OWASP Dependency Check/scripts/run-check.sh
+# Run after: scan-grype.sh, scan-trivy.sh, scan-osv.sh, and OWASP Dependency Check/scripts/run-check.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -52,15 +53,53 @@ count_grype() {
     ' "$FILE" 2>/dev/null || echo "- - - - - -"
 }
 
+count_osv() {
+    local FILE="$1"
+    [[ -f "$FILE" ]] || { echo "- - - - - -"; return; }
+    # Severity bucketing mirrors OSV/scripts/compare-images.sh's JQ_SEVERITY —
+    # see there for the full rationale (GHSA database_specific.severity first,
+    # then a vendor-rated severity[] entry, else UNKNOWN; no CVSS-vector math).
+    jq -r '
+        def norm_sev($s):
+            ($s | ascii_upcase) as $u
+            | if   $u == "CRITICAL" then "CRITICAL"
+              elif ($u == "HIGH" or $u == "IMPORTANT") then "HIGH"
+              elif ($u == "MEDIUM" or $u == "MODERATE") then "MEDIUM"
+              elif ($u == "LOW" or $u == "NEGLIGIBLE" or $u == "UNIMPORTANT") then "LOW"
+              else "UNKNOWN"
+              end;
+        def osv_severity:
+            if (.database_specific.severity | type) == "string" and (.database_specific.severity | length) > 0 then
+                norm_sev(.database_specific.severity)
+            else
+                ((.severity // []) | map(select(.type != "CVSS_V2" and .type != "CVSS_V3" and .type != "CVSS_V4")) | .[0].score) as $vs
+                | if ($vs | type) == "string" and ($vs | length) > 0 then norm_sev($vs) else "UNKNOWN" end
+            end;
+        [.results[]? | .packages[]? | .vulnerabilities[]?] | unique_by(.id) |
+        {
+            total: length,
+            critical: (map(select(osv_severity == "CRITICAL")) | length),
+            high:     (map(select(osv_severity == "HIGH"))     | length),
+            medium:   (map(select(osv_severity == "MEDIUM"))   | length),
+            low:      (map(select(osv_severity == "LOW"))      | length),
+            unknown:  (map(select(osv_severity == "UNKNOWN"))  | length)
+        } | "\(.total) \(.critical) \(.high) \(.medium) \(.low) \(.unknown)"
+    ' "$FILE" 2>/dev/null || echo "- - - - - -"
+}
+
 extract_trivy_cve_ids() {
     local FILE="$1"
-    [[ -f "$FILE" ]] || return
+    # `return 0` (not bare `return`, which propagates the `[[ ]]`'s failing
+    # status) — under `set -e` a bare-status return here would abort the whole
+    # script the moment any one image is missing this tool's JSON (e.g. it
+    # wasn't built, or that scanner failed on it) via `IDS=$(extract_...)`.
+    [[ -f "$FILE" ]] || return 0
     jq -r '[.Results[]? | .Vulnerabilities // [] | .[].VulnerabilityID] | unique | .[]' "$FILE" 2>/dev/null
 }
 
 extract_grype_cve_ids() {
     local FILE="$1"
-    [[ -f "$FILE" ]] || return
+    [[ -f "$FILE" ]] || return 0
     # Grype often reports app-layer findings under a GHSA-* id while Trivy reports
     # the exact same vulnerability under its CVE-* id (e.g. GHSA-jjjh-jjxp-wpff is
     # CVE-2022-42003). Comparing raw ids would then count that one shared finding
@@ -76,14 +115,33 @@ extract_grype_cve_ids() {
     ' "$FILE" 2>/dev/null
 }
 
-# Count ids present in FILE_A's list but not in FILE_B's list (both already
-# CVE-normalized). Used for "Unique in X" — a finding X has that Y doesn't.
+extract_osv_cve_ids() {
+    local FILE="$1"
+    [[ -f "$FILE" ]] || return 0
+    # OSV findings are mostly native ids (GHSA-*, GO-*, UBUNTU-CVE-*, ...) rather
+    # than CVE-*. Prefer a real CVE id — from the id itself, its aliases (GHSA
+    # entries), or its upstream list (Ubuntu/Debian OS advisories) — so OSV lines
+    # up with Trivy/Grype's CVE-keyed ids. Falls back to the native id when no
+    # CVE alias exists, same as extract_grype_cve_ids above.
+    jq -r '
+        [.results[]? | .packages[]? | .vulnerabilities[]? |
+            (.id) as $id |
+            if ($id | startswith("CVE-")) then $id
+            else ((([(.aliases // [])[], (.upstream // [])[]]) | map(select(startswith("CVE-"))))[0]) // $id
+            end
+        ] | unique | .[]
+    ' "$FILE" 2>/dev/null
+}
+
+# Count ids present in FILE_A's list but not in the OTHER ids (already
+# CVE-normalized, newline-separated, may combine several tools' id lists).
+# Used for "Unique in X" — a finding X has that none of the other tools do.
 unique_count() {
-    local IDS_A="$1" IDS_B="$2"
+    local IDS_A="$1" IDS_OTHER="$2"
     [[ -z "$IDS_A" ]] && { echo "-"; return; }
     local MISSING=0
     while IFS= read -r ID; do
-        echo "$IDS_B" | grep -qxF "$ID" || MISSING=$((MISSING + 1))
+        echo "$IDS_OTHER" | grep -qxF "$ID" || MISSING=$((MISSING + 1))
     done <<< "$IDS_A"
     [[ $MISSING -eq 0 ]] && echo "-" || echo "$MISSING"
 }
@@ -155,36 +213,42 @@ count_owasp() {
 # ══════════════════════════════════════════════════════════════════
 echo ""
 echo "╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗"
-echo "║  VIEW 1: Severity Count Comparison — Grype vs Trivy                                                            ║"
+echo "║  VIEW 1: Severity Count Comparison — Grype vs Trivy vs OSV-Scanner                                              ║"
 echo "╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-BOTH_FMT="%-50s │ %5s %4s %4s %4s %4s %4s │ %5s %4s %4s %4s %4s %4s │ %-12s │ %-12s\n"
+BOTH_FMT="%-50s │ %5s %4s %4s %4s %4s %4s │ %5s %4s %4s %4s %4s %4s │ %5s %4s %4s %4s %4s %4s │ %-12s │ %-12s │ %-12s\n"
 
-printf "%-50s │ %-30s │ %-30s │ %-12s │ %-12s\n" "IMAGE" "  GRYPE (Tot/C/H/M/L/U)" "  TRIVY (Tot/C/H/M/L/U)" "Unique Grype" "Unique Trivy"
-printf '%s┼%s┼%s┼%s┼%s\n' "$(printf '─%.0s' {1..51})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..14})" "$(printf '─%.0s' {1..14})"
+printf "%-50s │ %-30s │ %-30s │ %-30s │ %-12s │ %-12s │ %-12s\n" "IMAGE" "  GRYPE (Tot/C/H/M/L/U)" "  TRIVY (Tot/C/H/M/L/U)" "  OSV (Tot/C/H/M/L/U)" "Unique Grype" "Unique Trivy" "Unique OSV"
+printf '%s┼%s┼%s┼%s┼%s┼%s┼%s\n' "$(printf '─%.0s' {1..51})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..32})" "$(printf '─%.0s' {1..14})" "$(printf '─%.0s' {1..14})" "$(printf '─%.0s' {1..14})"
 
 for IMG in "${ALL_IMAGES[@]}"; do
     FNAME=$(image_to_filename "$IMG")
     GRYPE_FILE="$RESULTS_DIR/grype/${FNAME}.json"
     TRIVY_FILE="$RESULTS_DIR/trivy/${FNAME}.json"
+    OSV_FILE="$RESULTS_DIR/osv/${FNAME}.json"
     GRYPE_COUNTS=$(count_grype "$GRYPE_FILE")
     TRIVY_COUNTS=$(count_trivy "$TRIVY_FILE")
+    OSV_COUNTS=$(count_osv "$OSV_FILE")
     GRYPE_CVES=$(extract_grype_cve_ids "$GRYPE_FILE")
     TRIVY_CVES=$(extract_trivy_cve_ids "$TRIVY_FILE")
-    UNIQUE_GRYPE=$(unique_count "$GRYPE_CVES" "$TRIVY_CVES")
-    UNIQUE_TRIVY=$(unique_count "$TRIVY_CVES" "$GRYPE_CVES")
+    OSV_CVES=$(extract_osv_cve_ids "$OSV_FILE")
+    UNIQUE_GRYPE=$(unique_count "$GRYPE_CVES" "$(printf '%s\n%s' "$TRIVY_CVES" "$OSV_CVES")")
+    UNIQUE_TRIVY=$(unique_count "$TRIVY_CVES" "$(printf '%s\n%s' "$GRYPE_CVES" "$OSV_CVES")")
+    UNIQUE_OSV=$(unique_count "$OSV_CVES" "$(printf '%s\n%s' "$GRYPE_CVES" "$TRIVY_CVES")")
     # shellcheck disable=SC2086
-    printf "$BOTH_FMT" "$IMG" $GRYPE_COUNTS $TRIVY_COUNTS "$UNIQUE_GRYPE" "$UNIQUE_TRIVY"
+    printf "$BOTH_FMT" "$IMG" $GRYPE_COUNTS $TRIVY_COUNTS $OSV_COUNTS "$UNIQUE_GRYPE" "$UNIQUE_TRIVY" "$UNIQUE_OSV"
 done
 
 echo ""
 echo "Legend: Tot=Total  C=Critical  H=High  M=Medium  L=Low  U=Unknown"
-echo "        All counts are unique CVEs (deduplicated by CVE ID, with Grype's GHSA ids resolved to their NVD CVE alias"
-echo "        via relatedVulnerabilities so the same finding under two different id schemes isn't double-counted)"
+echo "        All counts are unique CVEs (deduplicated by CVE ID, with Grype's GHSA ids and OSV's native ids resolved to"
+echo "        their CVE alias — via relatedVulnerabilities for Grype, aliases/upstream for OSV — so the same finding"
+echo "        under a different id scheme isn't double-counted or wrongly called 'unique')"
 echo "        '-' = scan not run, or no unique findings"
-echo "        Unique Grype = CVEs found by Grype but NOT by Trivy   Unique Trivy = CVEs found by Trivy but NOT by Grype"
+echo "        Unique Grype/Trivy/OSV = CVEs that tool found and NEITHER of the other two did"
 echo "        ⚠ Trivy may show 0 for Oracle Linux 10 images (e.g. GraalVM) — its vuln DB lacks OL10 coverage"
+echo "        ⚠ OSV often has no severity rating for OS-level CVEs (esp. Debian) — those count as UNKNOWN, not missing"
 
 # ══════════════════════════════════════════════════════════════════
 # VIEW 2: OS-level vs Application-level Breakdown
@@ -241,7 +305,9 @@ echo "║  • OS-level: vulnerabilities in distro packages (apt/rpm) — reduce
 echo "║  • App-level: vulnerabilities in JARs/dependencies — same across images (same app)                             ║"
 echo "║  • ⚠ OWASP scans a DIFFERENT project (demo with intentionally vulnerable deps like log4j 2.0,                 ║"
 echo "║    jackson-databind 2.9.10, Spring Boot 2.7) — NOT the hello-conference app that Trivy/Grype scan              ║"
-echo "║  • Unique Grype/Trivy = CVEs only that tool found — use both tools for best coverage                           ║"
+echo "║  • Unique Grype/Trivy/OSV = CVEs only that tool found — use multiple tools for best coverage                   ║"
+echo "║  • OSV-Scanner (View 1) adds a 3rd independent data source (OSV.dev) — but its OS-level severity data is       ║"
+echo "║    patchier than Grype/Trivy's (esp. Debian), so more of its findings land in the Unknown bucket here          ║"
 echo "╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 

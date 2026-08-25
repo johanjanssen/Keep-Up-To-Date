@@ -31,8 +31,9 @@ The presentation and demos can be viewed via [GitHub Pages](https://johanjanssen
 | [Performance Improvement/](#performance-improvement) | JMH benchmarks proving Java 17→25→28 EA (Valhalla) gives free speed & memory wins | `bash "Performance Improvement/scripts/run-benchmarks.sh"` |
 | [Grype/](#grype) | Image vulnerability scanning with Grype (Anchore) | `bash Grype/scripts/compare-images.sh` |
 | [Trivy/](#trivy) | Image vulnerability scanning with Trivy (Aqua Security) | `bash Trivy/scripts/compare-images.sh` |
+| [OSV/](#osv-scanner) | Image vulnerability scanning with OSV-Scanner (Google), matched against OSV.dev | `bash OSV/scripts/compare-images.sh` |
 | [OWASP Dependency Check/](#owasp-dependency-check) | Maven dependency scanning against the NVD database | `bash "OWASP Dependency Check/scripts/run-check.sh"` |
-| [Compare Security Scans/](#compare-security-scans) | Run Grype + Trivy + OWASP DC and compare results side-by-side | `bash "Compare Security Scans/scripts/run-all.sh"` |
+| [Compare Security Scans/](#compare-security-scans) | Run Grype + Trivy + OSV-Scanner + OWASP DC and compare results side-by-side | `bash "Compare Security Scans/scripts/run-all.sh"` |
 | [OpenRewrite/](#openrewrite) | Automated migration: Spring Boot 2→4, Java 17→25, JUnit 4→5 | `bash OpenRewrite/scripts/run-openrewrite.sh` |
 | [Old GroupIds Alerter/](#old-groupids-alerter) | Flags `pom.xml` dependencies declared under groupIds that moved (e.g. `javax.*` → `jakarta.*`) | `bash "Old GroupIds Alerter/scripts/run-oga.sh"` |
 | [Maven Dependency Plugin/](#maven-dependency-plugin) | Finds unused `pom.xml` dependencies with `dependency:analyze` — and the JDBC-driver false positive it gets wrong | `bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"` |
@@ -62,8 +63,8 @@ under its own subfolder so no workflow's output overwrites another's:
 | [`/images/`](https://johanjanssen.github.io/Keep-Up-To-Date/images/) | Build Docker Images — base OS & Java runtime image size comparison |
 | [`/custom-images/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-images/) | Build Docker Images — hello-conference image size & startup performance comparison |
 | [`/Benchmarks/`](https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/) | Performance Improvement — Java 17 vs 25 vs 28 EA benchmarks |
-| [`/image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/) | Compare Security Scans — base OS & Java runtime images, Trivy vs Grype |
-| [`/custom-image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/) | Compare Security Scans — hello-conference images, Trivy vs Grype |
+| [`/image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/) | Compare Security Scans — base OS & Java runtime images, Trivy vs Grype vs OSV-Scanner |
+| [`/custom-image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/) | Compare Security Scans — hello-conference images, Trivy vs Grype vs OSV-Scanner |
 | [`/OWASP/`](https://johanjanssen.github.io/Keep-Up-To-Date/OWASP/) | OWASP Dependency Check |
 | [`/OpenRewrite/`](https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/) | OpenRewrite migration recipes |
 | [`/renamed/`](https://johanjanssen.github.io/Keep-Up-To-Date/renamed/) | Old GroupIds Alerter |
@@ -83,7 +84,7 @@ Spring Boot 4.1 / Java 25 web application with **intentionally vulnerable** depe
 | `log4j-core` | `2.0` | CVE-2021-44228 (Log4Shell) | **10.0** |
 | `jackson-databind` | `2.9.10` | CVE-2019-14379 + others | 9.8 |
 
-Used as the scan target for Grype, Trivy, OWASP DC, and the Docker image builds.
+Used as the scan target for Grype, Trivy, OSV-Scanner, OWASP DC, and the Docker image builds.
 
 ---
 
@@ -194,6 +195,20 @@ bash Trivy/scripts/compare-images.sh                     # compare all images
 
 ---
 
+## OSV-Scanner
+
+Container image vulnerability scanning with [OSV-Scanner](https://github.com/google/osv-scanner)
+(by Google), matched against the [OSV.dev](https://osv.dev) database. Scans OS
+packages + language dependencies, same as Grype/Trivy.
+
+```bash
+bash OSV/scripts/update-db.sh                         # pull/refresh the scanner image
+bash OSV/scripts/scan-image.sh eclipse-temurin:25-jre  # scan one image
+bash OSV/scripts/compare-images.sh                     # compare all images
+```
+
+---
+
 ## OWASP Dependency Check
 
 Scans Maven dependencies (not OS packages) against the NVD database.
@@ -209,8 +224,9 @@ bash "OWASP Dependency Check/scripts/run-check.sh"       # scan vulnerable depen
 
 ## Compare Security Scans
 
-Runs Grype, Trivy, and OWASP DC against all images and produces comparison tables:
-severity counts side-by-side, and OS-level vs application-level breakdown.
+Runs Grype, Trivy, OSV-Scanner, and OWASP DC against all images and produces comparison
+tables: severity counts side-by-side (with a per-tool "Unique" column, including OSV-Scanner),
+and OS-level vs application-level breakdown.
 
 ```bash
 bash "Compare Security Scans/scripts/run-all.sh"

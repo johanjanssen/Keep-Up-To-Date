@@ -48,6 +48,59 @@ def load_trivy(path):
                 counts[sev if sev in counts else "UNKNOWN"] += 1
     counts["_total"] = sum(counts[s] for s in SEV_ORDER)
     return name, counts, seen
+def norm_sev(s):
+    # Shared by load_osv() below — mirrors the JQ_SEVERITY bucketing in
+    # OSV/scripts/compare-images.sh so the HTML report and the CLI table
+    # agree. GHSA-derived advisories use LOW/MODERATE/HIGH/CRITICAL; some
+    # vendor feeds (e.g. Ubuntu's OSV data) use low/medium/high/critical or
+    # importance words like "important"/"negligible"/"unimportant".
+    u = s.upper()
+    if u == "CRITICAL": return "CRITICAL"
+    if u in ("HIGH", "IMPORTANT"): return "HIGH"
+    if u in ("MEDIUM", "MODERATE"): return "MEDIUM"
+    if u in ("LOW", "NEGLIGIBLE", "UNIMPORTANT"): return "LOW"
+    return "UNKNOWN"
+def osv_severity(vuln):
+    # See OSV/scripts/compare-images.sh's JQ_SEVERITY for the full rationale.
+    ds = (vuln.get("database_specific") or {}).get("severity")
+    if isinstance(ds, str) and ds:
+        return norm_sev(ds)
+    vendor = [s for s in (vuln.get("severity") or []) if s.get("type") not in ("CVSS_V2", "CVSS_V3", "CVSS_V4")]
+    if vendor:
+        score = vendor[0].get("score")
+        if isinstance(score, str) and score:
+            return norm_sev(score)
+    return "UNKNOWN"  # no rating available (common for Debian OS CVEs, Go stdlib advisories, ...)
+def osv_cve_alias(vuln):
+    # Mirrors grype_cve_alias() below: prefer a real CVE id so OSV findings
+    # line up with Trivy/Grype's CVE-keyed ids in cross-tool comparisons.
+    vid = vuln.get("id", "")
+    if vid.startswith("CVE-"):
+        return vid
+    for rid in (vuln.get("aliases") or []) + (vuln.get("upstream") or []):
+        if rid.startswith("CVE-"):
+            return rid
+    return vid  # no CVE alias exists — genuinely OSV-only (e.g. a GO-* or plain UBUNTU-CVE-* id)
+def load_osv(path):
+    with open(path, encoding="utf-8-sig") as f:
+        data = json.load(f)
+    # OSV's image-scan JSON carries no image name/tag anywhere in it (unlike
+    # Trivy's ArtifactName / Grype's source.target.userInput) — fall back to
+    # the filename every time; load_all() below only uses this if trivy/grype
+    # didn't already supply a nicer name for the same image.
+    name = filename_to_image(path)
+    seen, cross_ids, counts = set(), set(), {s:0 for s in SEV_ORDER}
+    for result in data.get("results") or []:
+        for pkg in result.get("packages") or []:
+            for vuln in pkg.get("vulnerabilities") or []:
+                vid = vuln.get("id","")
+                if vid in seen:
+                    continue
+                seen.add(vid)
+                counts[osv_severity(vuln)] += 1
+                cross_ids.add(osv_cve_alias(vuln))
+    counts["_total"] = sum(counts[s] for s in SEV_ORDER)
+    return name, counts, cross_ids
 def grype_cve_alias(match):
     # Grype often reports app-layer findings under a GHSA-* id while Trivy reports
     # the exact same vulnerability under its CVE-* id (e.g. GHSA-jjjh-jjxp-wpff is
@@ -97,9 +150,9 @@ def load_image_order(repo_root=REPO_ROOT):
         # by Trivy total, same as before this ordering existed.
         print(f"  WARN could not read ALL_IMAGES from {images_conf}: {e}")
         return []
-def load_all(trivy_dir, grype_dir):
-    # Keyed by filename stem (stable join key — identical between the trivy/grype
-    # dirs since both are produced by the same images.conf#image_to_filename).
+def load_all(trivy_dir, grype_dir, osv_dir=None):
+    # Keyed by filename stem (stable join key — identical across the trivy/grype/osv
+    # dirs since all three are produced by the same images.conf#image_to_filename).
     # The display name comes from inside the JSON, not from reversing that key.
     results = {}
     for path in sorted(glob.glob(os.path.join(trivy_dir,"*.json"))):
@@ -120,18 +173,30 @@ def load_all(trivy_dir, grype_dir):
             entry["grype"] = counts
             entry["grype_ids"] = ids
         except Exception as e: print(f"  WARN grype {path}: {e}")
+    for path in sorted(glob.glob(os.path.join(osv_dir, "*.json"))) if osv_dir else []:
+        key = os.path.splitext(os.path.basename(path))[0]
+        try:
+            name, counts, ids = load_osv(path)
+            entry = results.setdefault(key, {})
+            entry.setdefault("name", name)
+            entry["osv"] = counts
+            entry["osv_ids"] = ids
+        except Exception as e: print(f"  WARN osv {path}: {e}")
     # Sort by Trivy total desc
     empty = {"_total":0,"CRITICAL":0,"HIGH":0,"MEDIUM":0,"LOW":0,"UNKNOWN":0}
     items = []
     for key, data in results.items():
         grype_ids = data.get("grype_ids", set())
         trivy_ids = data.get("trivy_ids", set())
+        osv_ids = data.get("osv_ids", set())
         items.append((
             data.get("name", filename_to_image(key)),
             data.get("grype", empty),
             data.get("trivy", empty),
-            len(grype_ids - trivy_ids),   # unique to Grype: found by Grype, not by Trivy
-            len(trivy_ids - grype_ids),   # unique to Trivy: found by Trivy, not by Grype
+            data.get("osv", empty),
+            len(grype_ids - trivy_ids - osv_ids),   # unique to Grype: found by Grype, not by Trivy or OSV
+            len(trivy_ids - grype_ids - osv_ids),   # unique to Trivy: found by Trivy, not by Grype or OSV
+            len(osv_ids - grype_ids - trivy_ids),   # unique to OSV: found by OSV, not by Grype or Trivy
         ))
     order = load_image_order()
     order_index = {name: i for i, name in enumerate(order)}
@@ -196,12 +261,13 @@ def main():
     parser.add_argument("trivy_dir")
     parser.add_argument("grype_dir")
     parser.add_argument("output_dir")
+    parser.add_argument("--osv-dir", default=None, help="Optional OSV-Scanner JSON results dir (adds it to the unique-CVE comparison)")
     parser.add_argument("--title", default="Container Image CVE Comparison — Trivy vs Grype")
     parser.add_argument("--prefix", default="scan")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
-    print(f"\nLoading results: trivy={args.trivy_dir}  grype={args.grype_dir}")
-    items = load_all(args.trivy_dir, args.grype_dir)
+    print(f"\nLoading results: trivy={args.trivy_dir}  grype={args.grype_dir}  osv={args.osv_dir}")
+    items = load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
     if not items:
         print("  No JSON files found."); sys.exit(0)
     print(f"  Images: {len(items)}")

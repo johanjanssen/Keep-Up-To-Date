@@ -53,10 +53,13 @@ jobs:
       - name: Scan with Trivy
         run: bash "Compare Security Scans/scripts/scan-trivy.sh"
 
+      - name: Scan with OSV-Scanner
+        run: bash "Compare Security Scans/scripts/scan-osv.sh"
+
       - name: Compare results (plain text)
         run: |
           bash "Compare Security Scans/scripts/compare.sh" 2>&1 | tee /tmp/compare-output.txt
-          echo "## 📊 Security Scan Comparison — Trivy vs Grype" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Security Scan Comparison — Trivy vs Grype vs OSV-Scanner" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat /tmp/compare-output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -67,6 +70,7 @@ jobs:
           python3 "Compare Security Scans/scripts/generate-html-report.py" \
             "Compare Security Scans/target/results/trivy" \
             "Compare Security Scans/target/results/grype" \
+            "Compare Security Scans/target/results/osv" \
             "Compare Security Scans/target/results/html/index.html" \
             "Compare Security Scans/target/results/html-custom/index.html" \
             --title "Container Image CVE Comparison — Trivy vs Grype" \
