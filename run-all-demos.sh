@@ -14,8 +14,8 @@
 #   6. OWASP DC — scan dependencies     (OWASP Dependency Check/)
 #   7. Compare all scan results         (Compare Security Scans/)
 #   8. Testcontainers integration tests (Testcontainers/)
-#   9. JaCoCo port-based demo           (Jacoco/)
-#  10. JaCoCo file-based demo           (Jacoco/)
+#   9. JaCoCo port-based demo           (JaCoCo/)
+#  10. JaCoCo file-based demo           (JaCoCo/)
 #  11. OpenRewrite dry-run              (OpenRewrite/)
 #  12. Old GroupIds Alerter check       (Old GroupIds Alerter/)
 #  13. Maven Dependency Plugin analyze  (Maven Dependency Plugin/)
@@ -146,10 +146,10 @@ run_step 8 "Testcontainers integration tests" \
 # ══════════════════════════════════════════════════════════════════════════════
 
 run_step 9 "JaCoCo port-based demo" \
-    bash "$ROOT_DIR/Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"
+    bash "$ROOT_DIR/JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"
 
 run_step 10 "JaCoCo file-based demo" \
-    bash "$ROOT_DIR/Jacoco/scripts/Retrieve Coverage From File/run-demo.sh"
+    bash "$ROOT_DIR/JaCoCo/scripts/Retrieve Coverage From File/run-demo.sh"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # OPENREWRITE
