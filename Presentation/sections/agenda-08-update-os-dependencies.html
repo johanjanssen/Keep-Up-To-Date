@@ -1,0 +1,40 @@
+<section>
+    <section>
+        <h2>🐳 The Layer You Forgot</h2>
+        <div class="medium">
+            <p>Every containerised application is built on a base image. That base image is a dependency — one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
+            <ol style="margin-top:0.6em;">
+                <li>You wrote <code>FROM mybase:v2</code> six months ago</li>
+                <li>That tag now points to a <strong>different image</strong> — rebuilt with OS patches</li>
+                <li>Your CI uses the <strong>cached layer from six months ago</strong></li>
+                <li>You are running vulnerable OS packages — <span class="tag-bad">and you don't know it</span></li>
+            </ol>
+        </div>
+    </section>
+
+    <section>
+        <h2>Pin Versions, Not Floating Tags</h2>
+        <div class="medium">
+            <p>Whether it's a Docker base image, a language runtime, or a build tool — <strong>floating version tags silently change under you</strong>.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.6em;">
+            <div class="box box-red">
+                <strong class="tag-bad">❌ Floating — dangerous</strong>
+                <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre
+# Rebuilt weekly. CI uses a stale
+# cached layer from months ago.</code></pre>
+            </div>
+            <div class="box box-green">
+                <strong class="tag-good">✅ Pinned — reproducible</strong>
+                <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre\
+@sha256:7ea65de6...</code></pre>
+                <small>Use automation to update the pin via PR.</small>
+            </div>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java tooling</span>
+            Commit <code>.sdkmanrc</code> (<code>java=25.0.1-tem</code>) and <code>mvnw</code> / <code>gradlew</code> wrappers — everyone and CI run the exact same versions.
+        </div>
+    </section>
+
+</section>

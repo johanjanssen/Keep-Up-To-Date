@@ -1,0 +1,223 @@
+<section>
+<section>
+    <h2>How's your situation?</h2>
+    <div class="medium">
+        <ul style="margin-top:0.8em;">
+            <li>Do you know what operating system (version) you're using?</li>
+            <li>Do you know which operating system packages you're using?</li>
+            <li>Do you know which libraries you're packaging in your application?</li>
+            <li>How many known security vulnerabilities does your application have?</li>
+            <li>Do you remove dead code and unused operating system packages and libraries?</li>
+            <li>How often do you / your team upgrade the versions of the software you're using?</li>
+        </ul>
+    </div>
+</section>
+
+    <section>
+        <h2>🚨 The "It Works, Don't Touch It" Trap</h2>
+        <div class="medium">
+            <p style="font-style:italic;color:#bd93f9;">"Projects don't drift maliciously — just one sprint at a time."</p>
+            <ul style="margin-top:0.8em;">
+                <li>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</li>
+                <li>You consciously chose a small fraction of them</li>
+                <li>The rest came with the territory — and each carries potential CVEs</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span><br>
+            A typical Spring Boot app: <strong>50–80 direct</strong>, <strong>200–400 transitive</strong> dependencies.<br>
+            <code>./mvnw dependency:tree | wc -l</code> — prepare to be surprised.
+        </div>
+    </section>
+
+    <section>
+        <h2>When Drift Becomes a Crisis</h2>
+        <div class="two-col medium">
+            <div class="box box-red">
+                <h3 style="color:#ff5555;">Log4Shell — Dec 2021</h3>
+                <ul>
+                    <li>CVSS <strong>10.0</strong> — maximum score</li>
+                    <li><strong>93%</strong> of cloud environments exposed</li>
+                    <li>Library vendor patched in <strong>2 hours</strong></li>
+                    <li>Most teams took <strong>weeks</strong> to deploy</li>
+                </ul>
+                <p class="small" style="margin-top:0.5em;color:#ffb86c;">Root cause: a logging library, unused by many teams, hadn't been reviewed in years</p>
+            </div>
+            <div class="box box-red">
+                <h3 style="color:#ff5555;">Spring4Shell — 2022</h3>
+                <ul>
+                    <li>CVE-2022-22965 in the framework itself</li>
+                    <li>Teams on old versions couldn't patch directly — had to upgrade the framework first</li>
+                </ul>
+                <p class="small" style="margin-top:0.5em;color:#ffb86c;">The version gap made patching a multi-week project instead of a one-day fix</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>The Compounding Cost of Delay</h2>
+        <div class="medium">
+            <ul>
+                <li><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</li>
+                <li><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</li>
+                <li><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span><br>
+            Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
+            Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
+        </div>
+        <p class="medium" style="margin-top:0.6em;font-style:italic;color:#bd93f9;">
+            "If it hurts, do it more often." — Martin Fowler
+        </p>
+    </section>
+
+    <section>
+        <h2>Mean Time to Patch (MTTP)</h2>
+        <p class="subtitle">Your most important security metric</p>
+        <div class="medium" style="margin-top:0.8em;">
+            <table>
+                <thead><tr><th>Update approach</th><th>Typical MTTP</th><th>Rating</th></tr></thead>
+                <tbody>
+                    <tr><td>Manual, quarterly review</td><td>30–90 days</td><td class="tag-bad">❌ Dangerous</td></tr>
+                    <tr><td>Weekly manual check</td><td>7–14 days</td><td class="tag-warn">⚠️ Acceptable</td></tr>
+                    <tr><td>Automated bots + auto-merge</td><td>30 min – 2 hours</td><td class="tag-good">✅ Best practice</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="medium" style="margin-top:0.8em;">
+            Industry benchmark: critical CVE → patched in production within <strong style="color:#ff5555;">72 hours</strong>.<br>
+            You cannot hit that with manual quarterly updates.
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Two Layers of Scanning</h2>
+        <p class="subtitle">They find different things — you need both</p>
+        <div class="two-col medium" style="margin-top:0.8em;">
+            <div class="box">
+                <h3>Layer 1: Source / Build Time</h3>
+                <p><em>What you declared</em></p>
+                <ul>
+                    <li>Scans your dependency manifest</li>
+                    <li>Fast, integrates with CI</li>
+                    <li>Misses OS-level and transitive-only packages</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>Layer 2: Runtime / Image</h3>
+                <p><em>What actually ships</em></p>
+                <ul>
+                    <li>Scans OS packages + language libs in the artifact</li>
+                    <li>Finds what build-time scanning misses</li>
+                    <li>Closer to what attackers see</li>
+                </ul>
+            </div>
+        </div>
+        <div class="box box-blue small" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Java example</span>
+            Layer 1: OWASP Dependency Check scans <code>pom.xml</code>. Layer 2: Trivy / Grype scan the Docker image (OS pkgs + all JARs). A transitive JAR pulled in by a framework won't appear in Layer 1 if it's not declared.
+        </div>
+    </section>
+
+    <section>
+        <h2>Source-Level Scanning</h2>
+        <div class="medium">
+            <p>Scan dependency manifests against a vulnerability database as part of the build. Fail the build on high-severity findings.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ OWASP Dependency Check</span>
+            <pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.owasp&lt;/groupId&gt;
+    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+            <pre><code class="language-bash">bash "OWASP Dependency Check/scripts/run-check.sh"
+# log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
+# jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml" target="_blank">▶ Run Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+    <section>
+        <h2>Image / Artifact Scanning</h2>
+        <div class="medium">
+            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-blue">
+                <span class="java-pill">☕ Grype (Anchore)</span>
+                <ul><li>OS packages + language deps</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
+                <pre><code class="language-bash">bash Grype/scripts/scan-image.sh \
+  eclipse-temurin:25-jre</code></pre>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">☕ Trivy (Aqua)</span>
+                <ul><li>OS packages + language deps</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
+                <pre><code class="language-bash">bash Trivy/scripts/scan-image.sh \
+  eclipse-temurin:25-jre</code></pre>
+            </div>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml" target="_blank">▶ Grype</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml/badge.svg" alt="" style="vertical-align:middle;margin-right:0.5em;">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml" target="_blank">▶ Trivy</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+    <section>
+        <h2>Two Scanners, Different Results</h2>
+        <p class="subtitle">Different databases → different findings — use both for complete coverage</p>
+        <div class="chart-wrap"><canvas id="chartScanners" height="300"></canvas></div>
+        <p class="small" style="margin-top:0.4em;">Live data — <code>bash "Compare Security Scans/scripts/compare.sh"</code></p>
+        <p class="small" style="margin-top:0.2em;">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶ Compare Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+    <section>
+        <h2>📊 Compare-Scans — Live Results</h2>
+        <p class="subtitle">Unique CVEs (deduplicated by ID) — Grype vs Trivy, Tot/C/H/M/L/U</p>
+        <div class="small">
+            <table>
+                <thead><tr><th>Image</th><th>Grype</th><th>Trivy</th><th>Unique Grype</th><th>Unique Trivy</th></tr></thead>
+                <tbody>
+                    <tr><td>eclipse-temurin:25-jre</td><td>96 / 0 / 2 / 87 / 7 / 0</td><td>60 / 0 / 8 / 47 / 4 / 1</td><td>48</td><td>12</td></tr>
+                    <tr><td>debian:12-slim</td><td>79 / 6 / 13 / 24 / 5 / 31</td><td>84 / 5 / 8 / 30 / 38 / 3</td><td>-</td><td>5</td></tr>
+                    <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td><td>-</td></tr>
+                    <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
+                    <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>48</td><td>12</td></tr>
+                    <tr><td>hello-conference:jlink-distroless-base</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
+                    <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-blue small" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
+            On jre-temurin, Grype found <strong>48 CVEs Trivy missed</strong> and Trivy found <strong>12 CVEs Grype missed</strong> —
+            neither tool is a superset of the other. (Grype's GHSA-id findings are resolved to their NVD CVE alias first, so a
+            vulnerability both tools found under different id schemes isn't miscounted as "unique" to both.)
+        </div>
+    </section>
+
+    <section>
+        <h2>🔍 Compare-Scans — Full Report</h2>
+        <p class="subtitle">Live, click-through report published to GitHub Pages — scroll, expand the full breakdown, no tab switch needed</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" loading="lazy" title="Compare Security Scans report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+</section>

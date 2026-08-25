@@ -1,0 +1,87 @@
+<section>
+<section>
+    <h2>🧱 Anatomy of a Container Image</h2>
+    <p class="subtitle">Every layer this talk touches — in one picture</p>
+    <div class="medium" style="max-width:760px;margin:0.4em auto 0;">
+        <svg viewBox="0 0 720 380" style="width:100%;height:auto;" role="img"
+             aria-label="An application bundles its dependencies and runs on a runtime, which runs on an operating system that has its own packages installed. A dashed pink path shows GraalVM native-image builds skipping the runtime layer entirely, running the compiled binary directly on the OS.">
+            <defs>
+                <marker id="lyArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#f8f8f2"/>
+                </marker>
+                <marker id="lyArrowPink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#ff79c6"/>
+                </marker>
+            </defs>
+
+            <!-- Application band -->
+            <rect x="40" y="18" width="290" height="62" rx="8" fill="rgba(139,233,253,0.08)" stroke="#8be9fd" stroke-width="1.5"/>
+            <text x="62" y="46" font-family="Inter,sans-serif" font-weight="700" font-size="16" fill="#f8f8f2">Application</text>
+            <text x="62" y="65" font-family="monospace" font-size="11" fill="#a9b6c2">hello-conference:jre-temurin-alpine</text>
+
+            <!-- Dependencies chip -->
+            <rect x="410" y="25" width="210" height="48" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.25)" stroke-width="1.25"/>
+            <text x="515" y="46" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="13" fill="#f8f8f2">Dependencies</text>
+            <text x="515" y="62" text-anchor="middle" font-family="monospace" font-size="10" fill="#a9b6c2">.jars · native libs</text>
+            <line x1="330" y1="49" x2="404" y2="49" stroke="#f8f8f2" stroke-width="1.25" marker-end="url(#lyArrow)"/>
+            <text x="367" y="41" text-anchor="middle" font-family="monospace" font-size="10" fill="#a9b6c2">bundles</text>
+
+            <!-- Runtime band -->
+            <rect x="40" y="159" width="290" height="62" rx="8" fill="rgba(80,250,123,0.08)" stroke="#50fa7b" stroke-width="1.5"/>
+            <text x="62" y="187" font-family="Inter,sans-serif" font-weight="700" font-size="16" fill="#f8f8f2">Runtime</text>
+            <text x="62" y="206" font-family="monospace" font-size="11" fill="#a9b6c2">JVM: Temurin, Zulu, CRaC</text>
+
+            <!-- App -> Runtime -->
+            <line x1="185" y1="80" x2="185" y2="153" stroke="#f8f8f2" stroke-width="1.25" marker-end="url(#lyArrow)"/>
+            <text x="197" y="122" font-family="monospace" font-size="10" fill="#a9b6c2">runs on</text>
+
+            <!-- Operating System band -->
+            <rect x="40" y="300" width="290" height="62" rx="8" fill="rgba(255,184,108,0.1)" stroke="#ffb86c" stroke-width="1.5"/>
+            <text x="62" y="328" font-family="Inter,sans-serif" font-weight="700" font-size="16" fill="#f8f8f2">Operating system</text>
+            <text x="62" y="347" font-family="monospace" font-size="11" fill="#a9b6c2">Alpine · AlmaLinux · Debian · distroless</text>
+
+            <!-- Runtime -> OS -->
+            <line x1="185" y1="221" x2="185" y2="294" stroke="#f8f8f2" stroke-width="1.25" marker-end="url(#lyArrow)"/>
+            <text x="197" y="263" font-family="monospace" font-size="10" fill="#a9b6c2">runs on</text>
+
+            <!-- OS Packages chip -->
+            <rect x="410" y="307" width="210" height="48" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.25)" stroke-width="1.25"/>
+            <text x="515" y="328" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="13" fill="#f8f8f2">OS packages</text>
+            <text x="515" y="344" text-anchor="middle" font-family="monospace" font-size="10" fill="#a9b6c2">counted via dpkg / rpm</text>
+            <line x1="330" y1="331" x2="404" y2="331" stroke="#f8f8f2" stroke-width="1.25" marker-end="url(#lyArrow)"/>
+            <text x="367" y="323" text-anchor="middle" font-family="monospace" font-size="10" fill="#a9b6c2">has installed</text>
+
+            <!-- Bypass: GraalVM native-image skips the runtime layer -->
+            <path d="M330,38 C 668,38 668,340 330,340" fill="none" stroke="#ff79c6" stroke-width="1.5" stroke-dasharray="2 5" marker-end="url(#lyArrowPink)"/>
+            <text x="674" y="175" font-family="monospace" font-size="10.5" fill="#ff79c6" text-anchor="end">GraalVM native-image:</text>
+            <text x="674" y="191" font-family="monospace" font-size="10.5" fill="#ff79c6" text-anchor="end">runtime layer collapses</text>
+            <text x="674" y="207" font-family="monospace" font-size="10.5" fill="#ff79c6" text-anchor="end">into the compiled binary</text>
+        </svg>
+    </div>
+    <p class="small" style="margin-top:0.4em;color:#a9b6c2;">
+        Every image in <code>images.conf</code> follows the solid path. The dashed one is
+        <code>native-scratch</code> / <code>native-netty-scratch</code> — no separate JVM layer, so the app lands directly on <code>scratch</code>.
+    </p>
+</section>
+
+    <section>
+        <h2>Which Runtime Distribution?</h2>
+        <div class="medium">
+            <p>Most ecosystems have multiple vendors distributing the same runtime — all standards-compliant, but with different support models and extras.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Java example</span>
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Distribution</th><th>Vendor</th><th>Good for</th></tr></thead>
+                <tbody>
+                    <tr><td>Eclipse Temurin</td><td>Adoptium</td><td>Standard apps, Docker (used in this project)</td></tr>
+                    <tr><td>Azul Zulu</td><td>Azul</td><td>CRaC checkpointing (patched JVM)</td></tr>
+                    <tr><td>GraalVM CE</td><td>Oracle / community</td><td>Native image compilation</td></tr>
+                    <tr><td>Amazon Corretto</td><td>AWS</td><td>AWS-native workloads</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small" style="margin-top:0.5em;">💡 It matters less than you think — all are standards-compliant. Pick one and commit to updating it.</p>
+    </section>
+
+</section>

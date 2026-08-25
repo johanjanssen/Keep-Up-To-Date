@@ -1,0 +1,35 @@
+<section>
+    <section>
+        <h2>Discover Stale Dependencies</h2>
+        <div class="medium">
+            <p>Build-tool plugins can compare your locked versions against the latest available in the registry — without modifying anything.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Maven Versions Plugin</span>
+            <pre><code class="language-bash">./mvnw versions:display-dependency-updates
+
+# [INFO] org.postgresql:postgresql ...... 42.7.3 -> 42.8.0
+# [INFO] jackson-databind .............. 2.17.1 -> 2.18.2
+# [INFO] log4j-core .................... 2.0    -> 2.24.3  ← 🔴 CVE!</code></pre>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.4em;">
+            <span class="java-pill">☕ Also useful</span>
+            <pre><code class="language-bash">./mvnw versions:display-plugin-updates      # build plugins too
+./mvnw versions:display-property-updates    # ${my.version} properties</code></pre>
+            <small>Gradle equivalent: <code>com.github.ben-manes.versions</code> plugin → <code>./gradlew dependencyUpdates</code></small>
+        </div>
+    </section>
+
+    <section>
+        <h2>Automate Security Alerts</h2>
+        <div class="medium">
+            <p>Don't wait for a scheduled scan — get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
+            <ul style="margin-top:0.6em;">
+                <li><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</li>
+                <li>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></li>
+                <li>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</li>
+            </ul>
+        </div>
+    </section>
+
+</section>
