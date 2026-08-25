@@ -59,7 +59,8 @@ under its own subfolder so no workflow's output overwrites another's:
 |---|---|
 | [`/Presentation/`](https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/) | The reveal.js conference slide deck |
 | [`/vulnerable/`](https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/) | Vulnerable Application Old Java + Callback Server — full exploit chain demo |
-| [`/images/`](https://johanjanssen.github.io/Keep-Up-To-Date/images/) | Build Docker Images — size & startup performance comparison |
+| [`/images/`](https://johanjanssen.github.io/Keep-Up-To-Date/images/) | Build Docker Images — base OS & Java runtime image size comparison |
+| [`/custom-images/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-images/) | Build Docker Images — hello-conference image size & startup performance comparison |
 | [`/Benchmarks/`](https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/) | Performance Improvement — Java 17 vs 25 vs 28 EA benchmarks |
 | [`/Scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/Scans/) | Compare Security Scans — Trivy vs Grype vs OWASP DC |
 | [`/OWASP/`](https://johanjanssen.github.io/Keep-Up-To-Date/OWASP/) | OWASP Dependency Check |
