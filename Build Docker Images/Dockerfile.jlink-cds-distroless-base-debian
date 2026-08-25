@@ -1,4 +1,4 @@
-# Image tag:  hello-conference:jlink-cds-distroless-base
+# Image tag:  hello-conference:jlink-cds-distroless-base-debian
 # Base:       gcr.io/distroless/base-debian13
 #
 # Two production techniques layered on top of a minimal jlink JRE:

@@ -154,7 +154,6 @@
             <li>Updating code dependencies Old GroupIds Alerter (OGA) / Renovate https://docs.renovatebot.com/presets-replacements/</li>
             <li>Updating source code OpenRewrite smaller example</li>
             <li>Key takeaways and conclusion</li>
-            <li>TODO: "Docker Image Size & Performance Comparison" has multiple distroless in the overview, make sure which ones is used.</li>
         </ol></div>
     </div>
 </section>
@@ -613,7 +612,7 @@
                     <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td><td>-</td></tr>
                     <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
                     <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>48</td><td>12</td></tr>
-                    <tr><td>hello-conference:jlink-distroless-base</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
+                    <tr><td>hello-conference:jlink-distroless-base-debian</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
                     <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
                 </tbody>
             </table>
@@ -1310,7 +1309,7 @@ function buildCharts() {
     makeChart('chartImageSize', {
         type: 'bar',
         data: {
-            labels: ['jre-temurin','jlink-full','jlink-minimal','jlink-cds','crac-azul','native-debian','native-distroless','native-scratch'],
+            labels: ['jre-temurin','jlink-full-debian','jlink-minimal-debian','jlink-cds-debian','crac-azul-debian','native-debian','native-distroless-debian','native-scratch'],
             datasets: [
                 {
                     label: 'Image Size (MB)',
