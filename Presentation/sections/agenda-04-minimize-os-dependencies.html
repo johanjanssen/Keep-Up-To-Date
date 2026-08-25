@@ -65,4 +65,43 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
         </p>
     </section>
 
+    <section>
+        <h2>It's Not Just a Java Problem</h2>
+        <div class="medium">
+            <p>Every language faces the same "does my image need a full runtime?" question — the shape of the answer just differs.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
+                <tbody>
+                    <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
+                    <tr><td>.NET</td><td>Native AOT — .NET's direct equivalent of GraalVM native-image</td></tr>
+                    <tr><td>Go</td><td>Compiles to a single static binary by default — <code>scratch</code> "just works"</td></tr>
+                    <tr><td>Rust</td><td>Same story as Go with a musl target — static binary, no runtime image needed</td></tr>
+                    <tr><td>Python / Node.js</td><td>Interpreted — always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
+                </tbody>
+            </table>
+            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all — only smaller.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Minimal runtime images across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool / Base image</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>Eclipse Temurin / Zulu JRE + <code>jlink</code></td><td>Java</td><td>Custom minimal JRE with only the modules you need</td></tr>
+                <tr><td>GraalVM <code>native-image</code></td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary, no JVM needed</td></tr>
+                <tr><td><code>gcr.io/distroless/*</code></td><td>Java, Python, Node.js, static (Go/Rust/C++)</td><td>No shell, no package manager, per-language variants</td></tr>
+                <tr><td><code>python:slim</code> / <code>python:alpine</code></td><td>Python</td><td>Smaller CPython base images</td></tr>
+                <tr><td><code>node:alpine</code></td><td>Node.js</td><td>Smaller Node.js base image</td></tr>
+                <tr><td>Static binary + <code>scratch</code></td><td>Go</td><td>Compiles to one static binary — no runtime image at all</td></tr>
+                <tr><td>.NET Native AOT</td><td>.NET</td><td>AOT-compiles to a native binary — the JVM-less path for .NET</td></tr>
+                <tr><td>musl static binary + <code>scratch</code></td><td>Rust</td><td>Same static-binary story as Go</td></tr>
+            </tbody>
+        </table>
+        <p class="small" style="margin-top:0.5em;">See the live <a href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">Docker image size &amp; package report</a> for real numbers across JDK/JRE vendors and OS bases.</p>
+    </section>
+
 </section>
