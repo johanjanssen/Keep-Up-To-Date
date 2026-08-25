@@ -3,7 +3,7 @@ name: Compare Security Scans
 on:
   push:
     branches: [master]
-    paths: ['Compare Security Scans/**', 'images.conf']
+    paths: ['Compare Security Scans/**', 'images.conf', 'OWASP Dependency Check/**', 'Vulnerable Application/**']
   workflow_dispatch:
 
 # Several workflows (static.yml, jacoco.yml, owasp-dc.yml, this one) each
@@ -47,6 +47,54 @@ jobs:
         # gracefully (they show up as "NOT BUILT" instead of failing the run).
         continue-on-error: true
 
+      # OWASP Dependency Check scans the hello-conference app's dependency tree
+      # (Vulnerable Application/pom.xml — the same source every hello-conference:*
+      # image above is built from) directly, rather than the built Docker
+      # images. Its result feeds the one-row "OWASP Dependency Check" table on
+      # the custom-image-scans page below. Mirrors owasp-dc.yml's own steps
+      # (including its NVD cache key, so the two workflows share/reuse the
+      # same cached mirror instead of each keeping a separate one) — see that
+      # workflow for the full rationale.
+      - name: Build Vulnerable App
+        run: ./mvnw -f "Vulnerable Application/pom.xml" package -DskipTests
+
+      - name: Get cache date
+        id: cache-date
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore NVD cache
+        id: restore-nvd-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: nvd-owasp-dc-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            nvd-owasp-dc-
+
+      - name: Start NVD cache
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: bash "OWASP Dependency Check/scripts/start-cache.sh"
+
+      - name: Update NVD cache
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: bash "OWASP Dependency Check/scripts/update-cache.sh"
+
+      - name: Run OWASP Dependency Check
+        run: bash "OWASP Dependency Check/scripts/run-check.sh" || true
+
+      - name: Save NVD cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            OWASP Dependency Check/data/nvd-cache
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ steps.restore-nvd-cache.outputs.cache-primary-key }}
+
       - name: Scan with Grype
         run: bash "Compare Security Scans/scripts/scan-grype.sh"
 
@@ -75,7 +123,8 @@ jobs:
             "Compare Security Scans/target/results/html-custom/index.html" \
             --title "Container Image CVE Comparison — Trivy vs Grype" \
             --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype" \
-            --json-out "Compare Security Scans/target/results/cve-counts.json"
+            --json-out "Compare Security Scans/target/results/cve-counts.json" \
+            --owasp-json "Vulnerable Application/target/dependency-check-report.json"
 
       - name: Prepare Pages directories
         run: |
