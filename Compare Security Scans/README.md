@@ -67,6 +67,19 @@ gcr.io/distroless/static-debian13                  │     0    0    0    0    0
 Separate tables for OS-level vulnerabilities (distro packages) and application-level
 vulnerabilities (JARs/language deps), with OWASP DC included for the application layer.
 
+### HTML report — OWASP Dependency Check table
+
+The generated `custom-image-scans` HTML report (built by `generate-html-report.py`,
+published at [`/custom-image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/))
+adds a separate one-row **OWASP Dependency Check** table below the Grype/Trivy/OSV-Scanner
+one, with the same Total/Crit/High/Med/Low columns. It's a single row (not one per image)
+because OWASP DC scans the app's dependency tree (`Vulnerable Application/pom.xml`) once,
+and every `hello-conference:*` image embeds that same built jar. A "Unique in OWASP" column
+shows CVEs OWASP DC found that neither Grype, Trivy, nor OSV-Scanner found in any scanned
+image — and that same 4-way comparison is folded back into the Grype/Trivy/OSV table's own
+"Unique" columns, so a CVE found by both (say) Grype and OWASP DC no longer counts as
+"unique to Grype".
+
 ---
 
 ## Directory Structure

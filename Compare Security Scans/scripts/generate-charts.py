@@ -150,7 +150,36 @@ def load_image_order(repo_root=REPO_ROOT):
         # by Trivy total, same as before this ordering existed.
         print(f"  WARN could not read ALL_IMAGES from {images_conf}: {e}")
         return []
-def load_all(trivy_dir, grype_dir, osv_dir=None):
+def load_owasp(path):
+    # OWASP Dependency Check's JSON report (Vulnerable Application/target/
+    # dependency-check-report.json) — a single flat report for the whole app,
+    # not one per Docker image (every hello-conference:* image embeds the same
+    # jar, so this same report applies to all of them equally). Mirrors
+    # Compare Security Scans/scripts/compare.sh's count_owasp() jq: dedup by
+    # vulnerability .name (its CVE/advisory id), severity matched
+    # case-insensitively.
+    with open(path, encoding="utf-8-sig") as f:
+        data = json.load(f)
+    seen, counts = set(), {s: 0 for s in SEV_ORDER}
+    for dep in data.get("dependencies") or []:
+        for vuln in dep.get("vulnerabilities") or []:
+            vid = vuln.get("name", "")
+            if vid in seen:
+                continue
+            seen.add(vid)
+            sev = (vuln.get("severity") or "UNKNOWN").upper()
+            counts[sev if sev in counts else "UNKNOWN"] += 1
+    counts["_total"] = sum(counts[s] for s in SEV_ORDER)
+    return counts, seen
+def load_all(trivy_dir, grype_dir, osv_dir=None, owasp_ids=None):
+    # owasp_ids: CVE ids from OWASP Dependency Check (see load_owasp() above),
+    # folded into the Grype/Trivy/OSV "unique" columns below so e.g. a CVE
+    # Grype found that OWASP DC *also* found no longer counts as "unique to
+    # Grype". OWASP only scans the app layer (Vulnerable Application/pom.xml),
+    # so this only ever changes counts for hello-conference:* images in
+    # practice — subtracting it from base-OS images is a harmless no-op since
+    # those CVE ids don't overlap.
+    owasp_ids = owasp_ids or set()
     # Keyed by filename stem (stable join key — identical across the trivy/grype/osv
     # dirs since all three are produced by the same images.conf#image_to_filename).
     # The display name comes from inside the JSON, not from reversing that key.
@@ -185,25 +214,29 @@ def load_all(trivy_dir, grype_dir, osv_dir=None):
     # Sort by Trivy total desc
     empty = {"_total":0,"CRITICAL":0,"HIGH":0,"MEDIUM":0,"LOW":0,"UNKNOWN":0}
     items = []
+    all_ids = set()  # every CVE id seen by Grype/Trivy/OSV, across every image — used below for the OWASP "unique" count
     for key, data in results.items():
         grype_ids = data.get("grype_ids", set())
         trivy_ids = data.get("trivy_ids", set())
         osv_ids = data.get("osv_ids", set())
+        all_ids |= grype_ids | trivy_ids | osv_ids
         items.append((
             data.get("name", filename_to_image(key)),
             data.get("grype", empty),
             data.get("trivy", empty),
             data.get("osv", empty),
-            len(grype_ids - trivy_ids - osv_ids),   # unique to Grype: found by Grype, not by Trivy or OSV
-            len(trivy_ids - grype_ids - osv_ids),   # unique to Trivy: found by Trivy, not by Grype or OSV
-            len(osv_ids - grype_ids - trivy_ids),   # unique to OSV: found by OSV, not by Grype or Trivy
+            len(grype_ids - trivy_ids - osv_ids - owasp_ids),   # unique to Grype: found by Grype, not by Trivy, OSV, or OWASP DC
+            len(trivy_ids - grype_ids - osv_ids - owasp_ids),   # unique to Trivy: found by Trivy, not by Grype, OSV, or OWASP DC
+            len(osv_ids - grype_ids - trivy_ids - owasp_ids),   # unique to OSV: found by OSV, not by Grype, Trivy, or OWASP DC
         ))
     order = load_image_order()
     order_index = {name: i for i, name in enumerate(order)}
     # images.conf order first; images not listed there (shouldn't normally
     # happen) sort after all known ones, by Trivy total desc as before.
     items.sort(key=lambda x: (order_index.get(x[0], len(order)), -x[2]["_total"]))
-    return items
+    # unique to OWASP DC: found by OWASP DC, not by Grype, Trivy, or OSV in any scanned image
+    owasp_unique = len(owasp_ids - all_ids)
+    return items, owasp_unique
 def draw_barplot(items, title, out_path):
     if not items:
         return
@@ -267,7 +300,7 @@ def main():
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
     print(f"\nLoading results: trivy={args.trivy_dir}  grype={args.grype_dir}  osv={args.osv_dir}")
-    items = load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
+    items, _owasp_unique = load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
     if not items:
         print("  No JSON files found."); sys.exit(0)
     print(f"  Images: {len(items)}")
