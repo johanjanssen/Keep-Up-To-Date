@@ -7,7 +7,7 @@
 <style>
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
-    --grype: #E65100; --trivy: #1565C0; --osv: #00796B;
+    --grype: #E65100; --trivy: #1565C0; --osv: #00796B; --owasp: #6A1B9A;
     --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
@@ -45,11 +45,13 @@
   th.grype-hdr { background: #BF360C; color: #fff; }
   th.trivy-hdr { background: #0D47A1; color: #fff; }
   th.osv-hdr   { background: #00695C; color: #fff; }
+  th.owasp-hdr { background: #4A148C; color: #fff; }
   th.unique-hdr { background: #37474F; color: #fff; }
   tbody tr:nth-child(even) { background: var(--alt-row); }
   td.total.grype { font-weight: 700; color: var(--grype); }
   td.total.trivy { font-weight: 700; color: var(--trivy); }
   td.total.osv   { font-weight: 700; color: var(--osv); }
+  td.total.owasp { font-weight: 700; color: var(--owasp); }
   td.crit { color: var(--crit); font-weight: 600; }
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
@@ -63,7 +65,7 @@
 <body>
 <main>
   <h1>hello-conference Image CVE Comparison — Trivy vs Grype</h1>
-  <p class="subtitle">Generated 2026-08-25 16:25 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; "Unique in X" = found by X but by neither of the other two tools &middot; see also <a href="../image-scans/">base image CVE comparison</a></p>
+  <p class="subtitle">Generated 2026-08-25 22:24 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; "Unique in X" = found by X but by none of the other scanners &middot; see also <a href="../image-scans/">base image CVE comparison</a></p>
   <p class="legend">
     <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
@@ -72,7 +74,7 @@
   </p>
 
   <section>
-    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>
+    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner vs OWASP Dependency Check</h2>
     <h3>hello-conference Images</h3>
     <div class="table-scroll">
       <table>
@@ -106,12 +108,12 @@
           <td class="num high">12</td>
           <td class="num med">34</td>
           <td class="num low">4</td>
-          <td class="num total osv">109</td>
+          <td class="num total osv">108</td>
           <td class="num crit">2</td>
           <td class="num high">4</td>
-          <td class="num med">87</td>
+          <td class="num med">86</td>
           <td class="num low">8</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
@@ -150,10 +152,10 @@
           <td class="num high">5</td>
           <td class="num med">16</td>
           <td class="num low">7</td>
-          <td class="num total osv">32</td>
-          <td class="num crit">2</td>
-          <td class="num high">4</td>
-          <td class="num med">9</td>
+          <td class="num total osv">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -172,10 +174,10 @@
           <td class="num high">5</td>
           <td class="num med">16</td>
           <td class="num low">7</td>
-          <td class="num total osv">32</td>
-          <td class="num crit">2</td>
-          <td class="num high">4</td>
-          <td class="num med">9</td>
+          <td class="num total osv">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -194,10 +196,10 @@
           <td class="num high">11</td>
           <td class="num med">23</td>
           <td class="num low">7</td>
-          <td class="num total osv">45</td>
-          <td class="num crit">2</td>
-          <td class="num high">10</td>
-          <td class="num med">16</td>
+          <td class="num total osv">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -216,10 +218,10 @@
           <td class="num high">5</td>
           <td class="num med">16</td>
           <td class="num low">7</td>
-          <td class="num total osv">32</td>
-          <td class="num crit">2</td>
-          <td class="num high">4</td>
-          <td class="num med">9</td>
+          <td class="num total osv">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -238,10 +240,10 @@
           <td class="num high">5</td>
           <td class="num med">16</td>
           <td class="num low">7</td>
-          <td class="num total osv">32</td>
-          <td class="num crit">2</td>
-          <td class="num high">4</td>
-          <td class="num med">9</td>
+          <td class="num total osv">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -260,14 +262,14 @@
           <td class="num high">9</td>
           <td class="num med">27</td>
           <td class="num low">30</td>
-          <td class="num total osv">71</td>
+          <td class="num total osv">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total trivy">4</td>
-          <td class="num total osv">1</td>
+          <td class="num muted">–</td>
         </tr>
 
         <tr>
@@ -338,6 +340,36 @@
         </tbody>
       </table>
     </div>
+    <h3>OWASP Dependency Check</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="group">
+            <th class="image-col"></th>
+            <th colspan="5" class="owasp-hdr">OWASP Dependency Check</th>
+            <th class="unique-hdr">Unique</th>
+          </tr>
+          <tr>
+            <th class="image-col">Application</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in OWASP</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+        <tr>
+          <td class="image-name">HelloConference (application dependencies)</td>
+          <td class="num total owasp">24</td>
+          <td class="num crit">6</td>
+          <td class="num high">4</td>
+          <td class="num med">14</td>
+          <td class="num muted">–</td>
+          <td class="num total owasp">11</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="legend" style="margin-top:0.5rem">Same jar is embedded in every hello-conference image, so this single row applies to all of them &middot; "Unique in OWASP" = found by OWASP DC but by none of Grype/Trivy/OSV in any scanned image.</p>
   </section>
 
   <footer>Compare Security Scans &middot; <a href="https://github.com/johanjanssen/Keep-Up-To-Date">Keep-Up-To-Date</a></footer>
