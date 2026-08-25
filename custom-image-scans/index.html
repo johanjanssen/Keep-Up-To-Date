@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hello-conference Image CVE Comparison — Trivy vs Grype</title>
+<style>
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --grype: #E65100; --trivy: #1565C0;
+    --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1400px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  .legend { color: var(--muted); font-size: 0.85rem; margin: 0.75rem 0 2rem; }
+  .legend span { display: inline-block; margin-right: 1.25rem; }
+  .dot { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin-right: 0.35rem; }
+  section { margin-bottom: 3rem; }
+  h2 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 0.95rem; color: var(--muted); margin: 1.75rem 0 0; text-transform: uppercase; letter-spacing: 0.04em; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 920px; background: var(--surface); font-variant-numeric: tabular-nums; }
+  th, td { padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.image-col, td.image-name { text-align: left; white-space: normal; font-variant-numeric: normal; }
+  thead th { position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }
+  thead tr.group th { font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  th.grype-hdr { background: #BF360C; color: #fff; }
+  th.trivy-hdr { background: #0D47A1; color: #fff; }
+  th.unique-hdr { background: #37474F; color: #fff; }
+  tbody tr:nth-child(even) { background: var(--alt-row); }
+  td.total.grype { font-weight: 700; color: var(--grype); }
+  td.total.trivy { font-weight: 700; color: var(--trivy); }
+  td.crit { color: var(--crit); font-weight: 600; }
+  td.high { color: var(--high); font-weight: 600; }
+  td.med  { color: var(--med); font-weight: 600; }
+  td.low  { color: var(--low); font-weight: 600; }
+  td.muted { color: var(--muted); }
+  a { color: var(--trivy); }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>hello-conference Image CVE Comparison — Trivy vs Grype</h1>
+  <p class="subtitle">Generated 2026-08-25 14:54 UTC &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; see also <a href="../image-scans/">base image CVE comparison</a></p>
+  <p class="legend">
+    <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
+    <span><span class="dot" style="background:var(--high)"></span>High</span>
+    <span><span class="dot" style="background:var(--med)"></span>Medium</span>
+    <span><span class="dot" style="background:var(--low)"></span>Low</span>
+  </p>
+
+  <section>
+    <h2>Severity Comparison — Grype vs Trivy</h2>
+    <h3>hello-conference Images</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="group">
+            <th class="image-col"></th>
+            <th colspan="5" class="grype-hdr">Grype</th>
+            <th colspan="5" class="trivy-hdr">Trivy</th>
+            <th colspan="2" class="unique-hdr">Unique</th>
+          </tr>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in Grype</th><th>Unique in Trivy</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+        <tr>
+          <td class="image-name">hello-conference:jre-temurin</td>
+          <td class="num total grype">106</td>
+          <td class="num crit">2</td>
+          <td class="num high">8</td>
+          <td class="num med">88</td>
+          <td class="num low">8</td>
+          <td class="num total trivy">52</td>
+          <td class="num crit">2</td>
+          <td class="num high">12</td>
+          <td class="num med">34</td>
+          <td class="num low">4</td>
+          <td class="num total grype">57</td>
+          <td class="num total trivy">3</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jre-temurin-alpine</td>
+          <td class="num total grype">18</td>
+          <td class="num crit">2</td>
+          <td class="num high">5</td>
+          <td class="num med">11</td>
+          <td class="num muted">–</td>
+          <td class="num total trivy">15</td>
+          <td class="num crit">2</td>
+          <td class="num high">4</td>
+          <td class="num med">9</td>
+          <td class="num muted">–</td>
+          <td class="num total grype">3</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-full-distroless-base-debian</td>
+          <td class="num total grype">32</td>
+          <td class="num crit">3</td>
+          <td class="num high">7</td>
+          <td class="num med">12</td>
+          <td class="num low">1</td>
+          <td class="num total trivy">32</td>
+          <td class="num crit">2</td>
+          <td class="num high">5</td>
+          <td class="num med">16</td>
+          <td class="num low">7</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-distroless-base-debian</td>
+          <td class="num total grype">32</td>
+          <td class="num crit">3</td>
+          <td class="num high">7</td>
+          <td class="num med">12</td>
+          <td class="num low">1</td>
+          <td class="num total trivy">32</td>
+          <td class="num crit">2</td>
+          <td class="num high">5</td>
+          <td class="num med">16</td>
+          <td class="num low">7</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-netty-distroless-base-debian</td>
+          <td class="num total grype">45</td>
+          <td class="num crit">3</td>
+          <td class="num high">13</td>
+          <td class="num med">19</td>
+          <td class="num low">1</td>
+          <td class="num total trivy">45</td>
+          <td class="num crit">2</td>
+          <td class="num high">11</td>
+          <td class="num med">23</td>
+          <td class="num low">7</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:jlink-cds-distroless-base-debian</td>
+          <td class="num total grype">32</td>
+          <td class="num crit">3</td>
+          <td class="num high">7</td>
+          <td class="num med">12</td>
+          <td class="num low">1</td>
+          <td class="num total trivy">32</td>
+          <td class="num crit">2</td>
+          <td class="num high">5</td>
+          <td class="num med">16</td>
+          <td class="num low">7</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:crac-azul-distroless-base-debian</td>
+          <td class="num total grype">32</td>
+          <td class="num crit">3</td>
+          <td class="num high">7</td>
+          <td class="num med">12</td>
+          <td class="num low">1</td>
+          <td class="num total trivy">32</td>
+          <td class="num crit">2</td>
+          <td class="num high">5</td>
+          <td class="num med">16</td>
+          <td class="num low">7</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-debian-slim</td>
+          <td class="num total grype">70</td>
+          <td class="num crit">6</td>
+          <td class="num high">16</td>
+          <td class="num med">20</td>
+          <td class="num low">3</td>
+          <td class="num total trivy">74</td>
+          <td class="num crit">3</td>
+          <td class="num high">9</td>
+          <td class="num med">27</td>
+          <td class="num low">30</td>
+          <td class="num muted">–</td>
+          <td class="num total trivy">4</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-minimal-distroless-static-debian</td>
+          <td class="num total grype">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num total trivy">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-scratch</td>
+          <td class="num total grype">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num total trivy">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">hello-conference:native-netty-scratch</td>
+          <td class="num total grype">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num total trivy">0</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+          <td class="num muted">–</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Compare Security Scans &middot; <a href="https://github.com/johanjanssen/Keep-Up-To-Date">Keep-Up-To-Date</a></footer>
+</main>
+</body>
+</html>
