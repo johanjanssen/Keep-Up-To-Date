@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds hello-conference:native-scratch  (runtime base: scratch – zero OS overhead)
-# Improvements over native-minimal-distroless-static:
+# Improvements over native-minimal-distroless-static-debian:
 #   • strip --strip-all removes ELF symbol/debug sections after native compile
 #   • FROM scratch eliminates the ~2 MB distroless/static base layer
 # ⚠  First build: ~20-25 min (musl + zlib compiled from source + native compile).

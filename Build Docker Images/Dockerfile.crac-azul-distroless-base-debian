@@ -1,4 +1,4 @@
-# Image tag:  hello-conference:crac-azul-distroless-base
+# Image tag:  hello-conference:crac-azul-distroless-base-debian
 # Base:       gcr.io/distroless/base-debian13  (runtime)
 #             azul/zulu-openjdk:25-jdk-crac     (build + jlink)
 #
@@ -11,24 +11,24 @@
 #   - The Spring context is fully wired       → no bean-initialisation overhead
 #   Startup time typically drops to 50–200 ms regardless of application size.
 #
-# Three-step build (handled by build-crac-azul-distroless-base.sh):
+# Three-step build (handled by build-crac-azul-distroless-base-debian.sh):
 #   1. docker build   → this Dockerfile produces hello-conference:crac-azul-pre
 #                       (minimal jlink CRaC JRE + app JAR, no checkpoint yet)
 #   2. docker run     → starts the base image with --privileged so CRIU can
 #                       write the checkpoint; Spring exits after context refresh
 #   3. docker commit  → commits the stopped container (which now contains
-#                       /crac-checkpoint) as hello-conference:crac-azul-distroless-base
+#                       /crac-checkpoint) as hello-conference:crac-azul-distroless-base-debian
 #                       with the restore ENTRYPOINT
 #
 # No BuildKit insecure mode required.  --privileged is used only at build time
 # (step 2); the final image also needs --privileged at runtime (see below).
 #
 # Runtime:
-#   docker run --privileged -p 8080:8080 hello-conference:crac-azul-distroless-base
+#   docker run --privileged -p 8080:8080 hello-conference:crac-azul-distroless-base-debian
 #   (CAP_CHECKPOINT_RESTORE requires Linux kernel 5.9+; --privileged is the
 #   portable fallback for Docker Desktop and older kernels)
 #
-# Expected gains vs jlink-distroless-base (~158 MiB, ~3 s startup):
+# Expected gains vs jlink-distroless-base-debian (~158 MiB, ~3 s startup):
 #   Startup    – ~50–200 ms  (JVM state fully restored, no class loading)
 #   Memory     – ~130–160 MiB (heap restored to post-startup state)
 #   Image size – ~400–700 MB  (checkpoint = full heap + JIT code dump)
@@ -121,7 +121,7 @@ RUN LIBZ=$(ldconfig -p 2>/dev/null | awk '/libz\.so\.1 /{print $NF; exit}') && \
     cp -L "${LIBZ}" /tmp/libz.so.1
 
 # ── Stage 3: Base runtime (distroless + jlink CRaC JRE + app JAR) ────────────
-# build-crac-azul-distroless-base.sh runs this image with --privileged to create
+# build-crac-azul-distroless-base-debian.sh runs this image with --privileged to create
 # the checkpoint, then docker commit bakes the checkpoint directory into the
 # final image.
 FROM gcr.io/distroless/base-debian13
@@ -139,6 +139,6 @@ WORKDIR /app
 EXPOSE 8080
 
 # Placeholder ENTRYPOINT – overridden by the --change flag in the docker commit
-# step done by build-crac-azul-distroless-base.sh.  Can also be used to test a
+# step done by build-crac-azul-distroless-base-debian.sh.  Can also be used to test a
 # cold (non-CRaC) start: docker run hello-conference:crac-azul-pre
 ENTRYPOINT ["/jre/bin/java", "-jar", "app.jar"]

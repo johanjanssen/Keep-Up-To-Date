@@ -50,6 +50,12 @@
 #       for a newer fixed-version recipe (UpgradeSpringBoot_4_1, …) before assuming
 #       4.0 is the ceiling.
 #
+#  6. org.openrewrite.java.security.FixSqlInjectionConcat
+#       UserRepository.findByName() builds SQL by concatenating an untrusted
+#       parameter into the query string -> classic SQL injection.
+#       Statement + string concat  ->  PreparedStatement + bound "?" parameter
+#       Artifact: org.openrewrite.recipe:rewrite-java-security
+#
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -69,13 +75,15 @@ STATIC_ANALYSIS_VERSION="2.41.0"
 TESTING_FRAMEWORKS_VERSION="3.44.0"
 MIGRATE_JAVA_VERSION="3.42.0"
 REWRITE_SPRING_VERSION="6.37.0"
+JAVA_SECURITY_VERSION="3.38.1"
 
 # ── Recipe library coordinates (comma-separated, NO spaces) ──────────────────
 ARTIFACT_COORDS="\
 org.openrewrite.recipe:rewrite-static-analysis:${STATIC_ANALYSIS_VERSION},\
 org.openrewrite.recipe:rewrite-testing-frameworks:${TESTING_FRAMEWORKS_VERSION},\
 org.openrewrite.recipe:rewrite-migrate-java:${MIGRATE_JAVA_VERSION},\
-org.openrewrite.recipe:rewrite-spring:${REWRITE_SPRING_VERSION}"
+org.openrewrite.recipe:rewrite-spring:${REWRITE_SPRING_VERSION},\
+org.openrewrite.recipe:rewrite-java-security:${JAVA_SECURITY_VERSION}"
 
 # ── Active recipes (comma-separated, NO spaces) ──────────────────────────────
 ACTIVE_RECIPES="\
@@ -83,7 +91,8 @@ org.openrewrite.java.format.AutoFormat,\
 org.openrewrite.staticanalysis.EqualsAvoidsNull,\
 org.openrewrite.java.testing.junit5.JUnit4to5Migration,\
 org.openrewrite.java.migrate.UpgradeToJava25,\
-org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"
+org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,\
+org.openrewrite.java.security.FixSqlInjectionConcat"
 
 DRY_RUN="${DRY_RUN:-false}"
 
@@ -118,6 +127,7 @@ echo "    2. org.openrewrite.staticanalysis.EqualsAvoidsNull"
 echo "    3. org.openrewrite.java.testing.junit5.JUnit4to5Migration"
 echo "    4. org.openrewrite.java.migrate.UpgradeToJava25"
 echo "    5. org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"
+echo "    6. org.openrewrite.java.security.FixSqlInjectionConcat"
 echo ""
 echo "------------------------------------------------------------"
 echo ""
@@ -143,14 +153,13 @@ else
     echo "                      junit:junit + vintage-engine removed"
     echo "    *.java            javax.* imports -> jakarta.*"
     echo "    Person.java       role.equals(...) -> ...equals(role)"
-    echo "                      describe() string concat -> text block"
-    echo "    GreetingService   name.equals(...) -> ...equals(name)"
-    echo "                      getWelcomePage() HTML concat -> text block"
+    echo "    GreetingService   getWelcomePage() HTML concat -> text block"
+    echo "    UserRepository    Statement + SQL concat -> PreparedStatement + bind param"
     echo "    *Test.java        @RunWith removed"
     echo "                      @Before -> @BeforeEach, @After -> @AfterEach"
     echo "                      Assert.* -> static Assertions.*"
     echo "                      @Test(expected=) -> assertThrows(...)"
-    echo "    All .java files   reformatted (AutoFormat)"
+    echo "    OpenRewriteDemoApplication.java   reformatted (AutoFormat)"
     echo ""
     echo "  Next steps:"
     echo "    1. git diff"

@@ -18,7 +18,8 @@
 #  10. JaCoCo file-based demo           (Jacoco/)
 #  11. OpenRewrite dry-run              (OpenRewrite/)
 #  12. Old GroupIds Alerter check       (Old GroupIds Alerter/)
-#  13. Renovate demo                    (Renovate/) — optional, requires git
+#  13. Maven Dependency Plugin analyze  (Maven Dependency Plugin/)
+#  14. Renovate demo                    (Renovate/) — optional, requires git
 #
 # Usage:
 #   bash run-all-demos.sh                     # run all steps
@@ -165,13 +166,20 @@ run_step 12 "Old GroupIds Alerter check" \
     bash "$ROOT_DIR/Old GroupIds Alerter/scripts/run-oga.sh"
 
 # ══════════════════════════════════════════════════════════════════════════════
+# MAVEN DEPENDENCY PLUGIN
+# ══════════════════════════════════════════════════════════════════════════════
+
+run_step 13 "Maven Dependency Plugin analyze" \
+    bash "$ROOT_DIR/Maven Dependency Plugin/scripts/run-dependency-analyze.sh"
+
+# ══════════════════════════════════════════════════════════════════════════════
 # RENOVATE
 # ══════════════════════════════════════════════════════════════════════════════
 
 if [ "$SKIP_RENOVATE" = "true" ]; then
-    skip_step 13 "Renovate demo (Gitea + Jenkins)"
+    skip_step 14 "Renovate demo (Gitea + Jenkins)"
 else
-    run_step 13 "Renovate demo (Gitea + Jenkins)" \
+    run_step 14 "Renovate demo (Gitea + Jenkins)" \
         env DRY_RUN=true bash "$ROOT_DIR/Renovate/scripts/demo.sh"
 fi
 

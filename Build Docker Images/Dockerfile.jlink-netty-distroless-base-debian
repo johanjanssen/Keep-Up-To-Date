@@ -1,10 +1,10 @@
 # Runtime base: gcr.io/distroless/base-debian13  (Debian 13 Trixie)
-# Key improvement over jlink-distroless-base: Spring WebFlux (Netty) replaces Spring MVC (Tomcat).
+# Key improvement over jlink-distroless-base-debian: Spring WebFlux (Netty) replaces Spring MVC (Tomcat).
 #
 #   Tomcat  – servlet engine, thread pools, request/response buffering, temp-file I/O
 #   Netty   – event-loop NIO server; fewer compiled classes → fewer modules → smaller JRE
 #
-# Expected gains vs jlink-distroless-base:
+# Expected gains vs jlink-distroless-base-debian:
 #   JRE size  – smaller  (Tomcat modules dropped from jlink output)
 #   Memory    – lower    (no Tomcat thread pool, no servlet context)
 #   Startup   – faster   (Netty initialises in ~10-20 ms vs Tomcat ~100-200 ms)
