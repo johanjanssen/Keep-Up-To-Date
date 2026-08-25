@@ -1,5 +1,10 @@
 <section>
     <section>
+        <h1>The problem — or actually, the solution!</h1>
+        <h2>Managing your software dependencies</h2>
+    </section>
+
+    <section>
         <h2>Dependencies</h2>
         <div class="puml-wrap">
             <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
@@ -12,19 +17,7 @@
             <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
         </div>
     </section>
-    <section>
-        <h2>How's Your Situation?</h2>
-        <div class="medium">
-            <ul style="margin-top:0.8em;">
-                <li>Do you know what operating system (version) you're using?</li>
-                <li>Do you know which operating system packages (versions) you're using?</li>
-                <li>Do you know which libraries (versions) you're packaging in your application?</li>
-                <li>How many known security vulnerabilities does your application have?</li>
-                <li>Do you remove dead code and unused operating system packages and libraries?</li>
-                <li>How often do you / your team upgrade the versions of the software you're using?</li>
-            </ul>
-        </div>
-    </section>
+
 
     <section>
         <h2>🚨 The "It Works, Don't Touch It" Trap</h2>
@@ -323,21 +316,30 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Source-level vulnerability scanning across ecosystems</p>
-        <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
-            <tbody>
-                <tr><td>OWASP Dependency-Check</td><td>Java, Node, Golang, .NET, Node, Python and many more (some experimental)</td><td>Source-manifest CVE scanning against the NVD</td></tr>
-                <tr><td>pip-audit</td><td>Python</td><td>Official PyPA scanner, uses OSV + PyPI advisory data</td></tr>
-                <tr><td>npm audit / yarn audit</td><td>Node.js</td><td>Built into the package manager</td></tr>
-                <tr><td>govulncheck</td><td>Go</td><td>Official Go team tool; call-graph aware, fewer false positives</td></tr>
-                <tr><td>cargo-audit</td><td>Rust</td><td>Scans <code>Cargo.lock</code> against the RustSec advisory DB</td></tr>
-                <tr><td><code>dotnet list package --vulnerable</code></td><td>.NET</td><td>Built into the .NET SDK</td></tr>
-                <tr><td>Trivy / Grype / OSV-Scanner / Snyk / Docker Scout</td><td>Language-agnostic</td><td>Scan images &amp; multiple manifest formats in one pass</td></tr>
-                <tr><td>endoflife.date</td><td>Any (OS, runtime, framework)</td><td>Free API/site tracking end-of-life dates for 300+ products</td></tr>
-            </tbody>
-        </table>
+        <h2>How's Your Situation?</h2>
+        <div class="medium">
+            <ul style="margin-top:0.8em;">
+                <li>Do you know what operating system (version) you're using?</li>
+                <li>Do you know which operating system packages (versions) you're using?</li>
+                <li>Do you know which libraries (versions) you're packaging in your application?</li>
+                <li>How many known security vulnerabilities does your application have?</li>
+                <li>Do you remove dead code and unused operating system packages and libraries?</li>
+                <li>How often do you / your team upgrade the versions of the software you're using?</li>
+            </ul>
+        </div>
     </section>
 
+    <section>
+        <h2>It's not only managements fault that you're on old software</h2>
+        <div class="medium">
+            <ul style="margin-top:0.8em;">
+                <li>Who benefits most from new software?</li>
+                <li>Overestimating an upgrade results in delays or cancellations</li>
+                <li>Start with the upgrade in a lost hour to get better insights</li>
+                <li>Nowadays tools make the upgrade way easier</li>
+                <li>It's not easy to convince management to spend time on it</li>
+                <li>Even developers complain about automated upgrades</li>
+            </ul>
+        </div>
+    </section>
 </section>

@@ -37,29 +37,7 @@
         <img src="pictures/NetworkCable.jpg" class="r-stretch">
     </section>
 
-    <section>
-        <h2>Detect Dead Code in Production</h2>
-        <div class="medium">
-            <p>Code coverage in CI tells you what your tests exercise. Coverage from a <em>production agent</em> tells you what real users actually call — revealing removal candidates.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo production agent</span>
-            Attach the agent to the running JVM. After a representative period, generate a report.
-            <table style="margin-top:0.4em;">
-                <tbody>
-                    <tr><td><code>hello()</code>, <code>users()</code>, <code>user()</code>, <code>create()</code></td><td class="tag-good">🟢 Called — keep</td></tr>
-                    <tr><td><code>HelloController.diagnostics()</code></td><td class="tag-bad">🔴 Endpoint exists, never hit — remove candidate</td></tr>
-                    <tr><td><code>UserService.delete()</code></td><td class="tag-bad">🔴 No endpoint wired at all — dead from day one</td></tr>
-                </tbody>
-            </table>
-            <pre><code class="language-bash">bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml" target="_blank">▶ Run Demo</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml/badge.svg" alt="" style="vertical-align:middle;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">📊 View Live Report</a>
-        </p>
-    </section>
+
 
     <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>

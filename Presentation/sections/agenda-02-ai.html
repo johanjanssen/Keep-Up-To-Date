@@ -21,33 +21,4 @@
             <li>Other tools are already available to help (automate) the process</li>
         </ul>
     </section>
-
-    <section>
-        <h2>🤖 But... What About AI?</h2>
-        <div class="medium">
-            <p>AI coding assistants are genuinely useful here — but they change <em>how</em> you do this work, not <em>whether</em> you need to.</p>
-            <ul style="margin-top:0.6em;">
-                <li>Copilot / Claude can draft the code changes a major-version bump requires — <strong>you still need tests to trust the diff</strong></li>
-                <li>AI can summarise a changelog or a CVE advisory in seconds — <strong>it can also hallucinate a "safe" summary of a breaking change</strong></li>
-                <li>Agentic tools can open and iterate on update PRs — <strong>the safety net (tests, scanners, enforcer rules) is still what lets you trust the merge</strong></li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            💡 AI is a force multiplier on top of the practices in this talk — pinned versions, tests, scanning, SBOMs — not a replacement for them. Garbage in, confidently-wrong-sounding garbage out.
-        </div>
-    </section>
-
-    <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">AI-assisted update &amp; migration tooling — mostly not language-specific</p>
-        <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
-            <tbody>
-                <tr><td>GitHub Copilot / Claude Code</td><td>Any</td><td>Drafts the code diff a version bump or API change requires</td></tr>
-                <tr><td>OpenRewrite + AI-assisted recipe authoring</td><td>Java (also XML/YAML/Kotlin)</td><td>Deterministic AST recipes; AI helps write new ones</td></tr>
-                <tr><td>Renovate / Dependabot PR summaries</td><td>Any (30+ ecosystems)</td><td>Auto-generated changelogs on every update PR</td></tr>
-                <tr><td>AI-assisted code review (Copilot review, CodeRabbit)</td><td>Any</td><td>Flags risky patterns in an update PR before merge</td></tr>
-            </tbody>
-        </table>
-    </section>
 </section>
