@@ -1,0 +1,87 @@
+name: Maven Dependency Plugin
+
+on:
+  push:
+    branches: [master]
+    paths: ['Maven Dependency Plugin/**']
+  workflow_dispatch:
+
+# Several workflows (static.yml, jacoco.yml, owasp-dc.yml, compare-scans.yml,
+# openrewrite.yml, old-groupids-alerter.yml, this one) each publish their own
+# subfolder to the same gh-pages branch. Each workflow gets its OWN concurrency
+# group (rather than sharing one) so this run is never cancelled while queued
+# behind an unrelated workflow's deploy — GitHub cancels *queued* runs within a
+# shared group even with cancel-in-progress: false. The deploy step below still
+# pushes to the shared gh-pages branch, so it's wrapped in Wandalen/wretry.action
+# to retry automatically on the rare occasion it collides with another
+# workflow's push.
+concurrency:
+  group: "gh-pages-deploy-maven-dependency-plugin"
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Run STRICT check (opt-in CI gate — demonstrates it actually failing)
+        id: strict
+        continue-on-error: true
+        run: STRICT=true bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"
+
+      - name: Run check in report mode (collect every finding; build stays green)
+        run: |
+          bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh" 2>&1 | tee /tmp/dependency-analyze-output.log
+
+      - name: Generate HTML report
+        run: |
+          mkdir -p tmp/pages
+          python3 "Maven Dependency Plugin/scripts/generate-html-report.py" \
+            /tmp/dependency-analyze-output.log \
+            "Maven Dependency Plugin/pom.xml" \
+            tmp/pages/index.html \
+            --title "Maven Dependency Plugin demo — dependency:analyze"
+          echo "## 📦 Maven Dependency Plugin" >> $GITHUB_STEP_SUMMARY
+          echo "Checked pom.xml's declared dependencies against what the compiled bytecode actually references." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.strict.outcome }}" = "failure" ]; then
+            echo "STRICT run (opt-in CI gate, failOnWarning=true): **build FAILED** — exactly what would happen with that gate enabled." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "STRICT run (opt-in CI gate, failOnWarning=true): build passed (no unused dependencies found)." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "Report: https://johanjanssen.github.io/Keep-Up-To-Date/dependency/" >> $GITHUB_STEP_SUMMARY
+
+      # Published as its own subfolder (destination_dir + keep_files) rather than
+      # actions/deploy-pages: this repo has multiple workflows publishing to the
+      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
+      # run (it also requires an environment: github-pages block on the job, which
+      # is where "Missing environment" comes from) — peaceiris pushes to the
+      # gh-pages branch and destination_dir scopes each workflow to its own folder.
+      - name: Deploy to GitHub Pages (dependency/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages
+            destination_dir: dependency
+            keep_files: true
+
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/dependency[/index.html]
+
+      - name: Upload check output as a workflow artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maven-dependency-plugin-output
+          path: /tmp/dependency-analyze-output.log

@@ -33,6 +33,7 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 | [Compare Security Scans/](#compare-security-scans) | Run Grype + Trivy + OWASP DC and compare results side-by-side | `bash "Compare Security Scans/scripts/run-all.sh"` |
 | [OpenRewrite/](#openrewrite) | Automated migration: Spring Boot 2→4, Java 17→25, JUnit 4→5 | `bash OpenRewrite/scripts/run-openrewrite.sh` |
 | [Old GroupIds Alerter/](#old-groupids-alerter) | Flags `pom.xml` dependencies declared under groupIds that moved (e.g. `javax.*` → `jakarta.*`) | `bash "Old GroupIds Alerter/scripts/run-oga.sh"` |
+| [Maven Dependency Plugin/](#maven-dependency-plugin) | Finds unused `pom.xml` dependencies with `dependency:analyze` — and the JDBC-driver false positive it gets wrong | `bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"` |
 | [Testcontainers/](#testcontainers) | Integration testing with real PostgreSQL via `@ServiceConnection` | `bash Testcontainers/scripts/run-tests.sh` |
 | [JaCoCo/](#jacoco) | Production-agent code coverage — detect dead code in running applications | `bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"` |
 | [Renovate/](#renovate) | Local Gitea + Jenkins + Renovate bot — automated dependency update PRs | `bash Renovate/scripts/demo.sh` |
@@ -159,6 +160,23 @@ Jakarta EE relocation — using the
 ```bash
 bash "Old GroupIds Alerter/scripts/run-oga.sh"                # report only, build stays green
 STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"    # plugin default — build fails
+```
+
+---
+
+## Maven Dependency Plugin
+
+Runs the [Maven Dependency Plugin](https://maven.apache.org/plugins/maven-dependency-plugin/)'s
+`analyze` goal against a `pom.xml` with three intentionally chosen
+dependencies: two genuinely unused (`commons-lang3`, `guava`) and one classic
+**false positive** — an `h2` JDBC driver that's only ever reached via
+`java.sql.DriverManager` and the JDBC 4 `ServiceLoader` mechanism, never a
+direct import, so the plugin's bytecode scan flags it as unused too even
+though a `/db-check` endpoint genuinely needs it at runtime.
+
+```bash
+bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"                # report only, build stays green
+STRICT=true bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"    # opt-in CI gate — build fails
 ```
 
 ---
