@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maven Dependency Plugin demo — dependency:analyze</title>
+<style>
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --add-bg: #E4F5E1; --add-fg: #1C5B26; --del-bg: #FBE7E7; --del-fg: #8C1F1F;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4; --ok: #1C5B26; --ok-bg: #E4F5E1; --warn: #8C5A00; --warn-bg: #FBF0DA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+      --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+      --warn: #E0B93D; --warn-bg: #332A10;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --add-bg: #123320; --add-fg: #7FD68F; --del-bg: #3A1414; --del-fg: #E68080;
+    --alt-row: #1E2130; --focus: #8891E8; --ok: #7FD68F; --ok-bg: #123320;
+    --warn: #E0B93D; --warn-bg: #332A10;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  a { color: var(--focus); }
+  h2 { font-size: 1.05rem; margin: 2.5rem 0 0.9rem; }
+  h3 { font-size: 1rem; margin: 0 0 0.5rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .card .label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card .value { font-size: 1.4rem; margin-top: 0.25rem; font-weight: 600; }
+  .badge {
+    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem;
+    font-weight: 600; font-family: -apple-system, sans-serif; letter-spacing: 0.01em;
+  }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.unused { background: var(--del-bg); color: var(--del-fg); }
+  .badge.falsepos { background: var(--warn-bg); color: var(--warn); }
+
+  .finding {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 1.2rem; padding: 1rem 1.2rem 1.2rem;
+  }
+  .finding h3 code { color: var(--text); }
+  .context { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.9rem; }
+
+  .pom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 800px) { .pom-row { grid-template-columns: 1fr; } }
+  .pom-label {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .pom-block {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem; white-space: pre-wrap; word-break: break-word;
+    border-radius: 8px; padding: 0.7rem 0.9rem; margin: 0; overflow-x: auto;
+  }
+  .before-block { background: var(--del-bg); color: var(--del-fg); }
+  .after-block { background: var(--add-bg); color: var(--add-fg); }
+  .removed-block { background: var(--del-bg); color: var(--del-fg); font-style: italic; }
+  .note { color: var(--warn); background: var(--warn-bg); border-radius: 8px; padding: 0.5rem 0.7rem;
+           font-size: 0.85rem; margin: 0.9rem 0 0; }
+
+  footer { margin-top: 3rem; color: var(--muted); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Maven Dependency Plugin demo — dependency:analyze</h1>
+  <p class="subtitle">
+    Every finding below is real output from
+    <code>org.apache.maven.plugins:maven-dependency-plugin:analyze</code> run against this
+    demo's actual <code>pom.xml</code> — the "before" block is the literal dependency
+    declaration; "after" is the real-world fix for that specific finding. Two of the three
+    are genuinely dead weight; one is a JDBC-driver false positive that needs a different
+    fix entirely. Generated 2026-08-25 07:21 UTC.
+  </p>
+
+  <h2>Summary</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label">Unused declared dependencies</div>
+      <div class="value">3</div>
+    </div>
+    <div class="card">
+      <div class="label">Genuinely unused</div>
+      <div class="value">2</div>
+    </div>
+    <div class="card">
+      <div class="label">False positives</div>
+      <div class="value">1</div>
+    </div>
+    <div class="card">
+      <div class="label">CI gate</div>
+      <div class="value"><span class="badge warn">opt-in, off by default</span></div>
+    </div>
+  </div>
+
+  <h2>Findings (3)</h2>
+
+  
+    <section class="finding" id="finding-0">
+      <h3><code>org.apache.commons:commons-lang3</code> <span class="badge unused">unused — safe to delete</span></h3>
+      <p class="context">Declared in pom.xml, but no class under org.apache.commons.lang3.* is imported anywhere in src/. Nothing in the compiled bytecode references it.</p>
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;org.apache.commons&lt;/groupId&gt;
+            &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;
+            &lt;version&gt;3.20.0&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block removed-block">— &lt;dependency&gt; block deleted —</pre>
+        </div>
+      </div>
+      <p class="note">→ Delete the &lt;dependency&gt; block. There is no runtime path that needs it.</p>
+    </section>
+
+    <section class="finding" id="finding-1">
+      <h3><code>com.google.guava:guava</code> <span class="badge unused">unused — safe to delete</span></h3>
+      <p class="context">Same story as commons-lang3: declared, never imported, nothing in the compiled bytecode references com.google.common.*.</p>
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;com.google.guava&lt;/groupId&gt;
+            &lt;artifactId&gt;guava&lt;/artifactId&gt;
+            &lt;version&gt;33.7.1-jre&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after</div>
+          <pre class="pom-block removed-block">— &lt;dependency&gt; block deleted —</pre>
+        </div>
+      </div>
+      <p class="note">→ Delete the &lt;dependency&gt; block. There is no runtime path that needs it.</p>
+    </section>
+
+    <section class="finding" id="finding-2">
+      <h3><code>com.h2database:h2</code> <span class="badge falsepos">false positive — needed at runtime</span></h3>
+      <p class="context">DatabaseController opens a JDBC connection via java.sql.DriverManager and queries it (see /db-check) — h2 IS used, but only through the JDBC 4 ServiceLoader mechanism (h2's jar ships META-INF/services/java.sql.Driver, so the driver self-registers). No class from org.h2.* ever appears in this project's own bytecode, which is all dependency:analyze can see.</p>
+      <div class="pom-row">
+        <div class="pom-col">
+          <div class="pom-label before-label">pom.xml — before</div>
+          <pre class="pom-block before-block">&lt;dependency&gt;
+            &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+            &lt;artifactId&gt;h2&lt;/artifactId&gt;
+            &lt;version&gt;2.4.240&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+        </div>
+        
+        <div class="pom-col">
+          <div class="pom-label after-label">pom.xml — after (dependency unchanged)</div>
+          <pre class="pom-block after-block">&lt;dependency&gt;
+            &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+            &lt;artifactId&gt;h2&lt;/artifactId&gt;
+            &lt;version&gt;2.4.240&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+          <div class="pom-label after-label" style="margin-top:0.8rem;">pom.xml — add to &lt;build&gt;&lt;plugins&gt;</div>
+          <pre class="pom-block after-block">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;usedDependencies&gt;
+            &lt;usedDependency&gt;com.h2database:h2&lt;/usedDependency&gt;
+        &lt;/usedDependencies&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+        </div>
+      </div>
+      <p class="note">→ Keep the &lt;dependency&gt;. Instead, tell the plugin explicitly that it's used by adding a &lt;usedDependencies&gt; entry to maven-dependency-plugin's &lt;configuration&gt; — the supported way to suppress a bytecode-analysis false positive without deleting a dependency the app actually needs.</p>
+    </section>
+
+  <h2>Why this matters</h2>
+  <p class="context" style="max-width:70ch;">
+    <code>dependency:analyze</code> compares declared dependencies against compiled bytecode —
+    it can only see direct class references. Reflection, SPI/ServiceLoader lookups (JDBC
+    drivers, logging bridges, most annotation processors), and dependencies pulled in purely
+    for their <code>META-INF</code> contents are all invisible to it. Treat every finding as a
+    starting point for a human decision, not an automatic deletion: real dead weight should go,
+    but a dependency the app genuinely needs at runtime should be kept and the warning
+    suppressed explicitly via <code>&lt;usedDependencies&gt;</code> instead.
+  </p>
+
+  <footer>
+    Built by the <a href="https://github.com/johanjanssen/Keep-Up-To-Date/actions/workflows/maven-dependency-plugin.yml">Maven Dependency Plugin GitHub Action</a>
+    from <a href="https://github.com/johanjanssen/Keep-Up-To-Date/tree/master/Maven%20Dependency%20Plugin">Maven Dependency Plugin/</a>,
+    using the <a href="https://maven.apache.org/plugins/maven-dependency-plugin/analyze-mojo.html">Maven Dependency Plugin</a>'s <code>analyze</code> goal.
+    <a href="../">← back to Keep Up To Date</a>
+  </footer>
+</main>
+</body>
+</html>
