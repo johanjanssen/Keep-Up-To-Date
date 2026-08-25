@@ -84,4 +84,36 @@
         <p class="small" style="margin-top:0.5em;">💡 It matters less than you think — all are standards-compliant. Pick one and commit to updating it.</p>
     </section>
 
+    <section>
+        <h2>⚖️ jlink vs GraalVM native-image vs CRaC</h2>
+        <p class="subtitle">Three ways to fix "JVM cold-start is slow" — different tradeoffs</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
+                <tbody>
+                    <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full — still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                    <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow — full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT — good but not peak HotSpot</td></tr>
+                    <tr><td>Azul CRaC checkpoint/restore</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
+                </tbody>
+            </table>
+            <p class="small" style="margin-top:0.4em;">CRaC's tradeoff isn't compatibility — it's operational: the checkpoint captures process state (open sockets, files) at a point in time, so you design your startup code around what's safe to snapshot.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Fast-startup / low-footprint runtime strategies across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary</td></tr>
+                <tr><td>Azul CRaC</td><td>Java / JVM</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
+                <tr><td>CRIU</td><td>Any (OS-level process checkpoint)</td><td>The Linux checkpoint/restore mechanism CRaC itself builds on</td></tr>
+                <tr><td>.NET Native AOT / ReadyToRun</td><td>.NET</td><td>AOT compilation and pre-JIT for faster cold start</td></tr>
+                <tr><td>Go / Rust static binaries</td><td>Go, Rust</td><td>Already compiled — no JIT warm-up phase to begin with</td></tr>
+                <tr><td>Node.js V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialized heap to skip re-parsing/re-executing startup code</td></tr>
+            </tbody>
+        </table>
+    </section>
+
 </section>

@@ -1,3 +1,4 @@
+<section>
     <section>
         <h2>Automate the Migration Itself</h2>
         <div class="medium">
@@ -23,3 +24,19 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
         </p>
     </section>
 
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Automated code migration across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>OpenRewrite</td><td>Java (also XML / YAML / Kotlin recipes)</td><td>Recipe-driven, AST-level automated code migration</td></tr>
+                <tr><td>.NET Upgrade Assistant</td><td>.NET</td><td>Automated project &amp; API migration — .NET's OpenRewrite</td></tr>
+                <tr><td>LibCST codemods / Bowler</td><td>Python</td><td>AST-based automated rewrites</td></tr>
+                <tr><td>jscodeshift / ts-migrate</td><td>JavaScript / TypeScript</td><td>Codemod-driven automated rewrites</td></tr>
+                <tr><td><code>go fix</code> / <code>gofmt -r</code></td><td>Go</td><td>Simple automated syntax rewrites, built into the toolchain</td></tr>
+                <tr><td><code>cargo fix</code> / edition migrations</td><td>Rust</td><td>Automated migration across Rust editions</td></tr>
+            </tbody>
+        </table>
+    </section>
+</section>
