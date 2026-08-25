@@ -16,7 +16,7 @@
     -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/dracula.css" id="theme">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/solarized.css" id="theme">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
     <style>
         :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
@@ -24,8 +24,8 @@
         /* Theme sets .reveal h2{font-size:24pt!important}; override needs !important too */
         .reveal h2 { font-size:15pt!important; }
         .reveal table { font-size:0.58em; margin:0 auto; }
-        .reveal table th { background:rgba(139,233,253,0.15); }
-        .reveal table td,.reveal table th { padding:0.3em 0.65em; border:1px solid rgba(255,255,255,0.15); }
+        .reveal table th { background:rgba(38,139,210,0.15); }
+        .reveal table td,.reveal table th { padding:0.3em 0.65em; border:1px solid rgba(88,110,117,0.25); }
         .reveal .small  { font-size:0.55em; }
         .reveal .medium { font-size:0.68em; }
         .badge-row { display:flex; flex-wrap:wrap; gap:0.5em; justify-content:center; margin:0.5em 0; }
@@ -40,7 +40,7 @@
            slide transitions; width:100% fills the available slide width. */
         .iframe-wrap { width:100%; margin:0.6em auto 0; }
         .iframe-wrap iframe {
-            width:100%; height:440px; border:1px solid rgba(139,233,253,0.35);
+            width:100%; height:440px; border:1px solid rgba(38,139,210,0.35);
             border-radius:8px; background:#fff;
         }
         /* Live PlantUML embeds: the <img> src is built at load time from the
@@ -50,23 +50,23 @@
         .puml-wrap { margin:0.6em auto 0; text-align:center; }
         .puml-wrap img { max-width:100%; max-height:56vh; width:auto; height:auto; }
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; text-align:left; }
-        .box { background:rgba(139,233,253,0.08); border:1px solid rgba(139,233,253,0.25); border-radius:8px; padding:0.7em; margin:0.4em 0; }
-        .box-red   { background:rgba(255,85,85,0.1);   border-color:rgba(255,85,85,0.4); }
-        .box-green { background:rgba(80,250,123,0.1);  border-color:rgba(80,250,123,0.4); }
-        .box-blue  { background:rgba(139,233,253,0.1); border-color:rgba(139,233,253,0.4); }
-        .reveal .subtitle { color:#8be9fd; font-size:0.68em; }
+        .box { background:rgba(38,139,210,0.08); border:1px solid rgba(38,139,210,0.25); border-radius:8px; padding:0.7em; margin:0.4em 0; }
+        .box-red   { background:rgba(220,50,47,0.1);   border-color:rgba(220,50,47,0.4); }
+        .box-green { background:rgba(133,153,0,0.1);  border-color:rgba(133,153,0,0.4); }
+        .box-blue  { background:rgba(38,139,210,0.1); border-color:rgba(38,139,210,0.4); }
+        .reveal .subtitle { color:#268bd2; font-size:0.68em; }
         .reveal section img { border:none; box-shadow:none; }
-        .go-btn { display:inline-block; background:#50fa7b; color:#282a36 !important; padding:0.25em 0.7em; border-radius:6px; text-decoration:none !important; font-weight:bold; font-size:0.55em; margin:0.2em; }
-        .go-btn:hover { background:#69ff94; }
-        .tag-good { color:#50fa7b; font-weight:bold; }
-        .tag-bad  { color:#ff5555; font-weight:bold; }
-        .tag-warn { color:#ffb86c; font-weight:bold; }
+        .go-btn { display:inline-block; background:#859900; color:#fdf6e3 !important; padding:0.25em 0.7em; border-radius:6px; text-decoration:none !important; font-weight:bold; font-size:0.55em; margin:0.2em; }
+        .go-btn:hover { background:#6b7a00; }
+        .tag-good { color:#859900; font-weight:bold; }
+        .tag-bad  { color:#dc322f; font-weight:bold; }
+        .tag-warn { color:#cb4b16; font-weight:bold; }
         .timeline { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0; margin:0.8em 0; }
-        .tl-item  { background:rgba(189,147,249,0.15); border:1px solid rgba(189,147,249,0.4); border-radius:6px; padding:0.4em 0.7em; font-size:0.52em; text-align:center; }
-        .tl-lts   { background:rgba(80,250,123,0.15); border-color:rgba(80,250,123,0.5); }
-        .tl-now   { background:rgba(255,121,198,0.15); border-color:rgba(255,121,198,0.6); }
-        .tl-arrow { color:#bd93f9; font-size:0.9em; margin:0 0.25em; }
-        .java-pill { display:inline-block; background:rgba(255,184,108,0.2); border:1px solid rgba(255,184,108,0.5); border-radius:4px; padding:0.1em 0.5em; font-size:0.6em; vertical-align:middle; margin-left:0.4em; color:#ffb86c; }
+        .tl-item  { background:rgba(108,113,196,0.15); border:1px solid rgba(108,113,196,0.4); border-radius:6px; padding:0.4em 0.7em; font-size:0.52em; text-align:center; }
+        .tl-lts   { background:rgba(133,153,0,0.15); border-color:rgba(133,153,0,0.5); }
+        .tl-now   { background:rgba(211,54,130,0.15); border-color:rgba(211,54,130,0.6); }
+        .tl-arrow { color:#6c71c4; font-size:0.9em; margin:0 0.25em; }
+        .java-pill { display:inline-block; background:rgba(203,75,22,0.2); border:1px solid rgba(203,75,22,0.5); border-radius:4px; padding:0.1em 0.5em; font-size:0.6em; vertical-align:middle; margin-left:0.4em; color:#cb4b16; }
         code { font-size:0.9em !important; }
         /* Browser-chrome mockup for the repo slide: github.com sends
            X-Frame-Options: deny / frame-ancestors 'none', so it can't be
@@ -74,14 +74,14 @@
            wraps its social-preview image (opengraph.githubassets.com, which
            has no such restriction on <img>) in a fake address bar instead,
            and the whole thing is a real link out to the repo. */
-        .browser-mock { max-width:760px; margin:0.6em auto 0; border-radius:10px; overflow:hidden; border:1px solid rgba(139,233,253,0.35); background:#1e1f29; text-decoration:none; display:block; }
-        .browser-mock-bar { display:flex; align-items:center; gap:0.5em; padding:0.5em 0.8em; background:#282a36; border-bottom:1px solid rgba(139,233,253,0.2); }
+        .browser-mock { max-width:760px; margin:0.6em auto 0; border-radius:10px; overflow:hidden; border:1px solid rgba(38,139,210,0.35); background:#fdf6e3; text-decoration:none; display:block; }
+        .browser-mock-bar { display:flex; align-items:center; gap:0.5em; padding:0.5em 0.8em; background:#eee8d5; border-bottom:1px solid rgba(38,139,210,0.25); }
         .browser-mock-dots { display:flex; gap:0.3em; }
         .browser-mock-dots span { width:9px; height:9px; border-radius:50%; display:inline-block; }
-        .browser-mock-dots span:nth-child(1) { background:#ff5555; }
-        .browser-mock-dots span:nth-child(2) { background:#ffb86c; }
-        .browser-mock-dots span:nth-child(3) { background:#50fa7b; }
-        .browser-mock-url { flex:1; background:#0f1117; border-radius:5px; padding:0.3em 0.7em; font-size:0.5em; color:#8be9fd; text-align:left; font-family:monospace; }
+        .browser-mock-dots span:nth-child(1) { background:#dc322f; }
+        .browser-mock-dots span:nth-child(2) { background:#cb4b16; }
+        .browser-mock-dots span:nth-child(3) { background:#859900; }
+        .browser-mock-url { flex:1; background:#fdf6e3; border:1px solid rgba(88,110,117,0.3); border-radius:5px; padding:0.3em 0.7em; font-size:0.5em; color:#268bd2; text-align:left; font-family:monospace; }
         .browser-mock img { width:100%; display:block; }
     </style>
 </head>
@@ -100,15 +100,15 @@
 <script>
 // ─── Colour palette ───────────────────────────────────────────────────────────
 const C = {
-    cyan:   'rgba(139,233,253,0.85)',
-    green:  'rgba(80,250,123,0.85)',
-    purple: 'rgba(189,147,249,0.85)',
-    pink:   'rgba(255,121,198,0.85)',
-    orange: 'rgba(255,184,108,0.85)',
-    red:    'rgba(255,85,85,0.85)',
-    yellow: 'rgba(241,250,140,0.85)',
-    fg:     '#f8f8f2',
-    grid:   'rgba(255,255,255,0.12)',
+    cyan:   'rgba(38,139,210,0.85)',
+    green:  'rgba(133,153,0,0.85)',
+    purple: 'rgba(108,113,196,0.85)',
+    pink:   'rgba(211,54,130,0.85)',
+    orange: 'rgba(203,75,22,0.85)',
+    red:    'rgba(220,50,47,0.85)',
+    yellow: 'rgba(181,137,0,0.85)',
+    fg:     '#586e75',
+    grid:   'rgba(101,123,131,0.18)',
 };
 
 // ─── Sharp canvas helper ──────────────────────────────────────────────────────
