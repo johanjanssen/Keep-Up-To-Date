@@ -14,10 +14,10 @@ cd "Callback Server"
 ../mvnw spring-boot:run
 ```
 
-Or with Docker Compose (from the Vulnerable Application directory):
+Or with Docker Compose (from the Vulnerable Application Old Java directory):
 
 ```bash
-cd "Vulnerable Application"
+cd "Vulnerable Application Old Java"
 docker compose up callback
 ```
 
