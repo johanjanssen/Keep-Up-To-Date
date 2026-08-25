@@ -125,6 +125,50 @@ def severity_table_html(subtitle, rows_html):
     </div>"""
 
 
+def barchart_html(items):
+    """Grouped horizontal bar chart — total vulnerabilities per image, Grype
+    vs Trivy vs OSV-Scanner — rendered directly under its matching severity
+    table so the totals are readable at a glance without scanning across the
+    Total columns of three grouped headers. Plain HTML/CSS (bar width as a
+    %), no SVG/JS/build step, consistent with the rest of this report."""
+    if not items:
+        return ""
+    chart_max = max((v["_total"] for _, g, t, o, *_ in items for v in (g, t, o)), default=0) or 1
+
+    def bar(tool_class, tool_label, val):
+        pct = (val / chart_max) * 100
+        return (
+            f'<div class="bar-track" title="{tool_label}: {val}">'
+            f'<div class="bar-outer"><div class="bar {tool_class}" style="width:{pct:.1f}%"></div></div>'
+            f'<span class="bar-val">{val}</span></div>'
+        )
+
+    rows = []
+    for img, g, t, o, *_ in items:
+        esc = html.escape(img)
+        rows.append(f"""
+        <div class="barchart-row">
+          <div class="barchart-label" title="{esc}">{esc}</div>
+          <div class="barchart-bars">
+            {bar('grype', 'Grype', g['_total'])}
+            {bar('trivy', 'Trivy', t['_total'])}
+            {bar('osv', 'OSV-Scanner', o['_total'])}
+          </div>
+        </div>""")
+
+    return f"""
+    <div class="barchart" role="img" aria-label="Total vulnerabilities per image — Grype vs Trivy vs OSV-Scanner">
+      <div class="barchart-legend">
+        <span><i class="swatch grype"></i>Grype</span>
+        <span><i class="swatch trivy"></i>Trivy</span>
+        <span><i class="swatch osv"></i>OSV-Scanner</span>
+      </div>
+      <div class="barchart-rows">
+        {"".join(rows)}
+      </div>
+    </div>"""
+
+
 # Shared verbatim (not passed through .format — its literal "{" / "}" pairs
 # are CSS rules, not placeholders) so both reports render identically.
 PAGE_STYLE = """
@@ -181,6 +225,20 @@ PAGE_STYLE = """
   a { color: var(--trivy); }
   a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+  .barchart { margin: 0.9rem 0 0; padding: 1rem 1.1rem 1.15rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .barchart-legend { display: flex; gap: 1.25rem; font-size: 0.8rem; color: var(--muted); margin: 0 0 0.9rem; }
+  .barchart-legend .swatch { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: middle; }
+  .swatch.grype, .bar.grype { background: var(--grype); }
+  .swatch.trivy, .bar.trivy { background: var(--trivy); }
+  .swatch.osv,   .bar.osv   { background: var(--osv); }
+  .barchart-row { display: grid; grid-template-columns: minmax(140px, 240px) 1fr; gap: 0.9rem; align-items: center; padding: 0.4rem 0; }
+  .barchart-row + .barchart-row { border-top: 1px solid var(--border); }
+  .barchart-label { font-size: 0.82rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .barchart-bars { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .bar-track { display: flex; align-items: center; gap: 0.5rem; }
+  .bar-outer { flex: 1 1 auto; min-width: 0; height: 11px; background: var(--alt-row); border-radius: 3px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 0 3px 3px 0; }
+  .bar-val { flex: 0 0 auto; width: 2.4rem; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--muted); }
 """
 
 PAGE_HEAD = """<!doctype html>
@@ -275,7 +333,9 @@ def main():
 
     base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("Base Images", summary_rows_html(generic_items) if generic_items else no_results) + \
+        barchart_html(generic_items) + \
         severity_table_html("Java Runtime Images (JDK / JRE / GraalVM)", summary_rows_html(java_items) if java_items else no_results) + \
+        barchart_html(java_items) + \
         "\n  </section>\n"
     base_page = render_page(
         title=html.escape(args.title),
@@ -286,6 +346,7 @@ def main():
 
     custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("hello-conference Images", summary_rows_html(app_items) if app_items else no_results) + \
+        barchart_html(app_items) + \
         "\n  </section>\n"
     custom_page = render_page(
         title=html.escape(args.custom_title),
