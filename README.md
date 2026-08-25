@@ -4,7 +4,7 @@ Companion repository for the **"Keep Up To Date"** conference talk.
 Each directory is a self-contained demo covering a different aspect of keeping
 Java applications and Docker images secure, up-to-date, and well-tested.
 
-The presentation can be viewed via [GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/).
+The presentation and demos can be viewed via [GitHub Pages](https://johanjanssen.github.io/Keep-Up-To-Date).
 
 
 ---
