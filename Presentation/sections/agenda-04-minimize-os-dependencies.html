@@ -46,6 +46,17 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
     </section>
 
     <section>
+        <h2>🔍 Build Docker Images — Full Report</h2>
+        <p class="subtitle">Live image size &amp; package tables, published to GitHub Pages after every run</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
         <h2>It's Not Just a Java Problem</h2>
         <div class="medium">
             <p>Every language faces the same "does my image need a full runtime?" question — the shape of the answer just differs.</p>
@@ -81,7 +92,6 @@ bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code
                 <tr><td>musl static binary + <code>scratch</code></td><td>Rust</td><td>Same static-binary story as Go</td></tr>
             </tbody>
         </table>
-        <p class="small" style="margin-top:0.5em;">See the live <a href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">Docker image size &amp; package report</a> for real numbers across JDK/JRE vendors and OS bases.</p>
     </section>
 
 </section>
