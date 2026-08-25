@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """
 Generate two self-contained static HTML severity-comparison reports
-(Grype vs Trivy vs OSV-Scanner) from Trivy/Grype/OSV-Scanner JSON scan results:
+(Grype vs Trivy vs OSV-Scanner, plus OWASP Dependency Check on the app page)
+from Trivy/Grype/OSV-Scanner/OWASP-DC JSON scan results:
 
   - a "base images" report (generic OS images + Java runtime images) — the
     general-purpose comparison, published at /image-scans
   - a "custom images" report (hello-conference app images only) — the
-    app-specific comparison, published at /custom-image-scans
+    app-specific comparison, published at /custom-image-scans, with an added
+    one-row OWASP Dependency Check table (see --owasp-json) since OWASP DC
+    scans the app's dependency tree once, not per Docker image
 
 Meant to be published as-is to GitHub Pages — no external assets, no build step.
 
 Usage:
   python3 generate-html-report.py <trivy_dir> <grype_dir> <osv_dir> \\
-      <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."]
+      <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."] \\
+      [--owasp-json "..."]
 """
 import argparse, html, importlib.util, json, os, subprocess
 from datetime import datetime, timezone
@@ -125,12 +129,62 @@ def severity_table_html(subtitle, rows_html):
     </div>"""
 
 
+# OWASP Dependency Check scans the hello-conference app's dependency tree
+# (Vulnerable Application/pom.xml) once — not per Docker image, since every
+# hello-conference:* image embeds the same built jar. So this renders a
+# single-row table, using the same Total/Crit/High/Med/Low columns as the
+# Grype/Trivy/OSV table above, plus a "Unique in OWASP" column (CVEs OWASP DC
+# found that neither Grype, Trivy, nor OSV found in any scanned image — see
+# generate-charts.py::load_all's owasp_ids handling).
+def owasp_table_html(owasp_counts, owasp_unique):
+    if owasp_counts is None:
+        rows_html = '<tr><td colspan="7" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
+    else:
+        c = owasp_counts
+
+        def sev_cell(count, sev_class):
+            return f'<td class="num {sev_class}">{count}</td>' if count else '<td class="num muted">–</td>'
+
+        rows_html = f"""
+        <tr>
+          <td class="image-name">HelloConference (application dependencies)</td>
+          <td class="num total owasp">{c['_total']}</td>
+          {sev_cell(c['CRITICAL'], 'crit')}
+          {sev_cell(c['HIGH'], 'high')}
+          {sev_cell(c['MEDIUM'], 'med')}
+          {sev_cell(c['LOW'], 'low')}
+          <td class="num total owasp">{owasp_unique if owasp_unique else "–"}</td>
+        </tr>"""
+    return f"""
+    <h3>OWASP Dependency Check</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="group">
+            <th class="image-col"></th>
+            <th colspan="5" class="owasp-hdr">OWASP Dependency Check</th>
+            <th class="unique-hdr">Unique</th>
+          </tr>
+          <tr>
+            <th class="image-col">Application</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in OWASP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows_html}
+        </tbody>
+      </table>
+    </div>
+    <p class="legend" style="margin-top:0.5rem">Same jar is embedded in every hello-conference image, so this single row applies to all of them &middot; "Unique in OWASP" = found by OWASP DC but by none of Grype/Trivy/OSV in any scanned image.</p>"""
+
+
 # Shared verbatim (not passed through .format — its literal "{" / "}" pairs
 # are CSS rules, not placeholders) so both reports render identically.
 PAGE_STYLE = """
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
-    --grype: #E65100; --trivy: #1565C0; --osv: #00796B;
+    --grype: #E65100; --trivy: #1565C0; --osv: #00796B; --owasp: #6A1B9A;
     --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
@@ -168,11 +222,13 @@ PAGE_STYLE = """
   th.grype-hdr { background: #BF360C; color: #fff; }
   th.trivy-hdr { background: #0D47A1; color: #fff; }
   th.osv-hdr   { background: #00695C; color: #fff; }
+  th.owasp-hdr { background: #4A148C; color: #fff; }
   th.unique-hdr { background: #37474F; color: #fff; }
   tbody tr:nth-child(even) { background: var(--alt-row); }
   td.total.grype { font-weight: 700; color: var(--grype); }
   td.total.trivy { font-weight: 700; color: var(--trivy); }
   td.total.osv   { font-weight: 700; color: var(--osv); }
+  td.total.owasp { font-weight: 700; color: var(--owasp); }
   td.crit { color: var(--crit); font-weight: 600; }
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
@@ -255,9 +311,25 @@ def main():
     parser.add_argument("--json-out", default=None,
                          help="Optional path to also write a JSON summary (image name + Grype CVE "
                               "count, grouped generic/java/app) for the presentation's live charts")
+    parser.add_argument("--owasp-json",
+                         default=os.path.join(REPO_ROOT, "Vulnerable Application", "target", "dependency-check-report.json"),
+                         help="Path to OWASP Dependency Check's JSON report for the hello-conference app "
+                              "(Vulnerable Application/pom.xml — the same source every hello-conference:* "
+                              "image is built from). Rendered as a one-row table on the custom-images "
+                              "report and folded into the Grype/Trivy/OSV 'Unique' columns there. Missing "
+                              "file is not an error — the table just shows a placeholder.")
     args = parser.parse_args()
 
-    items = gc.load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
+    owasp_counts, owasp_ids = None, set()
+    if args.owasp_json and os.path.isfile(args.owasp_json):
+        try:
+            owasp_counts, owasp_ids = gc.load_owasp(args.owasp_json)
+        except Exception as e:
+            print(f"  WARN could not read OWASP report {args.owasp_json}: {e}")
+    else:
+        print(f"  No OWASP Dependency Check report at {args.owasp_json} — OWASP table will show a placeholder.")
+
+    items, owasp_unique = gc.load_all(args.trivy_dir, args.grype_dir, args.osv_dir, owasp_ids)
     if not items:
         print("  No JSON results found — writing placeholder pages.")
 
@@ -270,7 +342,7 @@ def main():
         f"Generated {generated} &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and "
         f'<strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; '
         f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
-        f'"Unique in X" = found by X but by neither of the other two tools &middot; '
+        f'"Unique in X" = found by X but by none of the other scanners &middot; '
     )
 
     base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
@@ -284,8 +356,9 @@ def main():
     )
     write_html(args.base_output_html, base_page)
 
-    custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
+    custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner vs OWASP Dependency Check</h2>" + \
         severity_table_html("hello-conference Images", summary_rows_html(app_items) if app_items else no_results) + \
+        owasp_table_html(owasp_counts, owasp_unique) + \
         "\n  </section>\n"
     custom_page = render_page(
         title=html.escape(args.custom_title),
