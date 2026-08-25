@@ -21,6 +21,23 @@
     </section>
 
     <section>
+        <h2>Catch Deprecated &amp; Renamed Packages</h2>
+        <div class="medium">
+            <p>A dependency doesn't need a CVE to be a problem — sometimes it's just been renamed, moved to a new coordinate, or deprecated outright, and a version-only bot won't tell you.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Old GroupIds Alerter (OGA)</span>
+            Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>) — the artifact still resolves under the old coordinate, so nothing else catches this.
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.4em;">
+            <span class="java-pill">🤖 Renovate <code>replacements</code> presets</span>
+            <pre><code class="language-json">{ "extends": ["replacements:all"] }
+// e.g. auto-PRs "org.json:json" -> its actively-maintained replacement</code></pre>
+            <a href="https://docs.renovatebot.com/presets-replacements/" target="_blank" class="small">docs.renovatebot.com/presets-replacements</a>
+        </div>
+    </section>
+
+    <section>
         <h2>Automate Security Alerts</h2>
         <div class="medium">
             <p>Don't wait for a scheduled scan — get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
@@ -30,6 +47,22 @@
                 <li>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</li>
             </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Automated updates &amp; deprecation alerts across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>Old GroupIds Alerter (OGA)</td><td>Java (Maven / Gradle)</td><td>Warns when a dependency moved to a new Maven <code>groupId</code></td></tr>
+                <tr><td>Renovate <code>replacements</code> presets</td><td>Any (Renovate-supported ecosystems)</td><td>Config-driven "package X was renamed to Y" rewrites</td></tr>
+                <tr><td><code>npm deprecate</code> warnings</td><td>Node.js</td><td>Publisher-set deprecation notices shown on install</td></tr>
+                <tr><td><code>dotnet list package --deprecated</code></td><td>.NET</td><td>Built into the .NET SDK</td></tr>
+                <tr><td>PyPI yanked-release / deprecation metadata</td><td>Python</td><td>Package index flags a release as yanked or deprecated</td></tr>
+                <tr><td>Renovate / Dependabot</td><td>Any (30+ ecosystems)</td><td>General automated update PRs, not deprecation-specific</td></tr>
+            </tbody>
+        </table>
     </section>
 
 </section>

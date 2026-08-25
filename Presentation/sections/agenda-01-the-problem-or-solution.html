@@ -220,4 +220,36 @@
         </p>
     </section>
 
+    <section>
+        <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
+        <div class="medium">
+            <p>Trivy and Grype are container-image-first. <strong>OSV-Scanner</strong> (Google / OSV.dev) starts from the other end — one CLI that reads lockfiles, SBOMs and images across 20+ ecosystems, all against the open OSV database.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">🔍 osv-scanner</span>
+            <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
+osv-scanner scan image eclipse-temurin:25-jre
+osv-scanner scan --sbom=target/bom.json .</code></pre>
+            <small>Same DB, same tool, whether you're scanning a Java <code>pom.xml</code>, a Python <code>requirements.txt</code>, a Go <code>go.sum</code>, or the built image.</small>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Source-level vulnerability scanning across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
+            <tbody>
+                <tr><td>OWASP Dependency-Check</td><td>Java (experimental: .NET, Node, Python)</td><td>Source-manifest CVE scanning against the NVD</td></tr>
+                <tr><td>pip-audit</td><td>Python</td><td>Official PyPA scanner, uses OSV + PyPI advisory data</td></tr>
+                <tr><td>npm audit / yarn audit</td><td>Node.js</td><td>Built into the package manager</td></tr>
+                <tr><td>govulncheck</td><td>Go</td><td>Official Go team tool; call-graph aware, fewer false positives</td></tr>
+                <tr><td>cargo-audit</td><td>Rust</td><td>Scans <code>Cargo.lock</code> against the RustSec advisory DB</td></tr>
+                <tr><td><code>dotnet list package --vulnerable</code></td><td>.NET</td><td>Built into the .NET SDK</td></tr>
+                <tr><td>Trivy / Grype / OSV-Scanner / Snyk / Docker Scout</td><td>Language-agnostic</td><td>Scan images &amp; multiple manifest formats in one pass</td></tr>
+                <tr><td>endoflife.date</td><td>Any (OS, runtime, framework)</td><td>Free API/site tracking end-of-life dates for 300+ products</td></tr>
+            </tbody>
+        </table>
+    </section>
+
 </section>

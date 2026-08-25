@@ -42,6 +42,37 @@
     </section>
 
     <section>
+        <h2>Find (and Remove) Unused Dependencies</h2>
+        <div class="medium">
+            <p>A dependency you don't use still ships in your artifact, still gets scanned, and still needs updating. The cheapest dependency to maintain is the one you remove.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Maven Dependency Plugin</span>
+            <pre><code class="language-bash">./mvnw dependency:analyze
+
+# [WARNING] Unused declared dependencies found:
+# [WARNING]    org.postgresql:postgresql:jar:42.7.3:compile
+# [WARNING] Used undeclared dependencies found:
+# [WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.4em;">
+            <span class="java-pill">☕ Fail the build on it</span>
+            <pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
+    &lt;version&gt;3.11.0&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;ignoredUnusedDeclaredDependencies&gt;
+            &lt;!-- e.g. a JDBC driver only loaded via reflection --&gt;
+            &lt;ignoredUnusedDeclaredDependency&gt;org.postgresql:postgresql&lt;/ignoredUnusedDeclaredDependency&gt;
+        &lt;/ignoredUnusedDeclaredDependencies&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+            <small>Gradle equivalent: the <code>com.autonomousapps.dependency-analysis</code> plugin.</small>
+        </div>
+    </section>
+
+    <section>
         <h2>Enforce Constraints at Build Time</h2>
         <div class="medium">
             <p>Don't just warn — <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
@@ -75,6 +106,23 @@
             <pre><code class="language-bash">./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
 # Output: target/bom.json — attach to every release artifact</code></pre>
         </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Finding unused, stale &amp; undeclared dependencies</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language</th><th>What it does</th></tr></thead>
+            <tbody>
+                <tr><td>Maven Dependency Plugin (<code>dependency:analyze</code>)</td><td>Java (Maven)</td><td>Flags unused-declared &amp; used-undeclared dependencies</td></tr>
+                <tr><td><code>com.autonomousapps.dependency-analysis</code></td><td>Java / Kotlin (Gradle)</td><td>Same idea, for Gradle builds</td></tr>
+                <tr><td>deptry</td><td>Python</td><td>Finds unused, missing &amp; transitive-only imports</td></tr>
+                <tr><td>depcheck</td><td>Node.js / TypeScript</td><td>Finds unused npm dependencies</td></tr>
+                <tr><td><code>go mod tidy</code></td><td>Go</td><td>Removes modules no longer imported anywhere</td></tr>
+                <tr><td>dotnet-outdated</td><td>.NET</td><td>Flags unused &amp; outdated PackageReferences</td></tr>
+                <tr><td>cargo-udeps</td><td>Rust</td><td>Finds unused Cargo.toml dependencies</td></tr>
+            </tbody>
+        </table>
     </section>
 
 </section>

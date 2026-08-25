@@ -358,7 +358,11 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 // Every <section> that used to live inline in this file now lives in
 // sections/*.html, one file per Agenda topic (sections/agenda-NN-*.html) plus
 // sections/leftover.html for slides that don't map cleanly to a single Agenda
-// item (title/intro, Renovate, testing/Testcontainers, closing material, …).
+// item (title/intro, Renovate, closing material, …). Testing/Testcontainers
+// used to live in leftover.html too, but now has its own agenda item
+// (sections/agenda-11-testing.html) placed right before the conclusion,
+// since testing is the precondition that makes every "update or remove"
+// decision elsewhere in the deck safe to act on.
 // See sections/leftover.html for the reasoning behind what ended up there.
 //
 // This list controls both WHICH files are shown and the ORDER they play in —
@@ -366,7 +370,7 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 // The chart/PlantUML listeners above are registered before Reveal.initialize()
 // runs so they don't miss the 'ready' event once loading finishes.
 const slideFiles = [
-    'sections/leftover.html',                       // title, agenda, Renovate, testing/Testcontainers, closing slides
+    'sections/leftover.html',                       // title, agenda, Renovate, closing slides
     'sections/agenda-01-the-problem-or-solution.html',
     'sections/agenda-02-ai.html',
     'sections/agenda-03-update-or-remove.html',
@@ -377,7 +381,8 @@ const slideFiles = [
     'sections/agenda-08-update-os-dependencies.html',
     'sections/agenda-09-update-code-dependencies.html',
     'sections/agenda-10-update-source-code.html',
-    'sections/agenda-11-takeaways-and-conclusion.html'
+    'sections/agenda-11-testing.html',
+    'sections/agenda-12-takeaways-and-conclusion.html'
 ];
 
 const container = document.getElementById('slides-container');

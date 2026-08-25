@@ -1,0 +1,155 @@
+<section>
+    <section>
+        <h2>🧪 Why Testing Is the Enabler, Not an Afterthought</h2>
+        <div class="medium">
+            <p>Every strategy in this talk — bump the version, swap the base image, delete the unused dependency, remove the dead code path — reduces to the same question: <strong>"How do I know I didn't just break something?"</strong></p>
+            <ul style="margin-top:0.6em;">
+                <li>Without tests, "update" and "remove" are both leaps of faith — so teams avoid them, and drift accumulates (see: <em>The "It Works, Don't Touch It" Trap</em>)</li>
+                <li>With a trustworthy suite, they become <strong>routine, reversible, low-stakes changes</strong> — the kind a bot can even make for you</li>
+                <li>Testing isn't a separate topic from "keeping things up to date" — it's the precondition that makes every other agenda item in this talk <em>safe to act on</em></li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            💡 Automation without tests is just automated risk. Every bot, scanner, and migration tool in this deck assumes CI will catch it if something breaks — that assumption is only as good as your test suite.
+        </div>
+    </section>
+
+    <section>
+        <h2>🧪 Automation Without Tests is Just Automated Risk</h2>
+        <div class="medium">
+            <p>Dependency updates that break <em>behaviour</em> don't cause compilation errors. Without tests, they silently corrupt your application.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Serialisation format changed in a patch version</li>
+                <li>Date/time handling differs across library versions</li>
+                <li>A transitive dependency removal removes a capability you relied on</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Example</span>
+            <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted — all silently breaking JSON contracts.
+        </div>
+    </section>
+
+    <section>
+        <h2>The Minimal Safety Net</h2>
+        <div class="medium">
+            <p>You don't need 90% line coverage. You need coverage of your <strong>integration boundaries</strong> — the surfaces that actually break when a dependency changes.</p>
+        </div>
+        <div class="medium" style="margin-top:0.6em;">
+            <table>
+                <thead><tr><th>Test type</th><th>What it catches</th></tr></thead>
+                <tbody>
+                    <tr><td>Unit tests</td><td>Business logic regressions</td></tr>
+                    <tr><td>Integration tests (real DB/broker)</td><td>Query behaviour, serialisation, protocol changes</td></tr>
+                    <tr><td>Contract tests</td><td>API-consumer compatibility</td></tr>
+                    <tr><td>Image smoke test</td><td>Runtime issues invisible at compile time</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-blue small" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Concrete targets</span> — every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
+        </div>
+    </section>
+
+    <section>
+        <h2>Integration Tests with Real Dependencies</h2>
+        <div class="medium"><p>Spin up the real database / broker / service in a container for the test — no mocks, no in-memory fakes.</p></div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-red">
+                <strong>Before: manual wiring</strong>
+                <pre><code class="language-java">@DynamicPropertySource
+static void props(
+  DynamicPropertyRegistry r) {
+  r.add("spring.datasource.url",
+    postgres::getJdbcUrl);
+  r.add("spring.datasource.username",
+    postgres::getUsername);
+}</code></pre>
+            </div>
+            <div class="box box-green">
+                <strong>After: <code>@ServiceConnection</code></strong>
+                <pre><code class="language-java">@Container
+@ServiceConnection
+static PostgreSQLContainer&lt;?&gt; db
+  = new PostgreSQLContainer&lt;&gt;(
+      "postgres:16-alpine");
+
+// That's it! 🎉</code></pre>
+            </div>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml" target="_blank">▶ Run Tests</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">📄 Full Test Source</a>
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">📊 Latest Maven Result</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Testcontainers — Full Test Source</h2>
+        <p class="subtitle"><code>UserRepositoryIntegrationTest.java</code> — real Postgres container, no mocks</p>
+        <!-- GitHub sends X-Frame-Options: deny / frame-ancestors 'none' on both the
+             blob view and raw.githubusercontent.com, so this can't be embedded as a
+             live iframe like the JaCoCo/Scans/Testcontainers report pages below —
+             inlined instead (also means it renders with zero network dependency). -->
+        <pre class="small"><code class="language-java">@SpringBootTest
+@Testcontainers
+class UserRepositoryIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer&lt;?&gt; postgres =
+            new PostgreSQLContainer&lt;&gt;("postgres:16-alpine");
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Test
+    void savesAndFindsUser() {
+        User saved = userRepository.save(new User("Alice", "alice@example.com"));
+        assertThat(saved.getId()).isNotNull();
+        User found = userRepository.findById(saved.getId()).orElseThrow();
+        assertThat(found.getEmail()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void findsUserByEmail() { /* ... */ }
+    @Test
+    void deletesUser() { /* ... */ }
+    @Test
+    void findsAllUsers() { /* ... */ }
+}</code></pre>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">↗ Full source on GitHub</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Testcontainers — Latest Maven Result</h2>
+        <p class="subtitle">Live, click-through report published to GitHub Pages — Surefire results + captured Maven output, no tab switch needed</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" loading="lazy" title="Testcontainers Maven result report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Testing tooling that makes update/removal safe — across ecosystems</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>Testcontainers</td><td>Java, Go, Python, Node.js, .NET, Rust (community)</td><td>Real dependencies (DB/broker) in disposable containers</td></tr>
+                <tr><td>JUnit 5 / TestNG</td><td>Java</td><td>Standard test runners</td></tr>
+                <tr><td>pytest</td><td>Python</td><td>Standard test runner + fixtures</td></tr>
+                <tr><td>Jest / Vitest</td><td>Node.js / TypeScript</td><td>Standard test runners</td></tr>
+                <tr><td><code>go test</code></td><td>Go</td><td>Built into the toolchain</td></tr>
+                <tr><td>xUnit / NUnit</td><td>.NET</td><td>Standard test runners</td></tr>
+                <tr><td><code>cargo test</code></td><td>Rust</td><td>Built into the toolchain</td></tr>
+                <tr><td>Pact / Spring Cloud Contract</td><td>Any (contract testing)</td><td>Verifies API-consumer compatibility across services</td></tr>
+            </tbody>
+        </table>
+    </section>
+</section>
