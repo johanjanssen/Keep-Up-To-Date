@@ -173,6 +173,89 @@ docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchm
     </section>
 
     <section>
+        <h2>Vulnerable application</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" loading="lazy" title="Vulnerable application"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Image / Artifact Scanning</h2>
+        <div class="medium">
+            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-blue">
+                <span class="java-pill">☕ Grype (Anchore)</span>
+                <ul><li>OS packages + language deps</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
+                <pre><code class="language-bash">bash Grype/scripts/scan-image.sh \
+  eclipse-temurin:25-jre</code></pre>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">☕ Trivy (Aqua)</span>
+                <ul><li>OS packages + language deps</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
+                <pre><code class="language-bash">bash Trivy/scripts/scan-image.sh \
+  eclipse-temurin:25-jre</code></pre>
+            </div>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" target="_blank">▶ Trivy vs Grype comparison</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Two Scanners, Different Results</h2>
+        <p class="subtitle">Different databases → different findings — use both for complete coverage</p>
+        <div class="chart-wrap"><canvas id="chartScanners" height="300"></canvas></div>
+        <p class="small" style="margin-top:0.4em;">Live data — <code>bash "Compare Security Scans/scripts/compare.sh"</code></p>
+        <p class="small" style="margin-top:0.2em;">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶ Compare Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+    <section>
+        <h2>📊 Compare-Scans — Live Results</h2>
+        <p class="subtitle">Unique CVEs (deduplicated by ID) — Grype vs Trivy, Tot/C/H/M/L/U</p>
+        <div class="small">
+            <table>
+                <thead><tr><th>Image</th><th>Grype</th><th>Trivy</th><th>Unique Grype</th><th>Unique Trivy</th></tr></thead>
+                <tbody>
+                <tr><td>eclipse-temurin:25-jre</td><td>96 / 0 / 2 / 87 / 7 / 0</td><td>60 / 0 / 8 / 47 / 4 / 1</td><td>48</td><td>12</td></tr>
+                <tr><td>debian:12-slim</td><td>79 / 6 / 13 / 24 / 5 / 31</td><td>84 / 5 / 8 / 30 / 38 / 3</td><td>-</td><td>5</td></tr>
+                <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td><td>-</td></tr>
+                <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
+                <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>48</td><td>12</td></tr>
+                <tr><td>hello-conference:jlink-distroless-base-debian</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
+                <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-blue small" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
+            On jre-temurin, Grype found <strong>48 CVEs Trivy missed</strong> and Trivy found <strong>12 CVEs Grype missed</strong> —
+            neither tool is a superset of the other. (Grype's GHSA-id findings are resolved to their NVD CVE alias first, so a
+            vulnerability both tools found under different id schemes isn't miscounted as "unique" to both.)
+        </div>
+    </section>
+
+    <section>
+        <h2>🔍 Compare-Scans — Full Report</h2>
+        <p class="subtitle">Live, click-through report published to GitHub Pages — scroll, expand the full breakdown, no tab switch needed</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+
+    <section>
         <h2>🔍 Two Layers of Scanning</h2>
         <p class="subtitle">They find different things — you need both</p>
         <div class="two-col medium" style="margin-top:0.8em;">
@@ -224,77 +307,6 @@ docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchm
         </p>
     </section>
 
-    <section>
-        <h2>Image / Artifact Scanning</h2>
-        <div class="medium">
-            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies.</p>
-        </div>
-        <div class="two-col medium" style="margin-top:0.5em;">
-            <div class="box box-blue">
-                <span class="java-pill">☕ Grype (Anchore)</span>
-                <ul><li>OS packages + language deps</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
-                <pre><code class="language-bash">bash Grype/scripts/scan-image.sh \
-  eclipse-temurin:25-jre</code></pre>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">☕ Trivy (Aqua)</span>
-                <ul><li>OS packages + language deps</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
-                <pre><code class="language-bash">bash Trivy/scripts/scan-image.sh \
-  eclipse-temurin:25-jre</code></pre>
-            </div>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" target="_blank">▶ Trivy vs Grype comparison</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Two Scanners, Different Results</h2>
-        <p class="subtitle">Different databases → different findings — use both for complete coverage</p>
-        <div class="chart-wrap"><canvas id="chartScanners" height="300"></canvas></div>
-        <p class="small" style="margin-top:0.4em;">Live data — <code>bash "Compare Security Scans/scripts/compare.sh"</code></p>
-        <p class="small" style="margin-top:0.2em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶ Compare Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt="" style="vertical-align:middle;">
-        </p>
-    </section>
-
-    <section>
-        <h2>📊 Compare-Scans — Live Results</h2>
-        <p class="subtitle">Unique CVEs (deduplicated by ID) — Grype vs Trivy, Tot/C/H/M/L/U</p>
-        <div class="small">
-            <table>
-                <thead><tr><th>Image</th><th>Grype</th><th>Trivy</th><th>Unique Grype</th><th>Unique Trivy</th></tr></thead>
-                <tbody>
-                    <tr><td>eclipse-temurin:25-jre</td><td>96 / 0 / 2 / 87 / 7 / 0</td><td>60 / 0 / 8 / 47 / 4 / 1</td><td>48</td><td>12</td></tr>
-                    <tr><td>debian:12-slim</td><td>79 / 6 / 13 / 24 / 5 / 31</td><td>84 / 5 / 8 / 30 / 38 / 3</td><td>-</td><td>5</td></tr>
-                    <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td><td>-</td></tr>
-                    <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
-                    <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>48</td><td>12</td></tr>
-                    <tr><td>hello-conference:jlink-distroless-base-debian</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
-                    <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box box-blue small" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
-            On jre-temurin, Grype found <strong>48 CVEs Trivy missed</strong> and Trivy found <strong>12 CVEs Grype missed</strong> —
-            neither tool is a superset of the other. (Grype's GHSA-id findings are resolved to their NVD CVE alias first, so a
-            vulnerability both tools found under different id schemes isn't miscounted as "unique" to both.)
-        </div>
-    </section>
-
-    <section>
-        <h2>🔍 Compare-Scans — Full Report</h2>
-        <p class="subtitle">Live, click-through report published to GitHub Pages — scroll, expand the full breakdown, no tab switch needed</p>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" loading="lazy" title="Compare Security Scans report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
 
     <section>
         <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
