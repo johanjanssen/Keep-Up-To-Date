@@ -61,26 +61,31 @@ jobs:
           cat /tmp/measure-performance-output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Generate HTML report
+      - name: Generate HTML reports
         run: |
           python3 "Build Docker Images/scripts/generate-html-report.py" \
             /tmp/measure-images-output.txt \
             /tmp/measure-performance-output.txt \
             "Build Docker Images/target/results/html/index.html" \
-            --title "Docker Image Size & Performance Comparison"
+            "Build Docker Images/target/results/html-custom/index.html" \
+            --title "Docker Image Size & Performance Comparison" \
+            --custom-title "hello-conference Image & Performance Comparison"
 
-      - name: Prepare Pages directory
+      - name: Prepare Pages directories
         run: |
-          mkdir -p tmp/pages
+          mkdir -p tmp/pages tmp/pages-custom
           cp "Build Docker Images/target/results/html/index.html" tmp/pages/
+          cp "Build Docker Images/target/results/html-custom/index.html" tmp/pages-custom/
 
-      # Published as its own subfolder (destination_dir + keep_files) rather than
-      # actions/deploy-pages: this repo has multiple workflows publishing to the
-      # same Pages site, and actions/deploy-pages replaces the ENTIRE site on every
-      # run (it also requires an environment: github-pages block on the job — the
-      # missing one of which is exactly the "Missing environment" deploy error) —
-      # peaceiris pushes to the gh-pages branch and destination_dir scopes each
-      # workflow to its own folder.
+      # Published as their own subfolders (destination_dir + keep_files) rather
+      # than actions/deploy-pages: this repo has multiple workflows publishing to
+      # the same Pages site, and actions/deploy-pages replaces the ENTIRE site on
+      # every run (it also requires an environment: github-pages block on the job
+      # — the missing one of which is exactly the "Missing environment" deploy
+      # error) — peaceiris pushes to the gh-pages branch and destination_dir
+      # scopes each workflow to its own folder. Base images and hello-conference
+      # images/performance are split into separate pages, so each gets its own
+      # deploy step.
       - name: Deploy to GitHub Pages (images/ subfolder)
         uses: Wandalen/wretry.action@v3
         with:
@@ -93,7 +98,21 @@ jobs:
             destination_dir: images
             keep_files: true
 
-      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/images[/index.html]
+      # Now the base-images report is available under https://johanjanssen.github.io/Keep-Up-To-Date/images[/index.html]
+
+      - name: Deploy to GitHub Pages (custom-images/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages-custom
+            destination_dir: custom-images
+            keep_files: true
+
+      # Now the hello-conference report is available under https://johanjanssen.github.io/Keep-Up-To-Date/custom-images[/index.html]
 
       - name: Upload measurement data
         uses: actions/upload-artifact@v4

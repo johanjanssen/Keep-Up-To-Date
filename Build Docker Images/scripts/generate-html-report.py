@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-Generate a single self-contained static HTML report from the plain-text output
+Generate two self-contained static HTML reports from the plain-text output
 of measure-images.sh (size/package comparison) and measure-performance.sh
-(startup/memory comparison).
+(startup/memory comparison):
+
+  - a "base images" report (generic OS images + Java runtime images) — the
+    general-purpose comparison, published at /images
+  - a "custom images" report (hello-conference app images + their startup/
+    memory numbers) — the app-specific comparison, published at /custom-images
 
 Meant to be published as-is to GitHub Pages — no external assets, no build step.
 
@@ -22,7 +27,8 @@ it marks each field boundary explicitly regardless of content length, and an
 empty field between two delimiters parses as "" rather than disappearing.
 
 Usage:
-  python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> <output_html> [--title "..."]
+  python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> \\
+      <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."]
 """
 import argparse, html, os, re, subprocess
 from datetime import datetime, timezone
@@ -196,64 +202,79 @@ def perf_rows_html(rows):
     return "\n".join(out)
 
 
-PAGE_TEMPLATE = """<!doctype html>
+# Shared verbatim (not passed through .format — its literal "{" / "}" pairs
+# are CSS rules, not placeholders) so both reports render identically.
+PAGE_STYLE = """
+  :root {
+    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
+    --accent: #1565C0; --ok: #2E7D32; --warn: #B71C1C;
+    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
+    --focus: #4353C4; --highlight-bg: #DCF3DE; --highlight-border: #2E7D32;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+      --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+      --highlight-bg: #1E3320; --highlight-border: #7FB855;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
+    --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
+    --highlight-bg: #1E3320; --highlight-border: #7FB855;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  section { margin-bottom: 3rem; }
+  h2 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 0.95rem; color: var(--muted); margin: 1.75rem 0 0; text-transform: uppercase; letter-spacing: 0.04em; }
+  p.hint { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 1rem; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); font-variant-numeric: tabular-nums; }
+  th, td { padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.image-col, td.image-name { text-align: left; white-space: normal; font-variant-numeric: normal; }
+  thead th { position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }
+  tbody tr:nth-child(even) { background: var(--alt-row); }
+  tbody tr.not-built { opacity: 0.55; font-style: italic; }
+  tbody tr.size-under-100 { background: var(--highlight-bg); box-shadow: inset 3px 0 var(--highlight-border); }
+  td.muted { color: var(--muted); }
+  td.warmup-ok { color: var(--ok); font-weight: 700; }
+  td.warmup-timeout { color: var(--warn); font-weight: 700; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+"""
+
+PAGE_HEAD = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
-<style>
-  :root {{
-    --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
-    --accent: #1565C0; --ok: #2E7D32; --warn: #B71C1C;
-    --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
-    --focus: #4353C4; --highlight-bg: #DCF3DE; --highlight-border: #2E7D32;
-  }}
-  @media (prefers-color-scheme: dark) {{
-    :root:not([data-theme="light"]) {{
-      --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-      --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
-      --highlight-bg: #1E3320; --highlight-border: #7FB855;
-    }}
-  }}
-  :root[data-theme="dark"] {{
-    --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-    --alt-row: #1E2130; --ok: #7FB855; --warn: #E0554A; --focus: #8891E8;
-    --highlight-bg: #1E3320; --highlight-border: #7FB855;
-  }}
-  * {{ box-sizing: border-box; }}
-  body {{
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }}
-  main {{ max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }}
-  h1 {{ font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }}
-  .subtitle {{ color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }}
-  section {{ margin-bottom: 3rem; }}
-  h2 {{ font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
-  h3 {{ font-size: 0.95rem; color: var(--muted); margin: 1.75rem 0 0; text-transform: uppercase; letter-spacing: 0.04em; }}
-  p.hint {{ color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 1rem; }}
-  .table-scroll {{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }}
-  table {{ border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); font-variant-numeric: tabular-nums; }}
-  th, td {{ padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }}
-  th.image-col, td.image-name {{ text-align: left; white-space: normal; font-variant-numeric: normal; }}
-  thead th {{ position: sticky; top: 0; background: var(--header-bg); color: var(--header-fg); font-weight: 600; }}
-  tbody tr:nth-child(even) {{ background: var(--alt-row); }}
-  tbody tr.not-built {{ opacity: 0.55; font-style: italic; }}
-  tbody tr.size-under-100 {{ background: var(--highlight-bg); box-shadow: inset 3px 0 var(--highlight-border); }}
-  td.muted {{ color: var(--muted); }}
-  td.warmup-ok {{ color: var(--ok); font-weight: 700; }}
-  td.warmup-timeout {{ color: var(--warn); font-weight: 700; }}
-  a {{ color: var(--accent); }}
-  a:focus-visible {{ outline: 2px solid var(--focus); outline-offset: 2px; }}
-  footer {{ color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }}
-</style>
+<style>{style}</style>
 </head>
 <body>
 <main>
   <h1>{title}</h1>
-  <p class="subtitle">Generated {generated} &middot; images built and measured from <strong>Build Docker Images</strong></p>
+  <p class="subtitle">{subtitle}</p>
+"""
 
+PAGE_FOOT = """
+  <footer>Build Docker Images &middot; <a href="https://github.com/johanjanssen/Keep-Up-To-Date">Keep-Up-To-Date</a></footer>
+</main>
+</body>
+</html>
+"""
+
+# Published at /images — the general-purpose comparison: generic OS base
+# images and Java runtime base images, with no hello-conference-specific data.
+BASE_IMAGES_SECTION = """
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
 
@@ -288,6 +309,14 @@ PAGE_TEMPLATE = """<!doctype html>
         </tbody>
       </table>
     </div>
+  </section>
+"""
+
+# Published at /custom-images — the hello-conference-specific comparison:
+# the app images themselves, plus their startup/memory numbers.
+CUSTOM_IMAGES_SECTION = """
+  <section>
+    <h2>Image Size &amp; Package Comparison</h2>
 
     <h3>hello-conference Images</h3>
     <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
@@ -323,20 +352,30 @@ PAGE_TEMPLATE = """<!doctype html>
       </table>
     </div>
   </section>
-
-  <footer>Build Docker Images &middot; <a href="https://github.com/johanjanssen/Keep-Up-To-Date">Keep-Up-To-Date</a></footer>
-</main>
-</body>
-</html>
 """
+
+
+def render_page(title, subtitle, section):
+    return PAGE_HEAD.format(title=title, style=PAGE_STYLE, subtitle=subtitle) + section + PAGE_FOOT
+
+
+def write_html(output_html, content):
+    os.makedirs(os.path.dirname(output_html) or ".", exist_ok=True)
+    with open(output_html, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"  OK  html -> {output_html}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("measure_images_txt")
     parser.add_argument("measure_performance_txt")
-    parser.add_argument("output_html")
-    parser.add_argument("--title", default="Docker Image Size &amp; Performance Comparison")
+    parser.add_argument("base_output_html", help="Output path for the base-images report (published at /images)")
+    parser.add_argument("custom_output_html", help="Output path for the hello-conference report (published at /custom-images)")
+    parser.add_argument("--title", default="Docker Image Size &amp; Performance Comparison",
+                         help="Title for the base-images report")
+    parser.add_argument("--custom-title", default="hello-conference Image &amp; Performance Comparison",
+                         help="Title for the hello-conference report")
     args = parser.parse_args()
 
     images_text, perf_text = "", ""
@@ -354,19 +393,31 @@ def main():
     print(f"  images: {len(generic_base_rows)} generic base + {len(java_base_rows)} java base + "
           f"{len(app_rows)} app rows   performance: {len(perf_rows)} rows")
 
-    out = PAGE_TEMPLATE.format(
-        title=html.escape(args.title),
-        generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    base_section = BASE_IMAGES_SECTION.format(
         generic_base_rows=base_rows_html(generic_base_rows) if generic_base_rows else '<tr><td colspan="3">No results.</td></tr>',
         java_base_rows=base_rows_html(java_base_rows) if java_base_rows else '<tr><td colspan="3">No results.</td></tr>',
+    )
+    base_page = render_page(
+        title=html.escape(args.title),
+        subtitle=f"Generated {generated} &middot; base images measured from <strong>Build Docker Images</strong> &middot; "
+                  f'see also <a href="../custom-images/">hello-conference images &amp; performance</a>',
+        section=base_section,
+    )
+    write_html(args.base_output_html, base_page)
+
+    custom_section = CUSTOM_IMAGES_SECTION.format(
         app_rows=app_rows_html(app_rows) if app_rows else '<tr><td colspan="5">No results.</td></tr>',
         perf_rows=perf_rows_html(perf_rows) if perf_rows else '<tr><td colspan="5">No results.</td></tr>',
     )
-
-    os.makedirs(os.path.dirname(args.output_html) or ".", exist_ok=True)
-    with open(args.output_html, "w", encoding="utf-8") as f:
-        f.write(out)
-    print(f"  OK  html -> {args.output_html}")
+    custom_page = render_page(
+        title=html.escape(args.custom_title),
+        subtitle=f"Generated {generated} &middot; images built and measured from <strong>Build Docker Images</strong> &middot; "
+                  f'see also <a href="../images/">base image comparison</a>',
+        section=custom_section,
+    )
+    write_html(args.custom_output_html, custom_page)
 
 
 if __name__ == "__main__":
