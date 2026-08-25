@@ -52,6 +52,7 @@ jobs:
             <ul>
               <li><a href="OpenRewrite/">OpenRewrite: recipes to change and update code </a></li>
               <li><a href="renamed/">Old GroupIds Alerter: replace old GroupIds</a></li>
+              <li><a href="dependency/">Maven Dependency Plugin: find unused dependencies (and false positives)</a></li>
               <li><a href="JaCoCo/">JaCoCo: measure code coverage of an application</a></li>
               <li><a href="OWASP/">OWASP Dependency Check: find known vulnerabilities in the application</a></li>
               <li><a href="Scans/">Trivy vs Grype: security scan comparison</a></li>

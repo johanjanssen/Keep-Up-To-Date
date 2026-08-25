@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Maven Dependency Plugin Demo — `dependency:analyze`
+        ─────────────────────────────────────────────────────
+        The dependencies below are intentionally declared so `mvn dependency:analyze`
+        has something real to say about this project's own pom.xml:
+
+          • commons-lang3 — declared, never imported anywhere       → genuinely unused, safe to delete
+          • guava         — declared, never imported anywhere       → genuinely unused, safe to delete
+          • h2            — declared, never imported EITHER, but it IS needed:
+                             DatabaseController opens a JDBC connection via
+                             java.sql.DriverManager and lets the driver register
+                             itself through the JDBC 4 ServiceLoader mechanism
+                             (META-INF/services/java.sql.Driver inside h2's own jar).
+                             No class from org.h2.* ever appears in this project's
+                             bytecode, so dependency:analyze — which only sees
+                             bytecode-level class references — cannot tell this
+                             apart from a truly unused dependency. Removing it
+                             breaks /db-check at runtime despite the plugin saying
+                             it's safe to remove. Classic false positive.
+
+        pom.xml here is deliberately left in the "before" state — no
+        <usedDependencies> suppression for h2, commons-lang3 and guava both
+        still declared — so `dependency:analyze` has real findings to report.
+        The fix (delete the two real unused deps, add <usedDependencies> for
+        h2) is shown as a pom.xml diff in the generated report; it isn't
+        applied here so the plugin's actual output stays real, not staged.
+
+        See scripts/run-dependency-analyze.sh and the GitHub Pages report
+        published under /dependency.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>maven-dependency-plugin-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>maven-dependency-plugin-demo</name>
+    <description>Maven Dependency Plugin demo: dependency:analyze, unused dependencies, and a JDBC-driver false positive</description>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            ⚠️  UNUSED — for the dependency:analyze demo only.
+            Neither class is imported anywhere in src/. `mvn dependency:analyze`
+            correctly flags both as "Unused declared dependencies" — real dead
+            weight, safe to remove. See scripts/run-dependency-analyze.sh and the
+            GitHub Pages report published under /dependency.
+        -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.20.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.7.1-jre</version>
+        </dependency>
+
+        <!--
+            ⚠️  FALSE POSITIVE — for the dependency:analyze demo only.
+            DatabaseController never imports org.h2.*; it only calls
+            java.sql.DriverManager, and h2's driver registers itself via the JDBC 4
+            ServiceLoader mechanism (META-INF/services/java.sql.Driver in h2's own
+            jar). dependency:analyze only sees bytecode-level class references, so
+            it flags this as "unused" too — but /db-check genuinely needs it at
+            runtime. This is exactly the shape of false positive JDBC drivers,
+            SPI providers, and @Configuration-only annotation processors produce.
+            The real fix — a <usedDependencies> suppression, not deletion — is
+            shown in the generated report rather than applied here; see the
+            top-of-file comment for why.
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.4.240</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+                Boilerplate, NOT part of the demo narrative below — every Spring Boot
+                project hits this with dependency:analyze and suppresses it the same
+                way: starter POMs (spring-boot-starter-web/-test) carry no classes of
+                their own, so the plugin always flags them "unused declared", while the
+                classes THEY pull in transitively (spring-context, spring-web,
+                spring-boot, junit-jupiter-api, ...) get flagged "used undeclared"
+                since this project never declares them directly. Suppressed here so the
+                findings below are only the three deliberately planted for this demo.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <usedDependencies>
+                        <usedDependency>org.springframework.boot:spring-boot-starter-web</usedDependency>
+                        <usedDependency>org.springframework.boot:spring-boot-starter-test</usedDependency>
+                    </usedDependencies>
+                    <ignoredUsedUndeclaredDependencies>
+                        <ignoredUsedUndeclaredDependency>org.springframework.boot:spring-boot-test</ignoredUsedUndeclaredDependency>
+                        <ignoredUsedUndeclaredDependency>org.springframework.boot:spring-boot-autoconfigure</ignoredUsedUndeclaredDependency>
+                        <ignoredUsedUndeclaredDependency>org.springframework:spring-context</ignoredUsedUndeclaredDependency>
+                        <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+                        <ignoredUsedUndeclaredDependency>org.springframework.boot:spring-boot</ignoredUsedUndeclaredDependency>
+                        <ignoredUsedUndeclaredDependency>org.springframework:spring-web</ignoredUsedUndeclaredDependency>
+                    </ignoredUsedUndeclaredDependencies>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
