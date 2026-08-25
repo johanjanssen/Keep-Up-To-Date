@@ -8,10 +8,11 @@ Meant to be published as-is to GitHub Pages — no external assets, no build ste
 Usage:
   python3 generate-html-report.py <trivy_dir> <grype_dir> <charts_dir> <compare_text_file> <output_html> [--title "..."]
 """
-import argparse, base64, html, importlib.util, os, sys
+import argparse, base64, html, importlib.util, os, subprocess, sys
 from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
 # Reuse the (already-fixed) JSON loading/aggregation logic from generate-charts.py
 # instead of re-deriving image names / severity counts a second time.
@@ -25,6 +26,42 @@ def b64_file(path):
         return None
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode("ascii")
+
+
+# images.conf (bash) is the single source of truth for which base images are
+# "generic OS" vs "Java runtime" — this mirrors the identical helper in
+# Build Docker Images/scripts/generate-html-report.py, kept as a plain
+# duplicate (not a shared import) since each report script is meant to stay
+# self-contained. Both scripts read BASE_IMAGES_JAVA directly from
+# images.conf by asking bash to source it, rather than guessing from the
+# image name — add a new Java base image there and every report picks it up.
+def load_java_base_image_names(repo_root=REPO_ROOT):
+    images_conf = os.path.join(repo_root, "images.conf")
+    script = 'source "$1"; printf "%s\\n" "${BASE_IMAGES_JAVA[@]}"'
+    try:
+        result = subprocess.run(
+            ["bash", "-c", script, "bash", images_conf],
+            capture_output=True, text=True, check=True,
+        )
+        return set(line for line in result.stdout.splitlines() if line)
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
+        # A wrong-but-safe fallback: nothing gets misplaced into the Java
+        # table, it all just lands in the plainer "Base Images" one instead.
+        print(f"  WARN could not read BASE_IMAGES_JAVA from {images_conf}: {e}")
+        return set()
+
+
+def split_three(items, java_image_names):
+    """Split scan results into base/generic, base/Java, and hello-conference
+    app images — see load_java_base_image_names() above for how "Java" is
+    decided. Keeps the severity comparison meaningful for each audience
+    instead of mixing e.g. alpine:3 in with eclipse-temurin:25-jdk, or a
+    base image in with the app images built from it."""
+    app_items = [it for it in items if it[0].startswith("hello-conference:")]
+    base_items = [it for it in items if not it[0].startswith("hello-conference:")]
+    java_items = [it for it in base_items if it[0] in java_image_names]
+    generic_items = [it for it in base_items if it[0] not in java_image_names]
+    return generic_items, java_items, app_items
 
 
 def summary_rows_html(items):
@@ -92,6 +129,7 @@ PAGE_TEMPLATE = """<!doctype html>
   .dot {{ display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin-right: 0.35rem; }}
   section {{ margin-bottom: 3rem; }}
   h2 {{ font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
+  h3 {{ font-size: 0.95rem; color: var(--muted); margin: 1.75rem 0 0; text-transform: uppercase; letter-spacing: 0.04em; }}
   .charts {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; }}
   .charts img {{ display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }}
   .table-scroll {{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }}
@@ -135,6 +173,8 @@ PAGE_TEMPLATE = """<!doctype html>
       <span><span class="dot" style="background:var(--med)"></span>Medium</span>
       <span><span class="dot" style="background:var(--low)"></span>Low</span>
     </p>
+
+    <h3>Base Images</h3>
     <div class="table-scroll">
       <table>
         <thead>
@@ -152,7 +192,53 @@ PAGE_TEMPLATE = """<!doctype html>
           </tr>
         </thead>
         <tbody>
-          {rows}
+          {generic_rows}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Java Runtime Images (JDK / JRE / GraalVM)</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="group">
+            <th class="image-col"></th>
+            <th colspan="5" class="grype-hdr">Grype</th>
+            <th colspan="5" class="trivy-hdr">Trivy</th>
+            <th colspan="2" class="unique-hdr">Unique</th>
+          </tr>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in Grype</th><th>Unique in Trivy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {java_rows}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>hello-conference Images</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="group">
+            <th class="image-col"></th>
+            <th colspan="5" class="grype-hdr">Grype</th>
+            <th colspan="5" class="trivy-hdr">Trivy</th>
+            <th colspan="2" class="unique-hdr">Unique</th>
+          </tr>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Unique in Grype</th><th>Unique in Trivy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {app_rows}
         </tbody>
       </table>
     </div>
@@ -194,6 +280,9 @@ def main():
     if not items:
         print("  No JSON results found — writing a placeholder page.")
 
+    generic_items, java_items, app_items = split_three(items, load_java_base_image_names())
+    print(f"  images: {len(generic_items)} generic base + {len(java_items)} java base + {len(app_items)} app rows")
+
     barplot_b64 = b64_file(os.path.join(args.charts_dir, "scan-barplot.png"))
     chart_barplot_img = f'<img src="data:image/png;base64,{barplot_b64}" alt="Grype vs Trivy total CVEs barplot">' if barplot_b64 else "<p><em>Barplot not available.</em></p>"
 
@@ -203,11 +292,14 @@ def main():
             compare_text = f.read()
     compare_text = compare_text or "(no compare.sh output found)"
 
+    no_results = '<tr><td colspan="13">No results.</td></tr>'
     out = PAGE_TEMPLATE.format(
         title=html.escape(args.title),
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         chart_barplot_img=chart_barplot_img,
-        rows=summary_rows_html(items) if items else '<tr><td colspan="13">No results.</td></tr>',
+        generic_rows=summary_rows_html(generic_items) if generic_items else no_results,
+        java_rows=summary_rows_html(java_items) if java_items else no_results,
+        app_rows=summary_rows_html(app_items) if app_items else no_results,
         compare_text=html.escape(compare_text),
         open_attr="open",
     )
