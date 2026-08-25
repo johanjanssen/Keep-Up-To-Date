@@ -70,13 +70,15 @@ jobs:
             "Compare Security Scans/target/results/html/index.html" \
             "Compare Security Scans/target/results/html-custom/index.html" \
             --title "Container Image CVE Comparison — Trivy vs Grype" \
-            --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype"
+            --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype" \
+            --json-out "Compare Security Scans/target/results/cve-counts.json"
 
       - name: Prepare Pages directories
         run: |
-          mkdir -p tmp/pages tmp/pages-custom
+          mkdir -p tmp/pages tmp/pages-custom tmp/pages-chart-data
           cp "Compare Security Scans/target/results/html/index.html" tmp/pages/
           cp "Compare Security Scans/target/results/html-custom/index.html" tmp/pages-custom/
+          cp "Compare Security Scans/target/results/cve-counts.json" tmp/pages-chart-data/
 
       # Published as their own subfolders (destination_dir + keep_files) rather
       # than actions/deploy-pages: this repo has multiple workflows publishing to
@@ -113,6 +115,27 @@ jobs:
             keep_files: true
 
       # Now the hello-conference report is available under https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/index.html
+
+      # chart-data/ is shared with the Measure Docker Images workflow above —
+      # this step contributes cve-counts.json, that one contributes
+      # image-sizes.json, into the SAME destination_dir. keep_files: true
+      # (plus publish_dir here containing only cve-counts.json) means this
+      # deploy never touches image-sizes.json, whichever workflow last wrote
+      # it. Presentation/index.html fetches both files client-side and merges
+      # them by image name to drive the live "Image Size vs CVE Count" charts.
+      - name: Deploy to GitHub Pages (chart-data/ subfolder)
+        uses: Wandalen/wretry.action@v3
+        with:
+          action: peaceiris/actions-gh-pages@v4
+          attempt_limit: 3
+          attempt_delay: 5000
+          with: |
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: tmp/pages-chart-data
+            destination_dir: chart-data
+            keep_files: true
+
+      # Now available at https://johanjanssen.github.io/Keep-Up-To-Date/chart-data/cve-counts.json
 
       - name: Upload comparison data
         uses: actions/upload-artifact@v4
