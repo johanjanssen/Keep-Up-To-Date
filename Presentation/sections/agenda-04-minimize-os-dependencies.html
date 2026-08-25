@@ -1,63 +1,5 @@
 <section>
     <section>
-        <h2>☕ Ride the Release Train</h2>
-        <div class="medium">
-            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong> — not when they feel ready, but on a fixed schedule.</p>
-            <ul style="margin-top:0.6em;">
-                <li>Regular releases → smaller, manageable changes each time</li>
-                <li><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</li>
-                <li>Non-LTS releases are production-quality for short-lived or internal services</li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java example</span>
-            New release every <strong>6 months</strong> (March / September). LTS every 2 years.
-            <div class="timeline" style="margin-top:0.5em;">
-                <div class="tl-item">Java 8<br><small>LTS 2014</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 11<br><small>LTS 2018</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 17<br><small>LTS 2021</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 21<br><small>LTS 2023 🧵</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-now">Java 25<br><small>LTS Sep 2025 ⚡</small></div>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>Use JRE Instead of JDK</h2>
-    </section>
-
-    <section>
-        <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
-        <p class="subtitle">Same code, same hardware — JMH benchmarks across Java 25 → 28 EA</p>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🔮 Java 25 → 28 EA — Valhalla preview</span>
-            Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
-            Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong> — but only once fields are narrow enough to fit the JVM's current flattening size limit.
-        </div>
-        <pre><code class="language-bash">docker run --rm -v "$(pwd)/results:/results" bench:java25 "\.ValhallaBenchmark\."       # record
-docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchmark\."  # value record</code></pre>
-        <p class="small" style="margin-top:0.6em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml" target="_blank">▶ Run Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml/badge.svg" alt="" style="vertical-align:middle;">
-        </p>
-    </section>
-
-    <section>
-        <h2>🔍 Performance Benchmarks — Full Report</h2>
-        <p class="subtitle">Live overview tables, published to GitHub Pages after every run</p>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
         <div class="medium">
             <p>The fewer OS packages in your image, the smaller the attack surface. Most application runtimes don't need a shell, a package manager, or system utilities.</p>
@@ -77,6 +19,13 @@ docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchm
             <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data — base images, not the app image.</p>
         </div>
         <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
+    </section>
+
+    <section>
+        <h2>Use JRE Instead of JDK</h2>
+        <ul>
+            <li>Use jlink to create a custom (smaller) JRE</li>
+        </ul>
     </section>
 
     <section>
