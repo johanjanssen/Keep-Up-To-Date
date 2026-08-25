@@ -87,6 +87,8 @@
 </head>
 <body>
 <div class="reveal">
+<!-- Sections from external files are injected here -->
+<div class="slides" id="slides-container"></div>
 <div class="slides">
 
 <!-- ═══════════════════════ TITLE ═══════════════════════ -->
@@ -149,7 +151,7 @@
         </ol></div>
         <div><ol start="5">
             <li>Updating OS level dependencies Dependabot/Renovate also Dockerfile FROM statements</li>
-            <li>Updating code dependencies Old GroupIds Alerter (OGA)</li>
+            <li>Updating code dependencies Old GroupIds Alerter (OGA) / Renovate https://docs.renovatebot.com/presets-replacements/</li>
             <li>Updating source code OpenRewrite smaller example</li>
             <li>Key takeaways and conclusion</li>
             <li>TODO: "Docker Image Size & Performance Comparison" has multiple distroless in the overview, make sure which ones is used.</li>
@@ -1168,6 +1170,44 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako_deflate.min.js"></script>
+
+<script>
+    // Dynamically load external slide files into the Reveal.js presentation.
+    // 1. List your slide files in the order they should appear
+    const slideFiles = [
+        'sections/intro.html',
+        'sections/intro.html'
+    ];
+
+    const container = document.getElementById('slides-container');
+
+    // 2. Fetch all files asynchronously
+    Promise.all(
+        slideFiles.map(file =>
+            fetch(file)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Failed to load ${file}`);
+                    return response.text();
+                })
+        )
+    )
+        .then(htmlContents => {
+            // 3. Inject the HTML into the slides container
+            container.innerHTML = htmlContents.join('');
+
+            // 4. Initialize Reveal.js ONLY after DOM is fully populated
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true
+            });
+        })
+        .catch(error => {
+            console.error('Error loading external slides:', error);
+            container.innerHTML = `<section><h2>Error</h2><p>${error.message}</p></section>`;
+        });
+</script>
 
 <script>
 Reveal.initialize({
