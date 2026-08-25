@@ -50,10 +50,10 @@ done
 PORTS=(8081 8082 8083 8088 8090 8091 8092 8084 8085 8086 8087)
 
 # Extra docker run flags required by specific images.
-# crac-azul-distroless-base restores a CRIU checkpoint.  CAP_CHECKPOINT_RESTORE
+# crac-azul-distroless-base-debian restores a CRIU checkpoint.  CAP_CHECKPOINT_RESTORE
 # requires Linux kernel 5.9+ and a matching runc; --privileged is the portable fallback.
 declare -A EXTRA_RUN_ARGS=(
-    ["crac-azul-distroless-base"]="--privileged"
+    ["crac-azul-distroless-base-debian"]="--privileged"
 )
 
 declare -A WALL_MS

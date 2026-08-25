@@ -74,13 +74,13 @@ bash "Build Docker Images/measure-performance.sh"    # startup time + memory
 |---|---|---|
 | `jre-temurin` | Full JRE | `eclipse-temurin:25-jre` |
 | `jre-temurin-alpine` | Full JRE (Alpine) | `eclipse-temurin:25-jre-alpine` |
-| `jlink-full-distroless-base` | jlink (all modules) | `distroless/base-debian13` |
-| `jlink-distroless-base` | jlink (minimal modules) | `distroless/base-debian13` |
-| `jlink-netty-distroless-base` | jlink (Netty-optimised) | `distroless/base-debian13` |
-| `jlink-cds-distroless-base` | jlink + CDS archive | `distroless/base-debian13` |
-| `crac-azul-distroless-base` | CRaC checkpoint/restore | `distroless/base-debian13` |
+| `jlink-full-distroless-base-debian` | jlink (all modules) | `distroless/base-debian13` |
+| `jlink-distroless-base-debian` | jlink (minimal modules) | `distroless/base-debian13` |
+| `jlink-netty-distroless-base-debian` | jlink (Netty-optimised) | `distroless/base-debian13` |
+| `jlink-cds-distroless-base-debian` | jlink + CDS archive | `distroless/base-debian13` |
+| `crac-azul-distroless-base-debian` | CRaC checkpoint/restore | `distroless/base-debian13` |
 | `native-debian-slim` | GraalVM native image | `debian:13-slim` |
-| `native-minimal-distroless-static` | GraalVM native (minimal) | `distroless/static-debian13` |
+| `native-minimal-distroless-static-debian` | GraalVM native (minimal) | `distroless/static-debian13` |
 | `native-scratch` | GraalVM native | `scratch` |
 | `native-netty-scratch` | GraalVM native (Netty) | `scratch` |
 

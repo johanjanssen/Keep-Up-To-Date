@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds hello-conference:crac-azul-distroless-base  (CRaC – Coordinated Restore at Checkpoint)
+# Builds hello-conference:crac-azul-distroless-base-debian  (CRaC – Coordinated Restore at Checkpoint)
 #
 # Three steps (no BuildKit insecure mode required):
 #   1. docker build   – produces hello-conference:crac-azul-pre
@@ -7,7 +7,7 @@
 #   2. docker run     – starts the app with --privileged so CRIU can write the
 #                       checkpoint; Spring exits after context refresh
 #   3. docker commit  – commits the stopped container (containing /crac-checkpoint)
-#                       as hello-conference:crac-azul-distroless-base with the restore ENTRYPOINT
+#                       as hello-conference:crac-azul-distroless-base-debian with the restore ENTRYPOINT
 #
 # --privileged is needed only in step 2 (build time).
 # The final image only needs:
@@ -22,7 +22,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")/Vulnerable Application"
 
 BASE_TAG="hello-conference:crac-azul-pre"
-FINAL_TAG="hello-conference:crac-azul-distroless-base"
+FINAL_TAG="hello-conference:crac-azul-distroless-base-debian"
 CONTAINER_NAME="crac-checkpoint-run"
 
 # Remove any leftover checkpoint container from a previous run
@@ -31,7 +31,7 @@ docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 # ── Step 1: Build base image (app + CRaC JDK, no checkpoint yet) ─────────────
 echo "Step 1/3 – Building base image ${BASE_TAG} …"
 docker build \
-    --file  "${SCRIPT_DIR}/Dockerfile.crac-azul-distroless-base" \
+    --file  "${SCRIPT_DIR}/Dockerfile.crac-azul-distroless-base-debian" \
     --tag   "${BASE_TAG}" \
     --pull=false \
     --progress=plain \
@@ -81,7 +81,7 @@ echo ""
 echo "Step 3/3 – Committing checkpoint into ${FINAL_TAG} …"
 MSYS_NO_PATHCONV=1 docker commit \
     --change='ENTRYPOINT ["/jre/bin/java", "-XX:CRaCRestoreFrom=/crac-checkpoint"]' \
-    --message "CRaC checkpoint created by build-crac-azul-distroless-base.sh" \
+    --message "CRaC checkpoint created by build-crac-azul-distroless-base-debian.sh" \
     "${CONTAINER_NAME}" \
     "${FINAL_TAG}"
 
