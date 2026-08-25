@@ -54,7 +54,7 @@
 <body>
 <main>
   <h1>Docker Image Size &amp; Performance Comparison</h1>
-  <p class="subtitle">Generated 2026-08-25 10:04 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
+  <p class="subtitle">Generated 2026-08-25 11:39 UTC &middot; images built and measured from <strong>Build Docker Images</strong></p>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
@@ -219,6 +219,18 @@
         </tr>
 
         <tr>
+          <td class="image-name">gcr.io/distroless/java25-debian13</td>
+          <td>226MB</td>
+          <td>25</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">ghcr.io/graalvm/native-image-community:25i2</td>
+          <td>1.15GB</td>
+          <td>148</td>
+        </tr>
+
+        <tr>
           <td class="image-name">amazoncorretto:25</td>
           <td>532MB</td>
           <td>144</td>
@@ -231,15 +243,27 @@
         </tr>
 
         <tr>
+          <td class="image-name">bellsoft/liberica-runtime-container:jre-25-slim-musl</td>
+          <td>140MB</td>
+          <td>16</td>
+        </tr>
+
+        <tr>
           <td class="image-name">bellsoft/liberica-runtime-container:jre-25-slim-glibc</td>
           <td>153MB</td>
           <td>16</td>
         </tr>
 
         <tr>
-          <td class="image-name">bellsoft/liberica-runtime-container:jre-25-slim-musl</td>
-          <td>140MB</td>
-          <td>16</td>
+          <td class="image-name">ibm-semeru-runtimes:open-25-jre</td>
+          <td>344MB</td>
+          <td>123</td>
+        </tr>
+
+        <tr>
+          <td class="image-name">registry.access.redhat.com/ubi9/openjdk-25-runtime:latest</td>
+          <td>429MB</td>
+          <td>131</td>
         </tr>
 
         <tr>
@@ -252,30 +276,6 @@
           <td class="image-name">cgr.dev/chainguard/jre:latest</td>
           <td>326MB</td>
           <td>37</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">ghcr.io/graalvm/native-image-community:25i2</td>
-          <td>1.15GB</td>
-          <td>148</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">ibm-semeru-runtimes:open-25-jre</td>
-          <td>344MB</td>
-          <td>123</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">gcr.io/distroless/java25-debian13</td>
-          <td>226MB</td>
-          <td>25</td>
-        </tr>
-
-        <tr>
-          <td class="image-name">registry.access.redhat.com/ubi9/openjdk-25-runtime:latest</td>
-          <td>429MB</td>
-          <td>131</td>
         </tr>
         </tbody>
       </table>
@@ -343,9 +343,9 @@
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base-debian</td>
-          <td>251MB</td>
+          <td>266MB</td>
           <td class="muted">–</td>
-          <td>+216.4 MB</td>
+          <td>+230.9 MB</td>
           <td>10</td>
         </tr>
 
@@ -400,90 +400,90 @@
           
         <tr>
           <td class="image-name">hello-conference:jre-temurin</td>
-          <td>204.5MiB</td>
+          <td>168.4MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.892s</td>
-          <td>2627 ms</td>
+          <td>1.798s</td>
+          <td>2494 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jre-temurin-alpine</td>
-          <td>170.7MiB</td>
+          <td>136.8MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>2.147s</td>
-          <td>2992 ms</td>
+          <td>1.945s</td>
+          <td>2600 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-full-distroless-base-debian</td>
-          <td>165.3MiB</td>
+          <td>161.3MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.98s</td>
-          <td>2776 ms</td>
+          <td>1.679s</td>
+          <td>2366 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-distroless-base-debian</td>
-          <td>161MiB</td>
+          <td>166MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.899s</td>
-          <td>2640 ms</td>
+          <td>1.736s</td>
+          <td>2494 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-netty-distroless-base-debian</td>
-          <td>157.9MiB</td>
+          <td>159.4MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.85s</td>
-          <td>2826 ms</td>
+          <td>1.791s</td>
+          <td>2671 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:jlink-cds-distroless-base-debian</td>
-          <td>173.1MiB</td>
+          <td>188.2MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>1.352s</td>
-          <td>1971 ms</td>
+          <td>1.444s</td>
+          <td>1968 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:crac-azul-distroless-base-debian</td>
-          <td>63.26MiB</td>
+          <td>74.64MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.093s</td>
-          <td>210 ms</td>
+          <td>0.105s</td>
+          <td>206 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-debian-slim</td>
-          <td>21.77MiB</td>
+          <td>22.21MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.05s</td>
-          <td>128 ms</td>
+          <td>0.057s</td>
+          <td>124 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-minimal-distroless-static-debian</td>
-          <td>21.41MiB</td>
+          <td>21.64MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.063s</td>
-          <td>129 ms</td>
+          <td>0.058s</td>
+          <td>123 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-scratch</td>
-          <td>21.39MiB</td>
+          <td>21.61MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.067s</td>
-          <td>128 ms</td>
+          <td>0.062s</td>
+          <td>124 ms</td>
         </tr>
 
         <tr>
           <td class="image-name">hello-conference:native-netty-scratch</td>
-          <td>16.56MiB</td>
+          <td>16.57MiB</td>
           <td class="warmup-ok">OK</td>
-          <td>0.045s</td>
-          <td>126 ms</td>
+          <td>0.048s</td>
+          <td>124 ms</td>
         </tr>
         </tbody>
       </table>
