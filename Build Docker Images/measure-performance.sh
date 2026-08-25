@@ -103,9 +103,13 @@ printf "All containers up – settling %ds before memory snapshot …\n" "${SETT
 sleep "${SETTLE_SLEEP}"
 
 # ── Results ───────────────────────────────────────────────────
-printf "\n%-52s  %-20s  %-8s  %-14s  %s\n" \
+# " | "-delimited for the same reason as measure-images.sh: long image names
+# (e.g. hello-conference:native-minimal-distroless-static-debian) overflow the
+# fixed width below, and the delimiter is what keeps generate-html-report.py's
+# parsing correct regardless — see the comment in measure-images.sh.
+printf "\n%-52s | %-20s | %-8s | %-14s | %s\n" \
     "IMAGE" "MEMORY" "WARMUP" "STARTUP(log)" "STARTUP(wall)"
-printf "%-52s  %-20s  %-8s  %-14s  %s\n" \
+printf "%-52s | %-20s | %-8s | %-14s | %s\n" \
     "----------------------------------------------------" \
     "--------------------" "--------" "--------------" "-------------"
 
@@ -131,7 +135,7 @@ for i in "${!TAGS[@]}"; do
         WALL_FMT="TIMEOUT"
     fi
 
-    printf "%-52s  %-20s  %-8s  %-14s  %s\n" \
+    printf "%-52s | %-20s | %-8s | %-14s | %s\n" \
         "${PREFIX}:${TAG}" "${MEM}" "${WARMUP_STATUS[$TAG]:-TIMEOUT}" \
         "${LOG_STARTUP}" "${WALL_FMT}"
 done
