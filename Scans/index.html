@@ -69,7 +69,7 @@
 <body>
 <main>
   <h1>Container Image CVE Comparison — Trivy vs Grype</h1>
-  <p class="subtitle">Generated 2026-08-25 11:49 UTC &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; counts are unique CVEs (deduplicated by CVE ID)</p>
+  <p class="subtitle">Generated 2026-08-25 12:41 UTC &middot; images scanned with <strong>Grype</strong> and <strong>Trivy</strong> &middot; counts are unique CVEs (deduplicated by CVE ID)</p>
 
   <section>
     <h2>Severity Comparison — Grype vs Trivy</h2>
@@ -837,6 +837,7 @@
 
 IMAGE                                              │   GRYPE (Tot/C/H/M/L/U)        │   TRIVY (Tot/C/H/M/L/U)        │ Unique Grype │ Unique Trivy
 ───────────────────────────────────────────────────┼────────────────────────────────┼────────────────────────────────┼──────────────┼──────────────
+ubuntu:26.04                                       │    64    0    4   52    8    0 │    35    0    8   23    4    0 │ 32           │ 3           
 debian:13                                          │    70    6   16   20    3   25 │    74    3    9   27   30    5 │ -            │ 4           
 debian:13-slim                                     │    70    6   16   20    3   25 │    74    3    9   27   30    5 │ -            │ 4           
 gcr.io/distroless/base-debian13                    │    17    1    3    3    1    9 │    17    0    1    7    7    2 │ -            │ -           
@@ -845,10 +846,9 @@ almalinux:10                                       │   272    0   24  143  105
 almalinux/10-base                                  │   269    0   24  145  100    0 │    54    0   30   21    3    0 │ 215          │ -           
 almalinux:10-minimal                               │   143    0   12   79   52    0 │    41    0   19   19    3    0 │ 102          │ -           
 almalinux/10-micro                                 │    15    0    1   13    1    0 │     7    0    2    5    0    0 │ 8            │ -           
-alpine:3                                           │     2    0    1    1    0    0 │     0    0    0    0    0    0 │ 2            │ -           
-ubuntu:26.04                                       │    64    0    4   52    8    0 │    35    0    8   23    4    0 │ 32           │ 3           
-busybox:latest                                     │     3    0    3    0    0    0 │     0    0    0    0    0    0 │ 3            │ -           
 registry.access.redhat.com/ubi9-micro:latest       │    10    0    0    6    4    0 │     7    0    0    3    4    0 │ 3            │ -           
+alpine:3                                           │     2    0    1    1    0    0 │     0    0    0    0    0    0 │ 2            │ -           
+busybox:latest                                     │     3    0    3    0    0    0 │     0    0    0    0    0    0 │ 3            │ -           
 </pre>
     </details>
   </section>
