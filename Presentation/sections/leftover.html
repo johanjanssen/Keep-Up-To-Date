@@ -1,0 +1,349 @@
+<section>
+    <h1 style="font-size:1.45em;line-height:1.2;">Keeping Your Code, Dependencies,<br>and Runtime Up to Date</h1>
+    <p class="subtitle">Practical strategies for modern software teams</p>
+    <p style="margin-top:1.5em;font-size:0.78em;">
+        <strong>Johan Janssen</strong><br>
+        <span style="font-size:0.75em;color:#bd93f9;">Software developer / architect at ASML</span>
+    </p>
+</section>
+
+<section>
+    <img src="pictures/QuestionMark.svg" class="r-stretch">
+</section>
+
+<section>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+        <img src="pictures/Concept.jpg" style="width: 45%;" alt="First image" class="r-stretch">
+        <img src="pictures/Example.jpg" style="width: 45%;" alt="Second image" class="r-stretch">
+    </div>
+</section>
+
+<section>
+    <img src="pictures/Java.svg"class="r-stretch">
+</section>
+
+<section>
+    <h2>Follow along on GitHub</h2>
+    <p class="subtitle">Presentation:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://johanjanssen.github.io/Keep-Up-To-Date/Presentation/" target="_blank">↗ johanjanssen.github.io/Keep-Up-To-Date/Presentation/</a>
+
+    <p class="subtitle">Sourcecode, scripts, demos, builds:</p>
+    <a class="go-btn" style="font-size:0.75em;padding:0.4em 1em;" href="https://github.com/johanjanssen/Keep-Up-To-Date" target="_blank">↗ github.com/johanjanssen/Keep-Up-To-Date</a>
+</section>
+
+<section>
+    <h2>Agenda</h2>
+    <div class="two-col medium">
+        <div><ol>
+            <li>The problem or actually the solution! show security issues, performance improvements and lots of packages. What's your situation?</li>
+            <li>But, but,  ... AI</li>
+            <li>Update or remove?</li>
+            <li>Minimizing OS level dependencies Minimize attack surface JDK/JRE / remove stuff, small Docker image</li>
+            <li>Minimizing code dependencies example mvn dependency:analyze <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.11.0</version> <!-- Use the latest version -->
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <!-- Example: Tell Maven to ignore an unused database driver -->
+                        <ignoredUnusedDeclaredDependency>org.postgresql:postgresql</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
+            </plugin></li>
+            <li>Minimizing source code Jacoco/Azul</li>
+            <li>Native images and Coordinated Restore at Checkpoint (CRaC) tradeoff</li>
+        </ol></div>
+        <div><ol start="5">
+            <li>Updating OS level dependencies Dependabot/Renovate also Dockerfile FROM statements</li>
+            <li>Updating code dependencies Old GroupIds Alerter (OGA) / Renovate https://docs.renovatebot.com/presets-replacements/</li>
+            <li>Updating source code OpenRewrite smaller example</li>
+            <li>Key takeaways and conclusion</li>
+        </ol></div>
+    </div>
+</section>
+
+<section>
+    <section>
+        <h2>🤖 Manual Updates Don't Scale</h2>
+        <div class="medium">
+            <p>As a project grows, the number of dependencies that need attention <strong>grows faster than the team's capacity to review them</strong>.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Dependency bots watch registries continuously and open PRs automatically</li>
+                <li>The policy (what to group, what to auto-merge, what needs review) lives in config — not in people's heads</li>
+                <li>CI verifies each update before it lands — humans only intervene for breaking changes</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Renovate vs Dependabot</h2>
+        <table class="medium">
+            <thead><tr><th>Feature</th><th>Dependabot</th><th>Renovate</th></tr></thead>
+            <tbody>
+                <tr><td>Maven / Gradle</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+                <tr><td>Docker base images</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+                <tr><td>CI workflow versions</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
+                <tr><td>Maven Wrapper version</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+                <tr><td>Grouping updates</td><td>Limited</td><td class="tag-good">Full control</td></tr>
+                <tr><td>Self-hosted</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+                <tr><td>Config in repo</td><td class="tag-bad">❌</td><td class="tag-good">✅ <code>renovate.json</code></td></tr>
+                <tr><td>Stability days / merge confidence</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Policy as Code</h2>
+        <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo — not in a wiki, not in a person's memory.</p></div>
+        <pre><code class="language-json">{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "description": "Group related updates — one PR, one review",
+      "matchPackagePatterns": ["^org.springframework"],
+      "groupName": "Spring Framework",
+      "schedule": ["every weekend"]
+    },
+    {
+      "description": "Auto-merge low-risk patch updates for test libs",
+      "matchDepTypes": ["test"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true   // immediate: security patch + green CI = merged
+  }
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>The Automation Flywheel</h2>
+        <pre><code class="language-text">Bot detects new version
+  → opens PR with changelog and diff
+    → CI: build + unit tests + integration tests + image scan
+      → all green + low-risk update
+        → auto-merged in ~30 minutes
+          → you never manually touched it ✅</code></pre>
+        <div class="box box-green medium" style="margin-top:0.8em;">
+            💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
+            Your job: make your test suite trustworthy enough to enable auto-merge.
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Demo</span>
+            Gitea + Jenkins + Renovate, fully wired in Docker.
+            Renovate opens real PRs; Jenkins builds them; result posted back to Gitea.
+            <pre><code class="language-bash">bash Renovate/scripts/demo.sh</code></pre>
+        </div>
+    </section>
+</section>
+
+<section>
+    <section>
+        <h2>🧪 Automation Without Tests is Just Automated Risk</h2>
+        <div class="medium">
+            <p>Dependency updates that break <em>behaviour</em> don't cause compilation errors. Without tests, they silently corrupt your application.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Serialisation format changed in a patch version</li>
+                <li>Date/time handling differs across library versions</li>
+                <li>A transitive dependency removal removes a capability you relied on</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Example</span>
+            <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted — all silently breaking JSON contracts.
+        </div>
+    </section>
+
+    <section>
+        <h2>The Minimal Safety Net</h2>
+        <div class="medium">
+            <p>You don't need 90% line coverage. You need coverage of your <strong>integration boundaries</strong> — the surfaces that actually break when a dependency changes.</p>
+        </div>
+        <div class="medium" style="margin-top:0.6em;">
+            <table>
+                <thead><tr><th>Test type</th><th>What it catches</th></tr></thead>
+                <tbody>
+                    <tr><td>Unit tests</td><td>Business logic regressions</td></tr>
+                    <tr><td>Integration tests (real DB/broker)</td><td>Query behaviour, serialisation, protocol changes</td></tr>
+                    <tr><td>Contract tests</td><td>API-consumer compatibility</td></tr>
+                    <tr><td>Image smoke test</td><td>Runtime issues invisible at compile time</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-blue small" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Concrete targets</span> — every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
+        </div>
+    </section>
+
+    <section>
+        <h2>Integration Tests with Real Dependencies</h2>
+        <div class="medium"><p>Spin up the real database / broker / service in a container for the test — no mocks, no in-memory fakes.</p></div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-red">
+                <strong>Before: manual wiring</strong>
+                <pre><code class="language-java">@DynamicPropertySource
+static void props(
+  DynamicPropertyRegistry r) {
+  r.add("spring.datasource.url",
+    postgres::getJdbcUrl);
+  r.add("spring.datasource.username",
+    postgres::getUsername);
+}</code></pre>
+            </div>
+            <div class="box box-green">
+                <strong>After: <code>@ServiceConnection</code></strong>
+                <pre><code class="language-java">@Container
+@ServiceConnection
+static PostgreSQLContainer&lt;?&gt; db
+  = new PostgreSQLContainer&lt;&gt;(
+      "postgres:16-alpine");
+
+// That's it! 🎉</code></pre>
+            </div>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml" target="_blank">▶ Run Tests</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml/badge.svg" alt="" style="vertical-align:middle;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">📄 Full Test Source</a>
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">📊 Latest Maven Result</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Testcontainers — Full Test Source</h2>
+        <p class="subtitle"><code>UserRepositoryIntegrationTest.java</code> — real Postgres container, no mocks</p>
+        <!-- GitHub sends X-Frame-Options: deny / frame-ancestors 'none' on both the
+             blob view and raw.githubusercontent.com, so this can't be embedded as a
+             live iframe like the JaCoCo/Scans/Testcontainers report pages below —
+             inlined instead (also means it renders with zero network dependency). -->
+        <pre class="small"><code class="language-java">@SpringBootTest
+@Testcontainers
+class UserRepositoryIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer&lt;?&gt; postgres =
+            new PostgreSQLContainer&lt;&gt;("postgres:16-alpine");
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Test
+    void savesAndFindsUser() {
+        User saved = userRepository.save(new User("Alice", "alice@example.com"));
+        assertThat(saved.getId()).isNotNull();
+        User found = userRepository.findById(saved.getId()).orElseThrow();
+        assertThat(found.getEmail()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void findsUserByEmail() { /* ... */ }
+    @Test
+    void deletesUser() { /* ... */ }
+    @Test
+    void findsAllUsers() { /* ... */ }
+}</code></pre>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://github.com/johanjanssen/Keep-Up-To-Date/blob/master/Testcontainers/src/test/java/com/example/testcontainers/UserRepositoryIntegrationTest.java" target="_blank">↗ Full source on GitHub</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔍 Testcontainers — Latest Maven Result</h2>
+        <p class="subtitle">Live, click-through report published to GitHub Pages — Surefire results + captured Maven output, no tab switch needed</p>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" loading="lazy" title="Testcontainers Maven result report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+</section>
+<section>
+    <h2>⚙️ GitHub Actions — Live Status</h2>
+    <p class="subtitle">Click a badge to view runs · click ▶ to trigger manually</p>
+    <div class="small">
+        <table>
+            <thead><tr><th>Workflow</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                <tr><td>Build Docker Images</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Grype Scan</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/grype-scan.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Trivy Scan</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/trivy-scan.yml" target="_blank">▶</a></td></tr>
+                <tr><td>OWASP Dependency Check</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/owasp-dc.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Compare Scans</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Testcontainers</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/testcontainers.yml" target="_blank">▶</a></td></tr>
+                <tr><td>JaCoCo</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml" target="_blank">▶</a></td></tr>
+                <tr><td>OpenRewrite</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Vulnerable App Build</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/vulnerable-app.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/vulnerable-app.yml" target="_blank">▶</a></td></tr>
+                <tr><td>Renovate Validate</td><td><img src="https://github.com/OWNER/REPO/actions/workflows/renovate-validate.yml/badge.svg" alt=""></td><td><a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/renovate-validate.yml" target="_blank">▶</a></td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <h2>🛠️ Tools Reference Card</h2>
+    <table class="small">
+        <thead><tr><th>Problem</th><th>Tool</th></tr></thead>
+        <tbody>
+            <tr><td>Runtime version management</td><td>SDKMAN! / <code>.sdkmanrc</code>, nvm, pyenv, rbenv…</td></tr>
+            <tr><td>Build tool versioning</td><td>Maven Wrapper (<code>mvnw</code>), Gradle Wrapper</td></tr>
+            <tr><td>Dependency updates discovery</td><td><code>mvn versions:display-dependency-updates</code>, <code>./gradlew dependencyUpdates</code></td></tr>
+            <tr><td>Enforce constraints at build time</td><td>Maven Enforcer Plugin</td></tr>
+            <tr><td>SBOM generation</td><td>CycloneDX Maven Plugin, Syft</td></tr>
+            <tr><td>Source-level CVE scanning</td><td>OWASP Dependency Check, Snyk, GitHub Dependabot</td></tr>
+            <tr><td>Container image CVE scanning</td><td>Trivy, Docker Scout, Grype</td></tr>
+            <tr><td>Automated update PRs</td><td>Renovate Bot, GitHub Dependabot</td></tr>
+            <tr><td>Automated code migration</td><td>OpenRewrite</td></tr>
+            <tr><td>Integration testing</td><td>Testcontainers + <code>@ServiceConnection</code></td></tr>
+            <tr><td>Production code coverage</td><td>JaCoCo agent, Azul Code Inventory</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>📋 Example: Table Slide</h2>
+    <p class="subtitle">Replace with your own data</p>
+    <table class="small">
+        <thead><tr><th>Tool</th><th>Scans</th><th>Database</th><th>Output</th><th>Free?</th></tr></thead>
+        <tbody>
+            <tr><td>Grype</td><td>Container images</td><td>Anchore Feed</td><td>Table / JSON / SARIF</td><td class="tag-good">✅ OSS</td></tr>
+            <tr><td>Trivy</td><td>Container images</td><td>Aqua DB</td><td>Table / JSON / SARIF</td><td class="tag-good">✅ OSS</td></tr>
+            <tr><td>OWASP DC</td><td>Build manifests</td><td>NVD</td><td>HTML / JSON / SARIF</td><td class="tag-good">✅ OSS</td></tr>
+            <tr><td>Snyk</td><td>Deps + images</td><td>Snyk DB</td><td>HTML / JSON / SARIF</td><td class="tag-warn">Freemium</td></tr>
+            <tr><td>Docker Scout</td><td>Container images</td><td>Multi-source</td><td>Table / JSON / SARIF</td><td class="tag-warn">Freemium</td></tr>
+            <tr><td>Renovate</td><td>Dependencies</td><td>Package registries</td><td>Pull Requests</td><td class="tag-good">✅ OSS</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>📊 Example: Bar Chart</h2>
+    <div class="chart-wrap"><canvas id="chartExample" height="300"></canvas></div>
+</section>
+
+<section>
+    <h2>📊 Example: Bar Chart with Legend</h2>
+    <p class="subtitle">Stacked severity breakdown — replace with your data</p>
+    <div class="chart-wrap"><canvas id="chartLegend" height="300"></canvas></div>
+</section>
+
+<section>
+    <h1>Thank You! 🎉</h1>
+    <p style="font-size:0.85em;margin-top:1.2em;">
+        Repo &amp; slides:<br>
+        <a href="https://github.com/OWNER/REPO" target="_blank" style="color:#8be9fd;font-size:1.1em;">
+            github.com/OWNER/REPO
+        </a>
+    </p>
+    <div class="badge-row" style="margin-top:1em;">
+        <img src="https://img.shields.io/badge/Java-25-orange?logo=openjdk" alt="">
+        <img src="https://img.shields.io/badge/Spring_Boot-4.1-6db33f?logo=springboot" alt="">
+        <img src="https://img.shields.io/badge/Renovate-bot-1a1f6c?logo=renovatebot" alt="">
+    </div>
+    <p class="subtitle" style="margin-top:1.2em;">Questions?</p>
+</section>
+
