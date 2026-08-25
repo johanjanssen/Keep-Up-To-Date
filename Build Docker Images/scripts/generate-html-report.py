@@ -30,7 +30,7 @@ Usage:
   python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> \\
       <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."]
 """
-import argparse, html, os, re, subprocess
+import argparse, html, json, os, re, subprocess
 from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -366,6 +366,32 @@ def write_html(output_html, content):
     print(f"  OK  html -> {output_html}")
 
 
+# Feeds the presentation's live "Image Size vs CVE Count" charts (see
+# Presentation/index.html) — one entry per successfully-built image, skipping
+# "NOT BUILT" / unparseable sizes rather than plotting a misleading 0 MB.
+def chart_rows(rows):
+    out = []
+    for r in rows:
+        size_mb = size_to_mb(r["image_size"])
+        if size_mb is not None:
+            out.append({"name": r["image"], "size_mb": round(size_mb, 1)})
+    return out
+
+
+def write_json(output_json, generic_rows, java_rows, app_rows):
+    os.makedirs(os.path.dirname(output_json) or ".", exist_ok=True)
+    payload = {
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generic": chart_rows(generic_rows),
+        "java": chart_rows(java_rows),
+        "app": chart_rows(app_rows),
+    }
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+        f.write("\n")
+    print(f"  OK  json -> {output_json}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("measure_images_txt")
@@ -376,6 +402,9 @@ def main():
                          help="Title for the base-images report")
     parser.add_argument("--custom-title", default="hello-conference Image &amp; Performance Comparison",
                          help="Title for the hello-conference report")
+    parser.add_argument("--json-out", default=None,
+                         help="Optional path to also write a JSON summary (image name + size_mb, "
+                              "grouped generic/java/app) for the presentation's live charts")
     args = parser.parse_args()
 
     images_text, perf_text = "", ""
@@ -418,6 +447,9 @@ def main():
         section=custom_section,
     )
     write_html(args.custom_output_html, custom_page)
+
+    if args.json_out:
+        write_json(args.json_out, generic_base_rows, java_base_rows, app_rows)
 
 
 if __name__ == "__main__":

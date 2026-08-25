@@ -14,7 +14,7 @@ Usage:
   python3 generate-html-report.py <trivy_dir> <grype_dir> <osv_dir> \\
       <base_output_html> <custom_output_html> [--title "..."] [--custom-title "..."]
 """
-import argparse, html, importlib.util, os, subprocess
+import argparse, html, importlib.util, json, os, subprocess
 from datetime import datetime, timezone
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -222,6 +222,27 @@ def write_html(output_html, content):
     print(f"  OK  html -> {output_html}")
 
 
+# Feeds the presentation's live "Image Size vs CVE Count" charts (see
+# Presentation/index.html) — Grype's total is used (not Trivy's) to match the
+# "CVEs (Grype)" figure already quoted elsewhere in the deck.
+def chart_rows(items):
+    return [{"name": img, "cves": g["_total"]} for img, g, *_ in items]
+
+
+def write_json(output_json, generic_items, java_items, app_items):
+    os.makedirs(os.path.dirname(output_json) or ".", exist_ok=True)
+    payload = {
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generic": chart_rows(generic_items),
+        "java": chart_rows(java_items),
+        "app": chart_rows(app_items),
+    }
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+        f.write("\n")
+    print(f"  OK  json -> {output_json}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("trivy_dir")
@@ -231,6 +252,9 @@ def main():
     parser.add_argument("custom_output_html", help="Output path for the hello-conference report (published at /custom-image-scans)")
     parser.add_argument("--title", default="Container Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
     parser.add_argument("--custom-title", default="hello-conference Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
+    parser.add_argument("--json-out", default=None,
+                         help="Optional path to also write a JSON summary (image name + Grype CVE "
+                              "count, grouped generic/java/app) for the presentation's live charts")
     args = parser.parse_args()
 
     items = gc.load_all(args.trivy_dir, args.grype_dir, args.osv_dir)
@@ -269,6 +293,9 @@ def main():
         section=custom_section,
     )
     write_html(args.custom_output_html, custom_page)
+
+    if args.json_out:
+        write_json(args.json_out, generic_items, java_items, app_items)
 
 
 if __name__ == "__main__":
