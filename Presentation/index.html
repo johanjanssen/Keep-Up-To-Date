@@ -357,16 +357,7 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 //
 // Every <section> that used to live inline in this file now lives in
 // sections/*.html: sections/intro.html for the title/agenda material that
-// opens the talk, one file per Agenda topic (sections/agenda-NN-*.html), and
-// sections/leftover.html for slides that don't map cleanly to a single
-// Agenda item (Renovate spans items 8 & 9; live CI status, the tools cheat
-// sheet, example slides and the thank-you slide aren't part of the numbered
-// agenda at all) — played last, as closing material. Testing/Testcontainers
-// used to live in leftover.html too, but now has its own agenda item
-// (sections/agenda-11-testing.html) placed right before the conclusion,
-// since testing is the precondition that makes every "update or remove"
-// decision elsewhere in the deck safe to act on.
-// See sections/leftover.html for the reasoning behind what ended up there.
+// opens the talk, one file per Agenda topic (sections/agenda-NN-*.html).
 //
 // This list controls both WHICH files are shown and the ORDER they play in —
 // reorder it freely to change slide flow, no other code needs to change.
