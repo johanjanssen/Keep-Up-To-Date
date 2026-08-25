@@ -1,0 +1,25 @@
+    <section>
+        <h2>Automate the Migration Itself</h2>
+        <div class="medium">
+            <p>When a framework or language version change requires code edits, automated migration tools can apply the changes — consistently and at scale across your whole codebase.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ OpenRewrite</span>
+            Recipe-driven, AST-level refactoring. One command migrates the entire project.
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Before</th><th>After</th></tr></thead>
+                <tbody>
+                    <tr><td>Spring Boot 2.7 / JUnit 4 / Java 17</td><td>Spring Boot 4.1 / JUnit 5 / Java 25</td></tr>
+                    <tr><td><code>javax.*</code></td><td><code>jakarta.*</code></td></tr>
+                    <tr><td>String concatenation</td><td>Text blocks</td></tr>
+                </tbody>
+            </table>
+            <pre><code class="language-bash">DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh  # preview
+bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml" target="_blank">▶ Run Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+

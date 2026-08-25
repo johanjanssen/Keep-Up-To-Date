@@ -1,0 +1,68 @@
+<section>
+    <section>
+        <h2>☕ Ride the Release Train</h2>
+        <div class="medium">
+            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong> — not when they feel ready, but on a fixed schedule.</p>
+            <ul style="margin-top:0.6em;">
+                <li>Regular releases → smaller, manageable changes each time</li>
+                <li><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</li>
+                <li>Non-LTS releases are production-quality for short-lived or internal services</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span>
+            New release every <strong>6 months</strong> (March / September). LTS every 2 years.
+            <div class="timeline" style="margin-top:0.5em;">
+                <div class="tl-item">Java 8<br><small>LTS 2014</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 11<br><small>LTS 2018</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 17<br><small>LTS 2021</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-lts">Java 21<br><small>LTS 2023 🧵</small></div>
+                <div class="tl-arrow">→</div>
+                <div class="tl-item tl-now">Java 25<br><small>LTS Sep 2025 ⚡</small></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Reduce Attack Surface with Minimal Images</h2>
+        <div class="medium">
+            <p>The fewer OS packages in your image, the smaller the attack surface. Most application runtimes don't need a shell, a package manager, or system utilities.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java image hierarchy</span>
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Strategy</th><th>Base</th><th>CVEs (Grype)</th><th>Size</th></tr></thead>
+                <tbody>
+                    <tr><td>Full JRE</td><td>eclipse-temurin:25-jre</td><td class="tag-bad">96</td><td>477 MB</td></tr>
+                    <tr><td>jlink minimal</td><td>distroless/base-debian12</td><td class="tag-warn">15</td><td>33 MB</td></tr>
+                    <tr><td>GraalVM native</td><td>debian:12-slim</td><td class="tag-warn">79</td><td>116 MB</td></tr>
+                    <tr><td>GraalVM native minimal</td><td>distroless/static-debian12</td><td class="tag-good">0</td><td>6 MB</td></tr>
+                    <tr><td>GraalVM native scratch</td><td>scratch</td><td class="tag-good">0</td><td>0 MB</td></tr>
+                </tbody>
+            </table>
+            <p class="small" style="margin-top:0.3em;color:#8be9fd;">Live scan + <code>docker images</code> data — base images, not the app image.</p>
+        </div>
+        <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
+    </section>
+
+    <section>
+        <h2>Image Size vs CVE Count</h2>
+        <p class="subtitle">hello-conference app — same code, 9 base images</p>
+        <div class="chart-wrap"><canvas id="chartImageSize" height="320"></canvas></div>
+    </section>
+
+    <section>
+        <h2>🎬 Demo: Build All Images</h2>
+        <pre><code class="language-bash">bash "Build Docker Images/build-all-images.sh"    # build all 11 variants
+bash "Build Docker Images/measure-images.sh"       # size + package counts
+bash "Build Docker Images/measure-performance.sh"  # startup time + memory</code></pre>
+        <p class="small" style="margin-top:0.8em;">
+            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml" target="_blank">▶ Run Workflow</a>
+            <img src="https://github.com/OWNER/REPO/actions/workflows/build-docker-images.yml/badge.svg" alt="" style="vertical-align:middle;">
+        </p>
+    </section>
+
+</section>
