@@ -71,9 +71,10 @@ jobs:
             --recipe "org.openrewrite.staticanalysis.EqualsAvoidsNull:variable.equals(x) -> x.equals(variable), null-safe" \
             --recipe "org.openrewrite.java.testing.junit5.JUnit4to5Migration:Full JUnit 4 -> JUnit 5 (Jupiter) migration" \
             --recipe "org.openrewrite.java.migrate.UpgradeToJava25:java.version 17 -> 25, modern Java idioms (text blocks, …)" \
-            --recipe "org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0:spring-boot-starter-parent 2.7.18 -> 4.0.x, javax -> jakarta"
+            --recipe "org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0:spring-boot-starter-parent 2.7.18 -> 4.0.x, javax -> jakarta" \
+            --recipe "org.openrewrite.java.security.FixSqlInjectionConcat:SQL injection fix — Statement + string concat -> PreparedStatement + bound parameter"
           echo "## 🔧 OpenRewrite migration" >> $GITHUB_STEP_SUMMARY
-          echo "Spring Boot 2.7.18 -> 4.0.x, Java 17 -> 25, JUnit 4 -> 5." >> $GITHUB_STEP_SUMMARY
+          echo "Spring Boot 2.7.18 -> 4.0.x, Java 17 -> 25, JUnit 4 -> 5, SQL injection fixed." >> $GITHUB_STEP_SUMMARY
           echo "Before tests: $(cat /tmp/before-tests-summary.txt)" >> $GITHUB_STEP_SUMMARY
           echo "After tests:  $(cat /tmp/after-tests-summary.txt)" >> $GITHUB_STEP_SUMMARY
 
