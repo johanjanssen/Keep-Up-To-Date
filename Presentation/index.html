@@ -356,9 +356,12 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 // ─── Load external slide section files, then initialize Reveal exactly once ───
 //
 // Every <section> that used to live inline in this file now lives in
-// sections/*.html, one file per Agenda topic (sections/agenda-NN-*.html) plus
-// sections/leftover.html for slides that don't map cleanly to a single Agenda
-// item (title/intro, Renovate, closing material, …). Testing/Testcontainers
+// sections/*.html: sections/intro.html for the title/agenda material that
+// opens the talk, one file per Agenda topic (sections/agenda-NN-*.html), and
+// sections/leftover.html for slides that don't map cleanly to a single
+// Agenda item (Renovate spans items 8 & 9; live CI status, the tools cheat
+// sheet, example slides and the thank-you slide aren't part of the numbered
+// agenda at all) — played last, as closing material. Testing/Testcontainers
 // used to live in leftover.html too, but now has its own agenda item
 // (sections/agenda-11-testing.html) placed right before the conclusion,
 // since testing is the precondition that makes every "update or remove"
@@ -370,7 +373,7 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 // The chart/PlantUML listeners above are registered before Reveal.initialize()
 // runs so they don't miss the 'ready' event once loading finishes.
 const slideFiles = [
-    'sections/leftover.html',                       // title, agenda, Renovate, closing slides
+    'sections/intro.html',                          // title, follow-along, agenda
     'sections/agenda-01-the-problem-or-solution.html',
     'sections/agenda-02-ai.html',
     'sections/agenda-03-update-or-remove.html',
@@ -382,7 +385,8 @@ const slideFiles = [
     'sections/agenda-09-update-code-dependencies.html',
     'sections/agenda-10-update-source-code.html',
     'sections/agenda-11-testing.html',
-    'sections/agenda-12-takeaways-and-conclusion.html'
+    'sections/agenda-12-takeaways-and-conclusion.html',
+    'sections/leftover.html'                         // Renovate, live CI status, tools cheat sheet, examples, thank-you
 ];
 
 const container = document.getElementById('slides-container');
