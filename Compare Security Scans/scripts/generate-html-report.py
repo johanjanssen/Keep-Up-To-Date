@@ -84,16 +84,19 @@ def summary_rows_html(items):
           {sev_cell(g['HIGH'], 'high')}
           {sev_cell(g['MEDIUM'], 'med')}
           {sev_cell(g['LOW'], 'low')}
+          {sev_cell(g['UNKNOWN'], 'unk')}
           <td class="num total trivy">{t['_total']}</td>
           {sev_cell(t['CRITICAL'], 'crit')}
           {sev_cell(t['HIGH'], 'high')}
           {sev_cell(t['MEDIUM'], 'med')}
           {sev_cell(t['LOW'], 'low')}
+          {sev_cell(t['UNKNOWN'], 'unk')}
           <td class="num total osv">{o['_total']}</td>
           {sev_cell(o['CRITICAL'], 'crit')}
           {sev_cell(o['HIGH'], 'high')}
           {sev_cell(o['MEDIUM'], 'med')}
           {sev_cell(o['LOW'], 'low')}
+          {sev_cell(o['UNKNOWN'], 'unk')}
           {unique_cell(unique_grype, 'grype')}
           {unique_cell(unique_trivy, 'trivy')}
           {unique_cell(unique_osv, 'osv')}
@@ -109,16 +112,16 @@ def severity_table_html(subtitle, rows_html):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="5" class="grype-hdr">Grype</th>
-            <th colspan="5" class="trivy-hdr">Trivy</th>
-            <th colspan="5" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="6" class="grype-hdr">Grype</th>
+            <th colspan="6" class="trivy-hdr">Trivy</th>
+            <th colspan="6" class="osv-hdr">OSV-Scanner</th>
             <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
             <th>Unique in Grype</th><th>Unique in Trivy</th><th>Unique in OSV</th>
           </tr>
         </thead>
@@ -182,7 +185,7 @@ def barchart_html(items):
 # generate-charts.py::load_all's owasp_ids handling).
 def owasp_table_html(owasp_counts, owasp_unique):
     if owasp_counts is None:
-        rows_html = '<tr><td colspan="7" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
+        rows_html = '<tr><td colspan="8" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
     else:
         c = owasp_counts
 
@@ -197,6 +200,7 @@ def owasp_table_html(owasp_counts, owasp_unique):
           {sev_cell(c['HIGH'], 'high')}
           {sev_cell(c['MEDIUM'], 'med')}
           {sev_cell(c['LOW'], 'low')}
+          {sev_cell(c['UNKNOWN'], 'unk')}
           <td class="num total owasp">{owasp_unique if owasp_unique else "–"}</td>
         </tr>"""
     return f"""
@@ -206,12 +210,12 @@ def owasp_table_html(owasp_counts, owasp_unique):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="5" class="owasp-hdr">OWASP Dependency Check</th>
+            <th colspan="6" class="owasp-hdr">OWASP Dependency Check</th>
             <th class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Application</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
             <th>Unique in OWASP</th>
           </tr>
         </thead>
@@ -229,19 +233,19 @@ PAGE_STYLE = """
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --grype: #E65100; --trivy: #1565C0; --osv: #00796B; --owasp: #6A1B9A;
-    --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
+    --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C; --unknown: #6B7280;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-      --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+      --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8; --unknown: #9CA3AF;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-    --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+    --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8; --unknown: #9CA3AF;
   }
   * { box-sizing: border-box; }
   body {
@@ -277,6 +281,7 @@ PAGE_STYLE = """
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
   td.low  { color: var(--low); font-weight: 600; }
+  td.unk  { color: var(--unknown); font-weight: 600; }
   td.muted { color: var(--muted); }
   a { color: var(--trivy); }
   a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -314,6 +319,7 @@ PAGE_HEAD = """<!doctype html>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
     <span><span class="dot" style="background:var(--med)"></span>Medium</span>
     <span><span class="dot" style="background:var(--low)"></span>Low</span>
+    <span><span class="dot" style="background:var(--unknown)"></span>Unknown</span>
   </p>
 """
 
@@ -394,12 +400,13 @@ def main():
     generic_items, java_items, app_items = split_three(items, load_java_base_image_names())
     print(f"  images: {len(generic_items)} generic base + {len(java_items)} java base + {len(app_items)} app rows")
 
-    no_results = '<tr><td colspan="19">No results.</td></tr>'
+    no_results = '<tr><td colspan="22">No results.</td></tr>'
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     subtitle_common = (
         f"Generated {generated} &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and "
         f'<strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; '
         f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
+        f'"Unk" = no severity rating available from that scanner (Total = Crit+High+Med+Low+Unk) &middot; '
         f'"Unique in X" = found by X but by none of the other scanners &middot; '
     )
 
