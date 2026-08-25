@@ -6,11 +6,20 @@ of measure-images.sh (size/package comparison) and measure-performance.sh
 
 Meant to be published as-is to GitHub Pages — no external assets, no build step.
 
-Both tables are parsed by fixed character offsets that mirror the printf
-format strings in the two shell scripts (kept in sync in the constants below)
-rather than by splitting on whitespace, since several columns can legitimately
-be empty (e.g. APP SIZE for non-hello-conference base images) and a
-whitespace split would silently swallow those columns.
+Both tables are parsed by splitting each row on " | ", which the printf format
+strings in the two shell scripts use as an explicit field separator (kept in
+sync with the field-name lists below) — not by fixed character offsets and
+not by splitting on arbitrary whitespace. Fixed-width offsets silently
+mis-parse the moment any field's content is longer than the assumed column
+width (e.g. "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest" or
+"bellsoft/liberica-runtime-container:jre-25-slim-musl" both overflow the
+image-name column) — %-Ns in the shell scripts never truncates, it just stops
+padding, so every later column silently shifts and gets sliced at the wrong
+offset. A plain whitespace split has its own problem: several columns can
+legitimately be empty (e.g. APP SIZE for non-hello-conference base images),
+and that would silently swallow them. The "|" delimiter has neither problem:
+it marks each field boundary explicitly regardless of content length, and an
+empty field between two delimiters parses as "" rather than disappearing.
 
 Usage:
   python3 generate-html-report.py <measure_images_txt> <measure_performance_txt> <output_html> [--title "..."]
@@ -18,33 +27,37 @@ Usage:
 import argparse, html, os, re
 from datetime import datetime, timezone
 
-# ── Column layouts (must mirror the printf format strings) ─────────────────
-# measure-images.sh:      printf "%-50s  %-12s  %-12s  %-18s  %s\n"
-IMAGES_COLS = [("image", 50), ("image_size", 12), ("app_size", 12), ("app_runtime_size", 18), ("packages", None)]
-# measure-performance.sh: printf "%-52s  %-20s  %-8s  %-14s  %s\n"
-PERF_COLS = [("image", 52), ("memory", 20), ("warmup", 8), ("startup_log", 14), ("startup_wall", None)]
-GAP = 2  # spaces between each fixed-width column
+# ── Field layouts (must mirror the printf field ORDER in the two shell
+# scripts — widths don't need to match since fields are "|"-delimited, not
+# sliced by position) ────────────────────────────────────────────────────
+# measure-images.sh:      printf "%-50s | %-12s | %-12s | %-18s | %s\n"
+IMAGES_FIELDS = ["image", "image_size", "app_size", "app_runtime_size", "packages"]
+# measure-performance.sh: printf "%-52s | %-20s | %-8s | %-14s | %s\n"
+PERF_FIELDS = ["image", "memory", "warmup", "startup_log", "startup_wall"]
 
 
-def slice_row(line, cols):
-    row, pos = {}, 0
-    for name, width in cols:
-        if width is None:
-            row[name] = line[pos:].strip()
-        else:
-            row[name] = line[pos:pos + width].strip()
-            pos += width + GAP
-    return row
+def split_row(line, fields):
+    parts = [p.strip() for p in line.split(" | ")]
+    if len(parts) < len(fields):
+        # A row genuinely shorter than expected — pad rather than crash;
+        # missing trailing fields just render as muted "–" cells.
+        parts += [""] * (len(fields) - len(parts))
+    elif len(parts) > len(fields):
+        # More delimiters than expected (a field's own content contained
+        # " | ", which none of ours currently do) — fold the overflow into
+        # the last field instead of silently dropping it.
+        parts = parts[:len(fields) - 1] + [" | ".join(parts[len(fields) - 1:])]
+    return dict(zip(fields, parts))
 
 
 def is_separator(line):
     stripped = line.strip()
-    return bool(stripped) and set(stripped) <= {"-", " "}
+    return bool(stripped) and set(stripped) <= {"-", " ", "|"}
 
 
-def parse_table(text, cols):
+def parse_table(text, fields):
     """Find the first `header line` + `dashed separator line` + data-rows block
-    and parse it into a list of dicts keyed by cols[*][0]."""
+    and parse it into a list of dicts keyed by `fields`."""
     lines = text.splitlines()
     for i in range(len(lines) - 1):
         if lines[i].lstrip().upper().startswith("IMAGE"):
@@ -52,7 +65,7 @@ def parse_table(text, cols):
                 rows = []
                 j = i + 2
                 while j < len(lines) and lines[j].strip():
-                    rows.append(slice_row(lines[j], cols))
+                    rows.append(split_row(lines[j], fields))
                     j += 1
                 return rows
     return []
@@ -87,6 +100,28 @@ def split_base_app(rows):
     base_rows = [r for r in rows if not r["image"].startswith("hello-conference:")]
     app_rows = [r for r in rows if r["image"].startswith("hello-conference:")]
     return base_rows, app_rows
+
+
+# Keyword match (case-insensitive substring) rather than an explicit image
+# allowlist, so a new Java base image added to images.conf lands in the right
+# table without this file needing a matching update. "java" itself catches
+# gcr.io/distroless/java25-debian13, which carries none of the other keywords.
+JAVA_IMAGE_KEYWORDS = ("jdk", "jre", "graalvm", "openjdk", "corretto", "liberica", "semeru", "zulu", "temurin", "java")
+
+
+def is_java_image(image_name):
+    lower = image_name.lower()
+    return any(keyword in lower for keyword in JAVA_IMAGE_KEYWORDS)
+
+
+def split_generic_java(base_rows):
+    """Split base images into 'normal' OS images (debian, alpine, ubuntu, …)
+    and Java-runtime images (anything bundling a JDK, JRE, or GraalVM) so the
+    size/package comparison stays meaningful for each audience instead of
+    mixing e.g. alpine:3 in with eclipse-temurin:25-jdk."""
+    java_rows = [r for r in base_rows if is_java_image(r["image"])]
+    generic_rows = [r for r in base_rows if not is_java_image(r["image"])]
+    return generic_rows, java_rows
 
 
 def row_classes(r):
@@ -218,7 +253,23 @@ PAGE_TEMPLATE = """<!doctype html>
           </tr>
         </thead>
         <tbody>
-          {base_rows}
+          {generic_base_rows}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Java Runtime Images (JDK / JRE / GraalVM)</h3>
+    <p class="hint">Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="image-col">Image</th>
+            <th>Image Size</th><th>Packages</th>
+          </tr>
+        </thead>
+        <tbody>
+          {java_base_rows}
         </tbody>
       </table>
     </div>
@@ -281,15 +332,18 @@ def main():
         with open(args.measure_performance_txt, encoding="utf-8", errors="replace") as f:
             perf_text = f.read()
 
-    images_rows = parse_table(images_text, IMAGES_COLS)
-    perf_rows = parse_table(perf_text, PERF_COLS)
+    images_rows = parse_table(images_text, IMAGES_FIELDS)
+    perf_rows = parse_table(perf_text, PERF_FIELDS)
     base_rows, app_rows = split_base_app(images_rows)
-    print(f"  images: {len(base_rows)} base + {len(app_rows)} app rows   performance: {len(perf_rows)} rows")
+    generic_base_rows, java_base_rows = split_generic_java(base_rows)
+    print(f"  images: {len(generic_base_rows)} generic base + {len(java_base_rows)} java base + "
+          f"{len(app_rows)} app rows   performance: {len(perf_rows)} rows")
 
     out = PAGE_TEMPLATE.format(
         title=html.escape(args.title),
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        base_rows=base_rows_html(base_rows) if base_rows else '<tr><td colspan="3">No results.</td></tr>',
+        generic_base_rows=base_rows_html(generic_base_rows) if generic_base_rows else '<tr><td colspan="3">No results.</td></tr>',
+        java_base_rows=base_rows_html(java_base_rows) if java_base_rows else '<tr><td colspan="3">No results.</td></tr>',
         app_rows=app_rows_html(app_rows) if app_rows else '<tr><td colspan="5">No results.</td></tr>',
         perf_rows=perf_rows_html(perf_rows) if perf_rows else '<tr><td colspan="5">No results.</td></tr>',
     )
