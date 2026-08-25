@@ -8,10 +8,16 @@
     <!--
         Old GroupIds Alerter (OGA) Demo
         ────────────────────────────────
-        The dependencies below are intentionally declared under groupIds that are
-        no longer maintained — each one has since moved to a new Maven
-        coordinate. None of this is exotic: it's the kind of drift that quietly
-        accumulates in any long-lived pom.xml as upstream projects relocate.
+        This is the SAME app as ../Vulnerable Application Old Java/ — same
+        "HelloConference" source (Spring Boot 2.7.18, Java 11, log4j-core
+        2.14.1, jackson-databind 2.13.4.1) used there to demo Log4Shell and a
+        Jackson deserialization RCE. Reusing it here shows a second, unrelated
+        kind of drift that accumulates in the exact same real-world pom.xml:
+        dependencies declared under groupIds that have since moved to a new
+        Maven coordinate. A pom.xml can be "old" in more than one way at once.
+
+        The four dependencies below are added purely so oga-maven-plugin has
+        something to flag — they're not used by HelloConference at runtime:
 
           • com.graphql-java:graphql-java-tools   → com.graphql-java-kickstart:graphql-java-tools
           • javax.xml.bind:jaxb-api                → jakarta.xml.bind:jakarta.xml.bind-api
@@ -31,25 +37,39 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <!-- ⬇ Intentionally old — old enough that its BOM still manages the javax.* artifacts below -->
+        <!--
+            ⬇ Intentionally old — matches ../Vulnerable Application Old Java/.
+            Old enough that its BOM still manages the javax.* artifacts below.
+        -->
         <version>2.7.18</version>
         <relativePath/>
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>old-groupids-alerter-demo</artifactId>
+    <artifactId>HelloConference</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>old-groupids-alerter-demo</name>
-    <description>Old GroupIds Alerter demo: pom.xml dependencies on groupIds that have since moved home</description>
+    <name>HelloConference</name>
+    <description>Old GroupIds Alerter demo — the same HelloConference app as Vulnerable Application Old Java, with dependencies on groupIds that have since moved home</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
     </properties>
 
     <dependencies>
+        <!--
+            The dependencies in this block are identical to
+            ../Vulnerable Application Old Java/pom.xml — this is the same app.
+        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <!-- Remove log4j-to-slf4j bridge so log4j-core is the active Log4j2 impl -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -58,11 +78,30 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- log4j-api must match log4j-core exactly -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.4.1</version>
+        </dependency>
+
         <!--
             ⚠️  OLD GROUPIDS — for the Old GroupIds Alerter demo only.
             None of these are used at runtime; they're declared purely so
             oga-maven-plugin:check has something to flag. See scripts/run-oga.sh
-            and the GitHub Pages report published under /renamed.
+            and the GitHub Pages report published under /groupids.
         -->
 
         <!-- com.graphql-java moved its "kickstart" tooling to com.graphql-java-kickstart in 2019 -->

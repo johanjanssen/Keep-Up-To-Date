@@ -5,10 +5,14 @@ Maven plugin (`oga-maven-plugin`), which checks a project's `pom.xml` against a
 community-maintained list of dependencies that have moved to a new Maven
 coordinate — usually because the original groupId is no longer maintained.
 
-Based on the same "intentionally old" pattern as the [OpenRewrite](../OpenRewrite/)
-and [Vulnerable Application](../Vulnerable%20Application/) demos: a small, real,
-buildable Spring Boot app whose `pom.xml` declares dependencies under groupIds
-that have since relocated.
+The app is `HelloConference` — the exact same Spring Boot 2.7.18 / Java 11 app
+used in the [Vulnerable Application Old Java](../Vulnerable%20Application%20Old%20Java/)
+demo (same `pom.xml` dependencies, same `log4j2.xml`, same
+`HelloConferenceApplication` / `HelloConferenceController` source). That demo
+uses it to show real CVEs (Log4Shell, a Jackson deserialization RCE); this one
+adds four extra dependencies purely so it can show a different, unrelated kind
+of drift in the same real pom.xml: groupIds that have since moved to a new
+Maven coordinate. A pom.xml can be "old" in more than one way at once.
 
 ---
 
@@ -16,13 +20,15 @@ that have since relocated.
 
 ```
 Old GroupIds Alerter/
-  pom.xml                          ← 4 dependencies declared under old/moved groupIds
+  pom.xml                          ← same HelloConference deps as Vulnerable Application Old Java,
+                                       + 4 dependencies declared under old/moved groupIds
   src/
-    main/java/com/example/oldgroupidsalerter/
-      OldGroupIdsAlerterDemoApplication.java
-      controller/GreetingController.java
-    test/java/com/example/oldgroupidsalerter/
-      OldGroupIdsAlerterDemoApplicationTests.java
+    main/java/com/example/helloconference/
+      HelloConferenceApplication.java
+      HelloConferenceController.java
+    main/resources/log4j2.xml
+    test/java/com/example/helloconference/
+      HelloConferenceApplicationTests.java
   scripts/
     run-oga.sh                ← run the check (start here)
     generate-html-report.py   ← CI-only: renders findings as the GitHub Pages report
@@ -45,6 +51,16 @@ The three `javax.*` dependencies deliberately have **no `<version>`** in
 to miss in a real project: a managed dependency's version doesn't visibly
 "look old," so nothing prompts anyone to check whether the groupId itself
 still has a maintainer behind it.
+
+The plugin's relocation database is downloaded fresh on every run, so it can
+also flag dependencies beyond the four above as new relocations land upstream.
+At the time of writing it additionally flags `HelloConference`'s real
+`com.fasterxml.jackson.core:jackson-databind` dependency — the same one used
+for the deserialization RCE demo in
+[Vulnerable Application Old Java](../Vulnerable%20Application%20Old%20Java/) —
+for the pending Jackson 3.0 groupId move to `tools.jackson.core`. That's not
+one of the intentionally-added findings; it's the check catching a relocation
+in a dependency the app actually uses.
 
 ---
 
@@ -108,4 +124,4 @@ which:
    pulled from the actual dependency block in this project's `pom.xml`, not a
    mock-up — and publishes it to GitHub Pages.
 
-Latest report: **https://johanjanssen.github.io/Keep-Up-To-Date/renamed/**
+Latest report: **https://johanjanssen.github.io/Keep-Up-To-Date/groupids/**

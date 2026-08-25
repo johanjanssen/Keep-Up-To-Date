@@ -56,7 +56,7 @@ jobs:
           else
             echo "STRICT run (plugin default, failOnError=true): build passed (no old groupIds found)." >> $GITHUB_STEP_SUMMARY
           fi
-          echo "Report: https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" >> $GITHUB_STEP_SUMMARY
+          echo "Report: https://johanjanssen.github.io/Keep-Up-To-Date/groupids/" >> $GITHUB_STEP_SUMMARY
 
       # Published as its own subfolder (destination_dir + keep_files) rather than
       # actions/deploy-pages: this repo has multiple workflows publishing to the
@@ -65,10 +65,9 @@ jobs:
       # is where "Missing environment" comes from) — peaceiris pushes to the
       # gh-pages branch and destination_dir scopes each workflow to its own folder.
       #
-      # destination_dir is "renamed" (not "Old GroupIds Alerter") on purpose — the
-      # report is about dependency coordinates that need renaming in pom.xml, and
+      # destination_dir is "groupids" (not "Old GroupIds Alerter") on purpose —
       # a short, URL-friendly path is nicer to link to than one with spaces.
-      - name: Deploy to GitHub Pages (renamed/ subfolder)
+      - name: Deploy to GitHub Pages (groupids/ subfolder)
         uses: Wandalen/wretry.action@v3
         with:
           action: peaceiris/actions-gh-pages@v4
@@ -77,10 +76,10 @@ jobs:
           with: |
             github_token: ${{ secrets.GITHUB_TOKEN }}
             publish_dir: tmp/pages
-            destination_dir: renamed
+            destination_dir: groupids
             keep_files: true
 
-      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/renamed[/index.html]
+      # Now the report is available under https://johanjanssen.github.io/Keep-Up-To-Date/groupids[/index.html]
 
       - name: Upload check output as a workflow artifact
         uses: actions/upload-artifact@v4
