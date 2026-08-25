@@ -7,7 +7,7 @@
 <style>
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
-    --grype: #E65100; --trivy: #1565C0; --osv: #00796B;
+    --grype: #E65100; --trivy: #1565C0; --osv: #00796B; --owasp: #6A1B9A;
     --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
@@ -45,11 +45,13 @@
   th.grype-hdr { background: #BF360C; color: #fff; }
   th.trivy-hdr { background: #0D47A1; color: #fff; }
   th.osv-hdr   { background: #00695C; color: #fff; }
+  th.owasp-hdr { background: #4A148C; color: #fff; }
   th.unique-hdr { background: #37474F; color: #fff; }
   tbody tr:nth-child(even) { background: var(--alt-row); }
   td.total.grype { font-weight: 700; color: var(--grype); }
   td.total.trivy { font-weight: 700; color: var(--trivy); }
   td.total.osv   { font-weight: 700; color: var(--osv); }
+  td.total.owasp { font-weight: 700; color: var(--owasp); }
   td.crit { color: var(--crit); font-weight: 600; }
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
@@ -63,7 +65,7 @@
 <body>
 <main>
   <h1>Container Image CVE Comparison — Trivy vs Grype</h1>
-  <p class="subtitle">Generated 2026-08-25 16:25 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; "Unique in X" = found by X but by neither of the other two tools &middot; see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a></p>
+  <p class="subtitle">Generated 2026-08-25 22:24 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; "Unique in X" = found by X but by none of the other scanners &middot; see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a></p>
   <p class="legend">
     <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
@@ -106,12 +108,12 @@
           <td class="num high">8</td>
           <td class="num med">23</td>
           <td class="num low">4</td>
-          <td class="num total osv">67</td>
+          <td class="num total osv">66</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">51</td>
+          <td class="num med">50</td>
           <td class="num low">8</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
@@ -128,14 +130,14 @@
           <td class="num high">9</td>
           <td class="num med">27</td>
           <td class="num low">30</td>
-          <td class="num total osv">71</td>
+          <td class="num total osv">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total trivy">4</td>
-          <td class="num total osv">1</td>
+          <td class="num muted">–</td>
         </tr>
 
         <tr>
@@ -150,14 +152,14 @@
           <td class="num high">9</td>
           <td class="num med">27</td>
           <td class="num low">30</td>
-          <td class="num total osv">71</td>
+          <td class="num total osv">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total trivy">4</td>
-          <td class="num total osv">1</td>
+          <td class="num muted">–</td>
         </tr>
 
         <tr>
@@ -172,7 +174,7 @@
           <td class="num high">1</td>
           <td class="num med">7</td>
           <td class="num low">7</td>
-          <td class="num total osv">17</td>
+          <td class="num total osv">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -393,12 +395,12 @@
           <td class="num high">8</td>
           <td class="num med">25</td>
           <td class="num low">5</td>
-          <td class="num total osv">113</td>
+          <td class="num total osv">112</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">88</td>
+          <td class="num med">87</td>
           <td class="num low">17</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
@@ -437,12 +439,12 @@
           <td class="num high">8</td>
           <td class="num med">25</td>
           <td class="num low">4</td>
-          <td class="num total osv">94</td>
+          <td class="num total osv">93</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">78</td>
+          <td class="num med">77</td>
           <td class="num low">8</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
@@ -481,12 +483,12 @@
           <td class="num muted">–</td>
           <td class="num med">4</td>
           <td class="num low">8</td>
-          <td class="num total osv">78</td>
+          <td class="num total osv">76</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">58</td>
+          <td class="num med">56</td>
           <td class="num low">20</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">2</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
@@ -503,12 +505,12 @@
           <td class="num muted">–</td>
           <td class="num med">4</td>
           <td class="num low">8</td>
-          <td class="num total osv">77</td>
+          <td class="num total osv">75</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">58</td>
+          <td class="num med">56</td>
           <td class="num low">19</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">2</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
@@ -525,12 +527,12 @@
           <td class="num muted">–</td>
           <td class="num med">3</td>
           <td class="num low">8</td>
-          <td class="num total osv">51</td>
+          <td class="num total osv">49</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">32</td>
+          <td class="num med">30</td>
           <td class="num low">19</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">2</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
@@ -679,12 +681,12 @@
           <td class="num high">8</td>
           <td class="num med">26</td>
           <td class="num low">4</td>
-          <td class="num total osv">101</td>
+          <td class="num total osv">100</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">83</td>
+          <td class="num med">82</td>
           <td class="num low">9</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
@@ -713,10 +715,10 @@
 
         <tr>
           <td class="image-name">cgr.dev/chainguard/jdk:latest</td>
-          <td class="num total grype">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">6</td>
+          <td class="num crit">1</td>
+          <td class="num high">2</td>
+          <td class="num med">3</td>
           <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
@@ -728,17 +730,17 @@
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">6</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">cgr.dev/chainguard/jre:latest</td>
-          <td class="num total grype">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">6</td>
+          <td class="num crit">1</td>
+          <td class="num high">2</td>
+          <td class="num med">3</td>
           <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
@@ -750,7 +752,7 @@
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
+          <td class="num total grype">6</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
