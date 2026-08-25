@@ -84,16 +84,19 @@ def summary_rows_html(items):
           {sev_cell(g['HIGH'], 'high')}
           {sev_cell(g['MEDIUM'], 'med')}
           {sev_cell(g['LOW'], 'low')}
+          {sev_cell(g['UNKNOWN'], 'unk')}
           <td class="num total trivy">{t['_total']}</td>
           {sev_cell(t['CRITICAL'], 'crit')}
           {sev_cell(t['HIGH'], 'high')}
           {sev_cell(t['MEDIUM'], 'med')}
           {sev_cell(t['LOW'], 'low')}
+          {sev_cell(t['UNKNOWN'], 'unk')}
           <td class="num total osv">{o['_total']}</td>
           {sev_cell(o['CRITICAL'], 'crit')}
           {sev_cell(o['HIGH'], 'high')}
           {sev_cell(o['MEDIUM'], 'med')}
           {sev_cell(o['LOW'], 'low')}
+          {sev_cell(o['UNKNOWN'], 'unk')}
           {unique_cell(unique_grype, 'grype')}
           {unique_cell(unique_trivy, 'trivy')}
           {unique_cell(unique_osv, 'osv')}
@@ -109,16 +112,16 @@ def severity_table_html(subtitle, rows_html):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="5" class="grype-hdr">Grype</th>
-            <th colspan="5" class="trivy-hdr">Trivy</th>
-            <th colspan="5" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="6" class="grype-hdr">Grype</th>
+            <th colspan="6" class="trivy-hdr">Trivy</th>
+            <th colspan="6" class="osv-hdr">OSV-Scanner</th>
             <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
             <th>Grype</th><th>Trivy</th><th>OSV</th>
           </tr>
         </thead>
@@ -126,6 +129,50 @@ def severity_table_html(subtitle, rows_html):
           {rows_html}
         </tbody>
       </table>
+    </div>"""
+
+
+def barchart_html(items):
+    """Grouped horizontal bar chart — total vulnerabilities per image, Grype
+    vs Trivy vs OSV-Scanner — rendered directly under its matching severity
+    table so the totals are readable at a glance without scanning across the
+    Total columns of three grouped headers. Plain HTML/CSS (bar width as a
+    %), no SVG/JS/build step, consistent with the rest of this report."""
+    if not items:
+        return ""
+    chart_max = max((v["_total"] for _, g, t, o, *_ in items for v in (g, t, o)), default=0) or 1
+
+    def bar(tool_class, tool_label, val):
+        pct = (val / chart_max) * 100
+        return (
+            f'<div class="bar-track" title="{tool_label}: {val}">'
+            f'<div class="bar-outer"><div class="bar {tool_class}" style="width:{pct:.1f}%"></div></div>'
+            f'<span class="bar-val">{val}</span></div>'
+        )
+
+    rows = []
+    for img, g, t, o, *_ in items:
+        esc = html.escape(img)
+        rows.append(f"""
+        <div class="barchart-row">
+          <div class="barchart-label" title="{esc}">{esc}</div>
+          <div class="barchart-bars">
+            {bar('grype', 'Grype', g['_total'])}
+            {bar('trivy', 'Trivy', t['_total'])}
+            {bar('osv', 'OSV-Scanner', o['_total'])}
+          </div>
+        </div>""")
+
+    return f"""
+    <div class="barchart" role="img" aria-label="Total vulnerabilities per image — Grype vs Trivy vs OSV-Scanner">
+      <div class="barchart-legend">
+        <span><i class="swatch grype"></i>Grype</span>
+        <span><i class="swatch trivy"></i>Trivy</span>
+        <span><i class="swatch osv"></i>OSV-Scanner</span>
+      </div>
+      <div class="barchart-rows">
+        {"".join(rows)}
+      </div>
     </div>"""
 
 
@@ -138,7 +185,7 @@ def severity_table_html(subtitle, rows_html):
 # generate-charts.py::load_all's owasp_ids handling).
 def owasp_table_html(owasp_counts, owasp_unique):
     if owasp_counts is None:
-        rows_html = '<tr><td colspan="7" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
+        rows_html = '<tr><td colspan="8" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
     else:
         c = owasp_counts
 
@@ -153,6 +200,7 @@ def owasp_table_html(owasp_counts, owasp_unique):
           {sev_cell(c['HIGH'], 'high')}
           {sev_cell(c['MEDIUM'], 'med')}
           {sev_cell(c['LOW'], 'low')}
+          {sev_cell(c['UNKNOWN'], 'unk')}
           <td class="num total owasp">{owasp_unique if owasp_unique else "–"}</td>
         </tr>"""
     return f"""
@@ -162,12 +210,12 @@ def owasp_table_html(owasp_counts, owasp_unique):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="5" class="owasp-hdr">OWASP Dependency Check</th>
+            <th colspan="6" class="owasp-hdr">OWASP Dependency Check</th>
             <th class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Application</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th>
+            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
             <th>Unique in OWASP</th>
           </tr>
         </thead>
@@ -185,19 +233,19 @@ PAGE_STYLE = """
   :root {
     --bg: #F7F8FC; --surface: #FFFFFF; --border: #DBDFEA; --text: #1A1D2B; --muted: #656F91;
     --grype: #E65100; --trivy: #1565C0; --osv: #00796B; --owasp: #6A1B9A;
-    --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C;
+    --crit: #B71C1C; --high: #E65100; --med: #B8860B; --low: #4C7A2C; --unknown: #6B7280;
     --header-bg: #1A237E; --header-fg: #FFFFFF; --alt-row: #EEF1FC;
     --focus: #4353C4;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-      --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+      --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8; --unknown: #9CA3AF;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12131A; --surface: #191B25; --border: #2B2E3D; --text: #E7E9F5; --muted: #9498B8;
-    --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8;
+    --alt-row: #1E2130; --med: #E0B93D; --low: #7FB855; --focus: #8891E8; --unknown: #9CA3AF;
   }
   * { box-sizing: border-box; }
   body {
@@ -233,10 +281,25 @@ PAGE_STYLE = """
   td.high { color: var(--high); font-weight: 600; }
   td.med  { color: var(--med); font-weight: 600; }
   td.low  { color: var(--low); font-weight: 600; }
+  td.unk  { color: var(--unknown); font-weight: 600; }
   td.muted { color: var(--muted); }
   a { color: var(--trivy); }
   a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+  .barchart { margin: 0.9rem 0 0; padding: 1rem 1.1rem 1.15rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .barchart-legend { display: flex; gap: 1.25rem; font-size: 0.8rem; color: var(--muted); margin: 0 0 0.9rem; }
+  .barchart-legend .swatch { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: middle; }
+  .swatch.grype, .bar.grype { background: var(--grype); }
+  .swatch.trivy, .bar.trivy { background: var(--trivy); }
+  .swatch.osv,   .bar.osv   { background: var(--osv); }
+  .barchart-row { display: grid; grid-template-columns: minmax(140px, 240px) 1fr; gap: 0.9rem; align-items: center; padding: 0.4rem 0; }
+  .barchart-row + .barchart-row { border-top: 1px solid var(--border); }
+  .barchart-label { font-size: 0.82rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .barchart-bars { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .bar-track { display: flex; align-items: center; gap: 0.5rem; }
+  .bar-outer { flex: 1 1 auto; min-width: 0; height: 11px; background: var(--alt-row); border-radius: 3px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 0 3px 3px 0; }
+  .bar-val { flex: 0 0 auto; width: 2.4rem; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--muted); }
 """
 
 PAGE_HEAD = """<!doctype html>
@@ -256,6 +319,7 @@ PAGE_HEAD = """<!doctype html>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
     <span><span class="dot" style="background:var(--med)"></span>Medium</span>
     <span><span class="dot" style="background:var(--low)"></span>Low</span>
+    <span><span class="dot" style="background:var(--unknown)"></span>Unknown</span>
   </p>
 """
 
@@ -336,18 +400,21 @@ def main():
     generic_items, java_items, app_items = split_three(items, load_java_base_image_names())
     print(f"  images: {len(generic_items)} generic base + {len(java_items)} java base + {len(app_items)} app rows")
 
-    no_results = '<tr><td colspan="19">No results.</td></tr>'
+    no_results = '<tr><td colspan="22">No results.</td></tr>'
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     subtitle_common = (
         f"Generated {generated} &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and "
         f'<strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; '
         f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
+        f'"Unk" = no severity rating available from that scanner (Total = Crit+High+Med+Low+Unk) &middot; '
         f'"Unique in X" = found by X but by none of the other scanners &middot; '
     )
 
     base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("Base Images", summary_rows_html(generic_items) if generic_items else no_results) + \
+        barchart_html(generic_items) + \
         severity_table_html("Java Runtime Images (JDK / JRE / GraalVM)", summary_rows_html(java_items) if java_items else no_results) + \
+        barchart_html(java_items) + \
         "\n  </section>\n"
     base_page = render_page(
         title=html.escape(args.title),
@@ -358,6 +425,7 @@ def main():
 
     custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner vs OWASP Dependency Check</h2>" + \
         severity_table_html("hello-conference Images", summary_rows_html(app_items) if app_items else no_results) + \
+        barchart_html(app_items) + \
         owasp_table_html(owasp_counts, owasp_unique) + \
         "\n  </section>\n"
     custom_page = render_page(
