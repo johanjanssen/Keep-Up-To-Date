@@ -47,6 +47,15 @@
 
     <section>
         <h2>Update FROM in Dockerfiles</h2>
+        <div class="medium">
+            <p>Treat the base image tag like any other dependency version — bump it deliberately, on a schedule, not by accident when the tag silently moves underneath you.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            <pre><code class="language-dockerfile">- FROM eclipse-temurin:21-jre
++ FROM eclipse-temurin:25-jre</code></pre>
+            A one-line diff — but it pulls in the latest JVM, security patches, and OS package updates all at once.
+        </div>
     </section>
 
     <section>
