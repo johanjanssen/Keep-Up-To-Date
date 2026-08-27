@@ -72,7 +72,8 @@ vulnerabilities (JARs/language deps), with OWASP DC included for the application
 The generated `custom-image-scans` HTML report (built by `generate-html-report.py`,
 published at [`/custom-image-scans/`](https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans/))
 adds a separate one-row **OWASP Dependency Check** table below the Grype/Trivy/OSV-Scanner
-one, with the same Total/Crit/High/Med/Low columns. It's a single row (not one per image)
+one, with the same Total/Crit/High columns (Medium/Low/Unknown are left out of both tables to
+keep them readable — each Total still includes them). It's a single row (not one per image)
 because OWASP DC scans the app's dependency tree (`Vulnerable Application/pom.xml`) once,
 and every `hello-conference:*` image embeds that same built jar. A "Unique in OWASP" column
 shows CVEs OWASP DC found that neither Grype, Trivy, nor OSV-Scanner found in any scanned

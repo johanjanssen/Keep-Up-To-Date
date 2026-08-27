@@ -28,6 +28,30 @@
     </section>
 
     <section>
+        <h2>JDK vs. JRE: What Actually Ships to Production</h2>
+        <div class="medium">
+            <p>The JDK is a superset: <strong>JDK = JRE + development tools</strong> (compiler, debugger, doc generator, jshell, …). Ship the JRE, not the JDK.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-red">
+                <h3>JDK in production ⚠️</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">🧰</span><span><code>javac</code>, <code>jshell</code> &amp; friends: tools an attacker can use too, once they have a shell</span></li>
+                    <li><span class="ic">📦</span><span>Extra packages = extra CVEs to patch, for tools never called at runtime</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>JRE in production ✅</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">▶️</span><span>Just the JVM + core libraries: everything <code>java -jar</code> needs</span></li>
+                    <li><span class="ic">✂️</span><span>Smaller, leaner image — jlink pushes this further (next slide)</span></li>
+                </ul>
+            </div>
+        </div>
+        <p class="small" style="margin-top:0.5em;">Not just Java: <strong>.NET</strong> splits SDK vs. Runtime the same way; <strong>Go/Rust</strong> compile to a static binary, so prod needs no toolchain at all; <strong>Python/Node.js</strong> keep the same interpreter but should still shed dev-only tooling and packages (<code>-slim</code>, <code>--omit=dev</code>).</p>
+    </section>
+
+    <section>
         <h2>Vendor JRE vs. Custom jlink Runtime</h2>
         <div class="medium">
             <p>Both drop the compiler and dev tools a full JDK carries: a runtime-only image. They trade off differently.</p>
@@ -102,22 +126,22 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
     </section>
 
     <section>
-        <h2>It's Not Just a Java Problem</h2>
+        <h2>Shrinking the Runtime Layer Without Going Native</h2>
         <div class="medium">
-            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
+            <p>Before reaching for a full AOT rewrite, every ecosystem has a cheaper lever: trim the runtime or the base image instead of replacing it.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <table style="margin-top:0.2em;">
-                <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
+                <thead><tr><th>Language</th><th>Small-image lever (no AOT)</th></tr></thead>
                 <tbody>
-                    <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
-                    <tr><td>.NET</td><td>Native AOT: .NET's direct equivalent of GraalVM native-image</td></tr>
-                    <tr><td>Go</td><td>Compiles to a single static binary by default: <code>scratch</code> "just works"</td></tr>
-                    <tr><td>Rust</td><td>Same story as Go with a musl target: static binary, no runtime image needed</td></tr>
-                    <tr><td>Python / Node.js</td><td>Interpreted: always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
+                    <tr><td>Java</td><td>Custom <code>jlink</code> JRE: trim to only the modules your app actually uses</td></tr>
+                    <tr><td>.NET</td><td>Self-contained trimmed deployment on an Alpine/distroless <code>dotnet/runtime-deps</code> image</td></tr>
+                    <tr><td>Python</td><td><code>python:slim</code> / <code>python:alpine</code>, multi-stage build to drop compilers after <code>pip install</code></td></tr>
+                    <tr><td>Node.js</td><td><code>node:alpine</code> / <code>node:slim</code>, multi-stage build to drop <code>devDependencies</code> &amp; build tools</td></tr>
+                    <tr><td>Go / Rust</td><td>Already a single static binary by default: <code>scratch</code> "just works" without any extra step</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
+            <p class="small" style="margin-top:0.4em;">This gets most of the size win for a fraction of the build complexity. Full AOT compilation (GraalVM native-image, .NET Native AOT) is next, in Chapter 07.</p>
         </div>
     </section>
 
@@ -128,15 +152,14 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
             <thead><tr><th>Tool / Base image</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
                 <tr><td>Eclipse Temurin / Zulu JRE + <code>jlink</code></td><td>Java</td><td>Custom minimal JRE with only the modules you need</td></tr>
-                <tr><td>GraalVM <code>native-image</code></td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary, no JVM needed</td></tr>
                 <tr><td><code>gcr.io/distroless/*</code></td><td>Java, Python, Node.js, static (Go/Rust/C++)</td><td>No shell, no package manager, per-language variants</td></tr>
                 <tr><td><code>python:slim</code> / <code>python:alpine</code></td><td>Python</td><td>Smaller CPython base images</td></tr>
                 <tr><td><code>node:alpine</code></td><td>Node.js</td><td>Smaller Node.js base image</td></tr>
                 <tr><td>Static binary + <code>scratch</code></td><td>Go</td><td>Compiles to one static binary: no runtime image at all</td></tr>
-                <tr><td>.NET Native AOT</td><td>.NET</td><td>AOT-compiles to a native binary: the JVM-less path for .NET</td></tr>
                 <tr><td>musl static binary + <code>scratch</code></td><td>Rust</td><td>Same static-binary story as Go</td></tr>
             </tbody>
         </table>
+        <p class="small" style="margin-top:0.4em;">GraalVM <code>native-image</code> &amp; .NET Native AOT drop the runtime layer entirely: covered in Chapter 07's own tools table, alongside CRaC.</p>
     </section>
 
 </section>
