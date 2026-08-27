@@ -39,29 +39,7 @@
         </div>
     </section>
 
-    <section>
-        <h2>When Drift Becomes a Crisis</h2>
-        <div class="two-col medium">
-            <div class="box box-red">
-                <h3 style="color:#dc322f;">Log4Shell — Dec 2021</h3>
-                <ul>
-                    <li>CVSS <strong>10.0</strong> — maximum score</li>
-                    <li><strong>93%</strong> of cloud environments exposed</li>
-                    <li>Library vendor patched in <strong>2 hours</strong></li>
-                    <li>Most teams took <strong>weeks</strong> to deploy</li>
-                </ul>
-                <p class="small" style="margin-top:0.5em;color:#cb4b16;">Root cause: a logging library, unused by many teams, hadn't been reviewed in years</p>
-            </div>
-            <div class="box box-red">
-                <h3 style="color:#dc322f;">Spring4Shell — 2022</h3>
-                <ul>
-                    <li>CVE-2022-22965 in the framework itself</li>
-                    <li>Teams on old versions couldn't patch directly — had to upgrade the framework first</li>
-                </ul>
-                <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap made patching a multi-week project instead of a one-day fix</p>
-            </div>
-        </div>
-    </section>
+
 
     <section>
         <h2>The Compounding Cost of Delay</h2>
@@ -317,6 +295,30 @@ docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchm
 osv-scanner scan image eclipse-temurin:25-jre
 osv-scanner scan --sbom=target/bom.json .</code></pre>
             <small>Same DB, same tool, whether you're scanning a Java <code>pom.xml</code>, a Python <code>requirements.txt</code>, a Go <code>go.sum</code>, or the built image.</small>
+        </div>
+    </section>
+
+    <section>
+        <h2>When Drift Becomes a Crisis</h2>
+        <div class="two-col medium">
+            <div class="box box-red">
+                <h3 style="color:#dc322f;">Log4Shell — Dec 2021</h3>
+                <ul>
+                    <li>CVSS <strong>10.0</strong> — maximum score</li>
+                    <li><strong>93%</strong> of cloud environments exposed</li>
+                    <li>Library vendor patched in <strong>2 hours</strong></li>
+                    <li>Most teams took <strong>weeks</strong> to deploy</li>
+                </ul>
+                <p class="small" style="margin-top:0.5em;color:#cb4b16;">Root cause: a logging library, unused by many teams, hadn't been reviewed in years</p>
+            </div>
+            <div class="box box-red">
+                <h3 style="color:#dc322f;">Spring4Shell — 2022</h3>
+                <ul>
+                    <li>CVE-2022-22965 in the framework itself</li>
+                    <li>Teams on old versions couldn't patch directly — had to upgrade the framework first</li>
+                </ul>
+                <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap made patching a multi-week project instead of a one-day fix</p>
+            </div>
         </div>
     </section>
 
