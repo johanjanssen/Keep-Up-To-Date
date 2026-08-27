@@ -32,7 +32,7 @@
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
                 <li><span class="ic">✅</span><span>You consciously chose a small fraction of them</span></li>
-                <li><span class="ic">🎲</span><span>The rest came with the territory, and each carries potential CVEs</span></li>
+                <li><span class="ic">🎲</span><span>Each carries potential Common Vulnerabilities and Exposures (CVEs)</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
@@ -58,9 +58,6 @@
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
             Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
         </div>
-        <p class="medium" style="margin-top:0.6em;font-style:italic;color:#6c71c4;">
-            "If it hurts, do it more often." - Martin Fowler
-        </p>
     </section>
 
     <section>
@@ -68,8 +65,7 @@
         <div class="medium">
             <p>Regulators worldwide have turned "keep your dependencies patched" into law, with fines that scale with global turnover, not a fixed slap on the wrist.</p>
         </div>
-        <p class="subtitle" style="margin-top:0.8em;">Two regions, five laws: a sample</p>
-    </section>
+E    </section>
 
     <section>
         <h2>🇪🇺 EU: Patching Is Now Law</h2>
@@ -155,8 +151,7 @@
     </section>
 
     <section>
-        <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
-        <p class="subtitle">Same code, same hardware: JMH benchmarks across Java 25 → 28 EA</p>
+        <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java 17 → 25: zero code changes</span>
             <ul style="margin-top:0.3em;">
@@ -165,6 +160,10 @@
                 <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
             </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
             Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
@@ -183,11 +182,11 @@
     </section>
 
     <section>
-        <h2>🎯 Live Demo: Log4Shell → RCE → PwnKit</h2>
+        <h2>🎯 Log4Shell → Remote Code Execution (RCE) → PwnKit</h2>
         <p class="subtitle">One curl command, real network hops, on the projector</p>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🎯</span><span>A search box on a Java 17 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
+                <li><span class="ic">🎯</span><span>A REST endpoint build with Java 17 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
                 <li><span class="ic">📡</span><span>One query string triggers a JNDI lookup against an "attacker" LDAP server</span></li>
                 <li><span class="ic">💀</span><span>The attacker's class loads on the victim: recon, credential/env-var theft, exfiltration</span></li>
                 <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit)</strong> to escalate</span></li>
