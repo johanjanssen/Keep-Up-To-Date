@@ -315,23 +315,20 @@ E    </section>
     </section>
 
     <section>
-        <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
-        <p class="subtitle">Layers 1 &amp; 2: one tool, one database, either side of the build</p>
+        <h2>OSV-Scanner operates on both layers</h2>
         <div class="medium">
-            <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path: one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
+            <p>One CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🌐 osv-scanner</span>
             <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
 osv-scanner scan image eclipse-temurin:25-jre
 osv-scanner scan --sbom=target/bom.json .</code></pre>
-            <small>Same DB, same tool, whether you're scanning a Java <code>pom.xml</code>, a Python <code>requirements.txt</code>, a Go <code>go.sum</code>, or the built image.</small>
         </div>
     </section>
 
     <section>
-        <h2>Different Scanners, Different Results</h2>
-        <p class="subtitle">Same layer, different database → different findings</p>
+        <h2>Different Tools, Different Databases, Different Results</h2>
         <div class="medium">
             <ul class="icon-list">
                 <li><span class="ic">🌐</span><span><strong>Grype</strong>: Anchore's own feed</span></li>
@@ -365,7 +362,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <div class="box box-red medium" style="margin-top:0.5em;">
             <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks; fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
         </div>
-        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote; a library nobody had reviewed in years, several layers down in the dependency tree. This is the exact CVE you just watched fire live.</p>
     </section>
 
     <section>
@@ -393,7 +389,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>It's Not Only Management's Fault</h2>
+        <h2>It's Not Only Management's Fault That You Run Old Software</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
