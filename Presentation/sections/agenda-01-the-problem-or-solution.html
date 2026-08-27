@@ -131,12 +131,6 @@
             Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
             Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong> — but only once fields are narrow enough to fit the JVM's current flattening size limit.
         </div>
-        <pre><code class="language-bash">docker run --rm -v "$(pwd)/results:/results" bench:java25 "\.ValhallaBenchmark\."       # record
-docker run --rm -v "$(pwd)/results:/results" bench:java28 "\.ValhallaValueBenchmark\."  # value record</code></pre>
-        <p class="small" style="margin-top:0.6em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml" target="_blank">▶ Run Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/benchmark-java-versions.yml/badge.svg" alt="" style="vertical-align:middle;">
-        </p>
     </section>
 
     <section>
