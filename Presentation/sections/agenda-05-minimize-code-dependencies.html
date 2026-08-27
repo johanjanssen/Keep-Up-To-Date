@@ -46,12 +46,15 @@
     </section>
 
     <section>
-        <h2>Tools to create SBOM</h2>
+        <h2>Tools to Create an SBOM</h2>
+        <div class="medium">
+            <p>Generate the SBOM as part of your build or CI pipeline — not as a one-off, manual export.</p>
+        </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <ul class="icon-list">
-                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin:</strong> <code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
-                <li><span class="ic">🔍</span><span><strong>Trivy:</strong> <code>trivy image --format cyclonedx --output sbom.json</code></span></li>
-                <li><span class="ic">📦</span><span><strong>Syft:</strong> <code>syft . -o cyclonedx-json</code></span></li>
+                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin</strong> (Java): <code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
+                <li><span class="ic">🌐</span><span><strong>Trivy</strong> (generic, from an image): <code>trivy image --format cyclonedx --output sbom.json</code></span></li>
+                <li><span class="ic">🌐</span><span><strong>Syft</strong> (generic, from a filesystem or image): <code>syft . -o cyclonedx-json</code></span></li>
             </ul>
         </div>
     </section>
@@ -103,6 +106,7 @@
         &lt;/excludes&gt;
     &lt;/bannedDependencies&gt;
 &lt;/rules&gt;</code></pre>
+            <small>Gradle equivalent: dependency <code>exclude</code> rules + a version catalog to pin allowed versions.</small>
         </div>
     </section>
 
