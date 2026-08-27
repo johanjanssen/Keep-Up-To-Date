@@ -102,22 +102,22 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
     </section>
 
     <section>
-        <h2>It's Not Just a Java Problem</h2>
+        <h2>Shrinking the Runtime Layer Without Going Native</h2>
         <div class="medium">
-            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
+            <p>Before reaching for a full AOT rewrite, every ecosystem has a cheaper lever: trim the runtime or the base image instead of replacing it.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <table style="margin-top:0.2em;">
-                <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
+                <thead><tr><th>Language</th><th>Small-image lever (no AOT)</th></tr></thead>
                 <tbody>
-                    <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
-                    <tr><td>.NET</td><td>Native AOT: .NET's direct equivalent of GraalVM native-image</td></tr>
-                    <tr><td>Go</td><td>Compiles to a single static binary by default: <code>scratch</code> "just works"</td></tr>
-                    <tr><td>Rust</td><td>Same story as Go with a musl target: static binary, no runtime image needed</td></tr>
-                    <tr><td>Python / Node.js</td><td>Interpreted: always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
+                    <tr><td>Java</td><td>Custom <code>jlink</code> JRE: trim to only the modules your app actually uses</td></tr>
+                    <tr><td>.NET</td><td>Self-contained trimmed deployment on an Alpine/distroless <code>dotnet/runtime-deps</code> image</td></tr>
+                    <tr><td>Python</td><td><code>python:slim</code> / <code>python:alpine</code>, multi-stage build to drop compilers after <code>pip install</code></td></tr>
+                    <tr><td>Node.js</td><td><code>node:alpine</code> / <code>node:slim</code>, multi-stage build to drop <code>devDependencies</code> &amp; build tools</td></tr>
+                    <tr><td>Go / Rust</td><td>Already a single static binary by default: <code>scratch</code> "just works" without any extra step</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
+            <p class="small" style="margin-top:0.4em;">This gets most of the size win for a fraction of the build complexity. Full AOT compilation (GraalVM native-image, .NET Native AOT) is next, in Chapter 07.</p>
         </div>
     </section>
 
