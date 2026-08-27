@@ -71,24 +71,40 @@
     <section>
         <h2>⚖️ It's Not Just Best Practice Anymore</h2>
         <div class="medium">
-            <p>Regulators on multiple continents have turned "keep your dependencies patched" from a best practice into a legal obligation, with fines that scale with global turnover — not a fixed slap on the wrist.</p>
+            <p>Regulators worldwide have turned "keep your dependencies patched" into law — with fines that scale with global turnover, not a fixed slap on the wrist.</p>
         </div>
-        <div class="small" style="margin-top:0.6em;">
+        <p class="subtitle" style="margin-top:0.8em;">Two regions, five laws — a sample</p>
+    </section>
+
+    <section>
+        <h2>🇪🇺 EU: Patching Is Now Law</h2>
+        <div class="medium">
             <table>
-                <thead><tr><th>Law</th><th>Region / scope</th><th>What it requires</th><th>Maximum penalty</th></tr></thead>
+                <thead><tr><th>Law</th><th>Requires</th><th>Max penalty</th></tr></thead>
                 <tbody>
-                    <tr><td>GDPR (Art. 32)</td><td>🇪🇺 EU — any org handling EU personal data</td><td>"Appropriate technical measures" — patched, secure systems</td><td>€20M or 4% global turnover</td></tr>
-                    <tr><td>NIS2 Directive</td><td>🇪🇺 EU — essential/important entities</td><td>Risk management, supply-chain security, 24h incident reporting</td><td>€10M / 2% (essential), €7M / 1.4% (important)</td></tr>
-                    <tr><td>Cyber Resilience Act</td><td>🇪🇺 EU — any product with digital elements</td><td>Vulnerability handling &amp; security updates for 5+ years</td><td>€15M or 2.5% global turnover</td></tr>
-                    <tr><td>Privacy Act 1988</td><td>🇦🇺 Australia — any org handling personal info</td><td>"Reasonable steps" to protect personal information</td><td>Greater of $50M AUD, 3× the benefit gained, or a % of turnover</td></tr>
-                    <tr><td>Cyber Security Act 2024</td><td>🇦🇺 Australia — critical infra + $3M+ turnover</td><td>Mandatory ransomware-payment reporting within 72h</td><td>$99,000 AUD per missed report</td></tr>
+                    <tr><td>GDPR (Art. 32)</td><td>Patched, secure systems for personal data</td><td>€20M or 4% turnover</td></tr>
+                    <tr><td>NIS2 Directive</td><td>Risk management, 24h incident reporting</td><td>€10M / 2% turnover</td></tr>
+                    <tr><td>Cyber Resilience Act</td><td>Security updates for 5+ years</td><td>€15M or 2.5% turnover</td></tr>
                 </tbody>
             </table>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
-            ⏰ The EU Cyber Resilience Act's vulnerability &amp; incident reporting duty becomes mandatory in <strong>September 2026</strong> — the exact "24h to notify, 72h detailed report" discipline this talk keeps coming back to is about to be law, not just good hygiene.
+            ⏰ The Cyber Resilience Act's "24h to notify, 72h detailed report" duty becomes mandatory in <strong>September 2026</strong> — the exact discipline this talk keeps coming back to is about to be law.
         </div>
-        <p class="small" style="margin-top:0.5em;color:#657b83;">Figures currently in force or newly enacted as of 2026 — always check the current text before citing exact numbers in your own compliance work.</p>
+    </section>
+
+    <section>
+        <h2>🇦🇺 Australia: Patching Is Now Law</h2>
+        <div class="medium">
+            <table>
+                <thead><tr><th>Law</th><th>Requires</th><th>Max penalty</th></tr></thead>
+                <tbody>
+                    <tr><td>Privacy Act 1988</td><td>"Reasonable steps" to protect personal info</td><td>Greater of $50M AUD, 3× benefit gained, or a % of turnover</td></tr>
+                    <tr><td>Cyber Security Act 2024</td><td>Mandatory ransomware-payment reporting within 72h</td><td>$99,000 AUD per missed report</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small" style="margin-top:0.6em;color:#657b83;">Figures current as of 2026 — verify before citing exact numbers in your own compliance work.</p>
     </section>
 
     <section>
@@ -155,55 +171,6 @@
     </section>
 
     <section>
-        <h2>Image / Artifact Scanning</h2>
-        <div class="medium">
-            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies. Several tools cover this ground, each with a different angle.</p>
-        </div>
-        <div class="two-col medium" style="margin-top:0.5em;">
-            <div class="box box-blue">
-                <span class="java-pill">☕ Grype (Anchore)</span>
-                <ul><li>OS packages + language deps</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">☕ Trivy (Aqua)</span>
-                <ul><li>OS packages + language deps</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">🔍 OSV-Scanner (Google)</span>
-                <ul><li>Images, lockfiles &amp; SBOMs — 20+ ecosystems</li><li>One tool, one database: OSV.dev</li><li>Also covers source manifests — see Layer 1</li></ul>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">☕ OWASP Dependency Check</span>
-                <ul><li>Scans the declared manifest (e.g. <code>pom.xml</code>)</li><li>Checks against the NVD database</li><li>Build-time gate — misses OS-level packages</li></ul>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>Different Scanners, Different Results</h2>
-        <p class="subtitle">Different databases, different scan targets → different findings</p>
-        <div class="medium">
-            <ul class="icon-list">
-                <li><span class="ic">☕</span><span><strong>Grype</strong> &amp; <strong>Trivy</strong> — separate vulnerability feeds, scan OS packages + language deps in the built image</span></li>
-                <li><span class="ic">🔍</span><span><strong>OSV-Scanner</strong> — the open OSV.dev database, one CLI across lockfiles, SBOMs and images</span></li>
-                <li><span class="ic">📄</span><span><strong>OWASP Dependency Check</strong> — the NVD database, scans the declared manifest at build time</span></li>
-            </ul>
-            <p style="margin-top:0.6em;">No two tools agree on every finding — neither database is a superset of the others, and each looks at a different slice of the artifact. Running just one leaves gaps.</p>
-        </div>
-    </section>
-
-    <section>
-        <h2>🔍 Compare-Scans — Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-
-    <section>
         <h2>🔍 Two Layers of Scanning</h2>
         <p class="subtitle">They find different things — you need both</p>
         <div class="two-col medium" style="margin-top:0.8em;">
@@ -239,6 +206,7 @@
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check</span>
+            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and Ruby — this demo uses the Maven plugin.</p>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.owasp&lt;/groupId&gt;
     &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
@@ -255,6 +223,26 @@
         </p>
     </section>
 
+    <section>
+        <h2>Image / Artifact Scanning</h2>
+        <div class="medium">
+            <p>Scan the built artifact — container image, fat JAR, etc. — for vulnerabilities in the OS layer and bundled dependencies. These scanners are language-agnostic: they inspect the artifact itself, not a build file.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-blue">
+                <span class="java-pill">🌐 Grype (Anchore)</span>
+                <ul><li>Generic — any container image</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">🌐 Trivy (Aqua)</span>
+                <ul><li>Generic — any container image</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">🌐 OSV-Scanner (Google)</span>
+                <ul><li>Generic — images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>One tool, one database: OSV.dev</li><li>Also scans source manifests — see Layer 1</li></ul>
+            </div>
+        </div>
+    </section>
 
     <section>
         <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
@@ -262,12 +250,35 @@
             <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path — one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">🔍 osv-scanner</span>
+            <span class="java-pill">🌐 osv-scanner</span>
             <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
 osv-scanner scan image eclipse-temurin:25-jre
 osv-scanner scan --sbom=target/bom.json .</code></pre>
             <small>Same DB, same tool, whether you're scanning a Java <code>pom.xml</code>, a Python <code>requirements.txt</code>, a Go <code>go.sum</code>, or the built image.</small>
         </div>
+    </section>
+
+    <section>
+        <h2>Different Scanners, Different Results</h2>
+        <p class="subtitle">Different databases, different scan targets → different findings</p>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">🌐</span><span><strong>Grype</strong> &amp; <strong>Trivy</strong> — separate feeds, scan the built image</span></li>
+                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — the OSV.dev database, scans lockfiles, SBOMs and images</span></li>
+                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong> — the NVD database, scans the manifest at build time</span></li>
+            </ul>
+            <p style="margin-top:0.6em;">No two tools agree on every finding. Run more than one for full coverage.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>🔍 Compare-Scans — Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
+        </p>
     </section>
 
     <section>
@@ -312,13 +323,13 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>It's not only managements fault that you're on old software</h2>
+        <h2>It's Not Only Management's Fault</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
                 <li><span class="ic">📉</span><span>Overestimating an upgrade results in delays or cancellations</span></li>
-                <li><span class="ic">⏱️</span><span>Start with the upgrade in a lost hour to get better insights</span></li>
-                <li><span class="ic">🛠️</span><span>Nowadays tools make the upgrade way easier</span></li>
+                <li><span class="ic">⏱️</span><span>Spend one spare hour investigating — it's usually smaller than feared</span></li>
+                <li><span class="ic">🛠️</span><span>Modern tooling makes upgrades far easier than a few years ago</span></li>
                 <li><span class="ic">🗣️</span><span>It's not easy to convince management to spend time on it</span></li>
                 <li><span class="ic">😒</span><span>Even developers complain about automated upgrades</span></li>
             </ul>
