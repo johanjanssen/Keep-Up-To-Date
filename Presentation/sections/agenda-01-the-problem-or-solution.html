@@ -193,32 +193,6 @@
     </section>
 
     <section>
-        <h2>📊 Compare-Scans — Live Results</h2>
-        <p class="subtitle">Unique CVEs (deduplicated by ID) — Grype vs Trivy, Tot/C/H/M/L/U</p>
-        <div class="small">
-            <table>
-                <thead><tr><th>Image</th><th>Grype</th><th>Trivy</th><th>Unique Grype</th><th>Unique Trivy</th></tr></thead>
-                <tbody>
-                <tr><td>eclipse-temurin:25-jre</td><td>96 / 0 / 2 / 87 / 7 / 0</td><td>60 / 0 / 8 / 47 / 4 / 1</td><td>48</td><td>12</td></tr>
-                <tr><td>debian:12-slim</td><td>79 / 6 / 13 / 24 / 5 / 31</td><td>84 / 5 / 8 / 30 / 38 / 3</td><td>-</td><td>5</td></tr>
-                <tr><td>gcr.io/distroless/base-debian12</td><td>15 / 1 / 2 / 3 / 1 / 8</td><td>15 / 0 / 0 / 6 / 9 / 0</td><td>-</td><td>-</td></tr>
-                <tr><td>gcr.io/distroless/static-debian12</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
-                <tr><td>hello-conference:jre-temurin</td><td>110 / 2 / 6 / 95 / 7 / 0</td><td>74 / 2 / 12 / 55 / 4 / 1</td><td>48</td><td>12</td></tr>
-                <tr><td>hello-conference:jlink-distroless-base-debian</td><td>29 / 3 / 6 / 11 / 1 / 8</td><td>29 / 2 / 4 / 14 / 9 / 0</td><td>-</td><td>-</td></tr>
-                <tr><td>hello-conference:native-scratch</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>0 / 0 / 0 / 0 / 0 / 0</td><td>-</td><td>-</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box box-blue small" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            Same app, different base image: <strong>jre-temurin → 110 CVEs</strong>, <strong>native-scratch → 0 CVEs</strong>.
-            On jre-temurin, Grype found <strong>48 CVEs Trivy missed</strong> and Trivy found <strong>12 CVEs Grype missed</strong> —
-            neither tool is a superset of the other. (Grype's GHSA-id findings are resolved to their NVD CVE alias first, so a
-            vulnerability both tools found under different id schemes isn't miscounted as "unique" to both.)
-        </div>
-    </section>
-
-    <section>
         <h2>🔍 Compare-Scans — Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
