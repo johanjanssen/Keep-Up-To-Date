@@ -58,6 +58,13 @@
         .reveal pre { width:95%; font-size:0.42em; }
         /* Fixed pixel height on chart containers so offsetHeight is stable */
         .chart-wrap { width:88%; max-width:740px; margin:0 auto; }
+        /* Two charts shown side by side (size-vs-CVE + size-vs-packages).
+           Spans nearly the full slide instead of the single-chart 740px cap
+           so long image names stay legible even split across two charts —
+           each .chart-wrap inside fills its half rather than centering at
+           its own max-width. */
+        .chart-row { display:flex; gap:1.2em; width:97%; max-width:1500px; margin:0 auto; align-items:flex-start; }
+        .chart-row .chart-wrap { flex:1 1 0; width:auto; max-width:none; }
         /* Live report embeds: reveal.js scales the whole slide with CSS transform,
            and iframes forward real mouse/scroll/click events through that transform
            just fine — so these are genuinely click-through-able during a talk, not
@@ -279,7 +286,7 @@ function tryRender(slide) {
 Reveal.on('ready',        e => tryRender(e.currentSlide));
 Reveal.on('slidechanged', e => tryRender(e.currentSlide));
 
-// ─── Live "Image Size vs CVE Count" charts ─────────────────────────────────
+// ─── Live "Image Size vs CVE Count" / "Image Size vs Package Count" charts ──
 //
 // Three groups — generic OS base images, Java JRE/JDK/GraalVM base images,
 // and hello-conference app images — mirroring images.conf's own
@@ -290,10 +297,16 @@ Reveal.on('slidechanged', e => tryRender(e.currentSlide));
 // gh-pages chart-data/ folder (see .github/workflows/measure-images.yml and
 // compare-scans.yml):
 //   image-sizes.json  — Build Docker Images/scripts/generate-html-report.py
+//                        (name, size_mb AND packages — all three measured
+//                        directly during that workflow's build/measure step,
+//                        never hardcoded here)
 //   cve-counts.json   — Compare Security Scans/scripts/generate-html-report.py
 // Both are already grouped generic/java/app AND already ordered the same way
 // as images.conf's arrays (the Python that produces them reads that order
 // directly) — so merging is a simple by-name lookup, not a re-sort.
+//
+// Each group renders as a PAIR of charts shown side by side (see .chart-row
+// in the <style> above): size vs CVE count, and size vs package count.
 //
 // This fetch is kicked off immediately (not gated on slide visibility) so
 // the data is normally ready well before a live talk reaches this slide.
@@ -309,19 +322,26 @@ let liveChartData = null;   // { generic:[...], java:[...], app:[...] } once loa
 let liveChartFailed = false;
 
 const GROUP_CHART_SPECS = [
-    { id: 'chartBaseImages', key: 'generic', countEl: 'baseImageCount',
-      title: 'Base OS images — size (MB) vs CVE count (Grype) — live data' },
-    { id: 'chartJavaImages', key: 'java', countEl: 'javaImageCount',
-      title: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs CVE count (Grype) — live data' },
-    { id: 'chartAppImages', key: 'app', countEl: 'appImageCount',
-      title: 'hello-conference app images — size (MB) vs CVE count (Grype) — live data' },
+    { key: 'generic', countEl: 'baseImageCount',
+      cveChartId: 'chartBaseImages', cveTitle: 'Base OS images — size (MB) vs CVE count (Grype) — live data',
+      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images — size (MB) vs package count — live data' },
+    { key: 'java', countEl: 'javaImageCount',
+      cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs CVE count (Grype) — live data',
+      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs package count — live data' },
+    { key: 'app', countEl: 'appImageCount',
+      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images — size (MB) vs CVE count (Grype) — live data',
+      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images — size (MB) vs package count — live data' },
 ];
 
+// sizeRows already carry "packages" straight from image-sizes.json — no
+// second fetch needed for the packages chart, only the CVE chart needs the
+// by-name merge against cve-counts.json.
 function mergeSizeAndCveGroup(sizeRows, cveRows) {
     const cveByName = new Map((cveRows || []).map(r => [r.name, r.cves]));
     return (sizeRows || []).map(r => ({
         name: r.name,
         size_mb: r.size_mb,
+        packages: r.packages ?? null,
         cves: cveByName.has(r.name) ? cveByName.get(r.name) : null
     }));
 }
@@ -335,6 +355,24 @@ function sizeBarColor(cves) {
     if (cves < 30)    return C.yellow;
     if (cves < 80)    return C.orange;
     return C.red;
+}
+
+// Same idea, scaled to package counts (roughly: fewer installed OS packages
+// == smaller attack surface) rather than CVEs.
+function packageBarColor(packages) {
+    if (packages === null || packages === undefined) return C.purple; // unknown — couldn't be counted
+    if (packages === 0)   return C.green;
+    if (packages < 20)    return C.yellow;
+    if (packages < 100)   return C.orange;
+    return C.red;
+}
+
+// x-axis tick options shared by both chart types below: the image-name
+// labels are long (e.g. "registry.access.redhat.com/ubi9/openjdk-25-runtime"),
+// so ticks are rotated at a fixed angle and never auto-skipped — every
+// image gets a label instead of Chart.js thinning them out to fit.
+function nameAxis() {
+    return axis({ font: { size: 12 }, autoSkip: false, maxRotation: 55, minRotation: 55 });
 }
 
 function buildGroupChartConfig(rows, titleText) {
@@ -356,7 +394,8 @@ function buildGroupChartConfig(rows, titleText) {
                     data: rows.map(r => r.cves),
                     borderColor: C.pink,
                     backgroundColor: C.pink,
-                    pointRadius: 4,
+                    pointRadius: 5,
+                    borderWidth: 2,
                     tension: 0.2,
                     spanGaps: true,
                     yAxisID: 'yCves'
@@ -365,13 +404,54 @@ function buildGroupChartConfig(rows, titleText) {
         },
         options: {
             plugins: {
-                legend: { display: true, labels: { color: C.fg, font: { size: 12 } } },
-                title:  { display: true, text: titleText, color: C.fg, font: { size: 12 } }
+                legend: { display: true, labels: { color: C.fg, font: { size: 14 } } },
+                title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
             },
             scales: {
-                x:     { ...axis({ font: { size: 9 } }), grid: { display: false } },
-                ySize: { ...axis(), position: 'left',  title: { display: true, text: 'MB',  color: C.fg } },
-                yCves: { ...axis(), position: 'right', title: { display: true, text: 'CVEs', color: C.fg }, grid: { display: false } }
+                x:     { ...nameAxis(), grid: { display: false } },
+                ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',  color: C.fg, font: { size: 13 } } },
+                yCves: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'CVEs', color: C.fg, font: { size: 13 } }, grid: { display: false } }
+            }
+        }
+    };
+}
+
+function buildPackagesChartConfig(rows, titleText) {
+    return {
+        type: 'bar',
+        data: {
+            labels: rows.map(r => r.name),
+            datasets: [
+                {
+                    label: 'Image Size (MB)',
+                    data: rows.map(r => r.size_mb),
+                    backgroundColor: rows.map(r => packageBarColor(r.packages)),
+                    borderRadius: 4,
+                    yAxisID: 'ySize'
+                },
+                {
+                    type: 'line',
+                    label: 'OS packages',
+                    data: rows.map(r => r.packages),
+                    borderColor: C.purple,
+                    backgroundColor: C.purple,
+                    pointRadius: 5,
+                    borderWidth: 2,
+                    tension: 0.2,
+                    spanGaps: true,
+                    yAxisID: 'yPkgs'
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                legend: { display: true, labels: { color: C.fg, font: { size: 14 } } },
+                title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
+            },
+            scales: {
+                x:     { ...nameAxis(), grid: { display: false } },
+                ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',       color: C.fg, font: { size: 13 } } },
+                yPkgs: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'Packages', color: C.fg, font: { size: 13 } }, grid: { display: false } }
             }
         }
     };
@@ -388,19 +468,28 @@ function showChartFallback(canvas) {
     canvas.insertAdjacentElement('afterend', msg);
 }
 
+// Renders one canvas from one (spec, cfgBuilder) pair — shared by both the
+// CVE chart and the packages chart in each group, since they only differ in
+// which canvas id / config builder they use.
+function renderOneGroupChart(canvasId, rows, cfgBuilder) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || canvas._chart || !canvas.offsetWidth) return; // not on this slide, not visible, or already built
+    if (!rows || !rows.length) {
+        showChartFallback(canvas);
+        return;
+    }
+    makeChart(canvasId, cfgBuilder(rows));
+}
+
 function renderGroupCharts() {
     if (!liveChartData && !liveChartFailed) return; // fetch still in flight
     GROUP_CHART_SPECS.forEach(spec => {
-        const canvas = document.getElementById(spec.id);
-        if (!canvas || canvas._chart || !canvas.offsetWidth) return; // not on this slide, not visible, or already built
         const rows = liveChartData && liveChartData[spec.key];
-        if (!rows || !rows.length) {
-            showChartFallback(canvas);
-            return;
-        }
-        makeChart(spec.id, buildGroupChartConfig(rows, spec.title));
         const countEl = document.getElementById(spec.countEl);
-        if (countEl) countEl.textContent = rows.length;
+        if (countEl && rows && rows.length) countEl.textContent = rows.length;
+
+        renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle));
+        renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle));
     });
 }
 

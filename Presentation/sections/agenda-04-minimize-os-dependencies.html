@@ -38,21 +38,30 @@
     </section>
 
     <section>
-        <h2>Base Images: Size vs CVE Count</h2>
-        <p class="subtitle">Generic OS base images — <span id="baseImageCount">…</span> images, live size data + Grype CVE count</p>
-        <div class="chart-wrap"><canvas id="chartBaseImages" height="320"></canvas></div>
+        <h2>Base Images: Size vs CVE Count &amp; Packages</h2>
+        <p class="subtitle">Generic OS base images — <span id="baseImageCount">…</span> images, live size, Grype CVE, and package data</p>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
+        </div>
     </section>
 
     <section>
-        <h2>Java Runtime Images: Size vs CVE Count</h2>
-        <p class="subtitle">JDK / JRE / GraalVM base images — <span id="javaImageCount">…</span> images, live size data + Grype CVE count</p>
-        <div class="chart-wrap"><canvas id="chartJavaImages" height="320"></canvas></div>
+        <h2>Java Runtime Images: Size vs CVE Count &amp; Packages</h2>
+        <p class="subtitle">JDK / JRE / GraalVM base images — <span id="javaImageCount">…</span> images, live size, Grype CVE, and package data</p>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
+        </div>
     </section>
 
     <section>
-        <h2>hello-conference: Size vs CVE Count</h2>
-        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images — live size data + Grype CVE count</p>
-        <div class="chart-wrap"><canvas id="chartAppImages" height="320"></canvas></div>
+        <h2>hello-conference: Size vs CVE Count &amp; Packages</h2>
+        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images — live size, Grype CVE, and package data</p>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chartAppImages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartAppPackages" height="460"></canvas></div>
+        </div>
     </section>
 
     <section>

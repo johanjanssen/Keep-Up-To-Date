@@ -366,15 +366,30 @@ def write_html(output_html, content):
     print(f"  OK  html -> {output_html}")
 
 
-# Feeds the presentation's live "Image Size vs CVE Count" charts (see
-# Presentation/index.html) — one entry per successfully-built image, skipping
-# "NOT BUILT" / unparseable sizes rather than plotting a misleading 0 MB.
+def packages_to_int(value):
+    """Parse the PACKAGES column (a plain count, or 'N/A'/'-' when it couldn't
+    be determined — see count_packages() in measure-images.sh) into an int,
+    or None when it isn't a number."""
+    try:
+        return int(value.strip())
+    except (AttributeError, ValueError):
+        return None
+
+
+# Feeds the presentation's live "Image Size vs CVE Count" and "Image Size vs
+# Package Count" charts (see Presentation/index.html) — one entry per
+# successfully-built image, skipping "NOT BUILT" / unparseable sizes rather
+# than plotting a misleading 0 MB.
 def chart_rows(rows):
     out = []
     for r in rows:
         size_mb = size_to_mb(r["image_size"])
         if size_mb is not None:
-            out.append({"name": r["image"], "size_mb": round(size_mb, 1)})
+            out.append({
+                "name": r["image"],
+                "size_mb": round(size_mb, 1),
+                "packages": packages_to_int(r["packages"]),
+            })
     return out
 
 
@@ -403,8 +418,8 @@ def main():
     parser.add_argument("--custom-title", default="hello-conference Image &amp; Performance Comparison",
                          help="Title for the hello-conference report")
     parser.add_argument("--json-out", default=None,
-                         help="Optional path to also write a JSON summary (image name + size_mb, "
-                              "grouped generic/java/app) for the presentation's live charts")
+                         help="Optional path to also write a JSON summary (image name + size_mb + "
+                              "packages, grouped generic/java/app) for the presentation's live charts")
     args = parser.parse_args()
 
     images_text, perf_text = "", ""
