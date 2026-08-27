@@ -73,21 +73,25 @@
     <section>
         <h2>Which Runtime Distribution?</h2>
         <div class="medium">
-            <p>Most ecosystems have multiple vendors distributing the same runtime — all standards-compliant, but with different support models and extras.</p>
+            <p>Most ecosystems have multiple vendors distributing the same runtime — all standards-compliant, but trading off differently on image size, tooling, and support model.</p>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
+        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <table style="margin-top:0.4em;">
-                <thead><tr><th>Distribution</th><th>Vendor</th><th>Good for</th></tr></thead>
+                <thead><tr><th>Distribution</th><th>Vendor</th><th>Good for</th><th>Trait</th></tr></thead>
                 <tbody>
-                    <tr><td>Eclipse Temurin</td><td>Adoptium</td><td>Standard apps, Docker (used in this project)</td></tr>
-                    <tr><td>Azul Zulu</td><td>Azul</td><td>CRaC checkpointing (patched JVM)</td></tr>
-                    <tr><td>GraalVM CE</td><td>Oracle / community</td><td>Native image compilation</td></tr>
-                    <tr><td>Amazon Corretto</td><td>AWS</td><td>AWS-native workloads</td></tr>
+                    <tr><td>Eclipse Temurin</td><td>Adoptium</td><td>Standard apps, Docker (used in this project)</td><td>Balanced default</td></tr>
+                    <tr><td>Azul Zulu</td><td>Azul</td><td>CRaC checkpointing (patched JVM)</td><td>Balanced, enterprise support</td></tr>
+                    <tr><td>GraalVM CE</td><td>Oracle / community</td><td>Native image compilation</td><td class="tag-warn">🔧 Extra AOT tooling, larger JDK</td></tr>
+                    <tr><td>Amazon Corretto</td><td>AWS</td><td>AWS-native workloads</td><td>Long-term free patches</td></tr>
+                    <tr><td>BellSoft Liberica</td><td>BellSoft</td><td>Smallest containers, embedded/IoT</td><td class="tag-good">📦 Musl/Alpine builds — smallest images</td></tr>
+                    <tr><td>IBM Semeru</td><td>IBM</td><td>Memory-constrained containers</td><td class="tag-good">📦 OpenJ9 JVM — lower RAM footprint</td></tr>
+                    <tr><td>Red Hat build of OpenJDK</td><td>Red Hat</td><td>RHEL / UBI-based enterprise images</td><td class="tag-warn">🔧 RHEL toolchain &amp; CVE backports</td></tr>
+                    <tr><td>Microsoft Build of OpenJDK</td><td>Microsoft</td><td>Azure-native workloads</td><td class="tag-warn">🔧 Azure &amp; VS Code tooling</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.5em;">💡 It matters less than you think — all are standards-compliant. Pick one and commit to updating it.</p>
+        <p class="small" style="margin-top:0.5em;">📦 Smaller image → less attack surface and faster pulls. 🔧 More tooling → faster builds/AOT/cloud integration, at the cost of a bigger base image. 💡 It matters less than you'd think day-to-day — all are standards-compliant. Pick one and commit to updating it.</p>
     </section>
 
     <section>

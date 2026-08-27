@@ -34,6 +34,9 @@
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Old GroupIds Alerter (OGA)</span>
             Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>) — the artifact still resolves under the old coordinate, so nothing else catches this.
+            <pre><code class="language-bash"># no pom.xml plugin config needed — invoked on-the-fly via Maven coordinates
+./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only
+STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"                 # real default: build FAILS if any are found</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
             <span class="java-pill">🤖 Renovate <code>replacements</code> presets</span>
@@ -41,6 +44,16 @@
 // e.g. auto-PRs "org.json:json" -> its actively-maintained replacement</code></pre>
             <a href="https://docs.renovatebot.com/presets-replacements/" target="_blank" class="small">docs.renovatebot.com/presets-replacements</a>
         </div>
+    </section>
+
+    <section>
+        <h2>🔍 Old GroupIds Alerter — Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" loading="lazy" title="Old GroupIds Alerter report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" target="_blank">↗ Open in new tab</a>
+        </p>
     </section>
 
     <section>

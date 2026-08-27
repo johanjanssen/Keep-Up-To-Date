@@ -105,19 +105,21 @@
 
     <section>
         <h2>Policy as Code</h2>
+        <p class="subtitle">🔧 Renovate config — <code>renovate.json</code>, checked into the repo</p>
         <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo — not in a wiki, not in a person's memory.</p></div>
-        <pre><code class="language-json">{
+        <pre><code class="language-json">// renovate.json
+{
   "extends": ["config:base"],
   "packageRules": [
     {
-      "description": "Group related updates — one PR, one review",
-      "matchPackagePatterns": ["^org.springframework"],
-      "groupName": "Spring Framework",
+      "description": "Group all Docker base-image bumps — one PR, one review",
+      "matchDatasources": ["docker"],
+      "groupName": "Docker base images",
       "schedule": ["every weekend"]
     },
     {
-      "description": "Auto-merge low-risk patch updates for test libs",
-      "matchDepTypes": ["test"],
+      "description": "Auto-merge patch-level OS package bumps once CI is green",
+      "matchManagers": ["dockerfile"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
     }
