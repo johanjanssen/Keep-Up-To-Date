@@ -10,10 +10,18 @@
         <h2>Update or Remove?</h2>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🗑️</span><span>Not used anymore? <strong>Remove it</strong>: the cheapest dependency to maintain is the one that's gone</span></li>
-                <li><span class="ic">🔄</span><span>Still needed? <strong>Update it</strong>, and put it on a regular upgrade cadence</span></li>
+                <li><span class="ic">🗑️</span><span>The cheapest dependency to maintain is the one that's gone</span></li>
+                <li><span class="ic">🔄</span><span>Update the required software regularly</span></li>
             </ul>
         </div>
+    </section>
+
+    <section>
+        <img src="pictures/Hurdles.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <img src="pictures/NetworkCable.jpg" class="r-stretch">
     </section>
 
     <section>
@@ -43,35 +51,9 @@
     </section>
 
     <section>
-        <img src="pictures/NetworkCable.jpg" class="r-stretch">
-    </section>
-
-
-
-    <section>
         <h2>Before Removing: Prove It's Unused</h2>
         <div class="medium">
-            <p>Don't guess: measure. Track what your code actually calls in production before deleting it.</p>
+            <p>Don't guess: measure. Track what your code actually calls in production before deleting it. Concrete solutions are covered later.</p>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            Attach a JaCoCo agent to the running JVM and dump coverage after a representative period (full demo in Chapter 6).
-            <pre><code class="language-bash">bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
-        </div>
-    </section>
-
-    <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Finding what's actually used in production: across ecosystems</p>
-        <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
-            <tbody>
-                <tr><td>JaCoCo production agent</td><td>Java / JVM</td><td>Attach to a running JVM, dump live coverage on demand</td></tr>
-                <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial fleet-wide production usage tracking</td></tr>
-                <tr><td><code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
-                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call-graph visibility as a proxy for "is this hit"</td></tr>
-                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flag-wrapped code paths report their own usage over time</td></tr>
-            </tbody>
-        </table>
     </section>
 </section>

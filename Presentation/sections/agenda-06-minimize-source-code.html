@@ -164,7 +164,7 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
 
     <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Code coverage tooling across ecosystems</p>
+        <p class="subtitle">Code coverage and production-usage tooling across ecosystems</p>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
@@ -173,8 +173,11 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
                 <tr><td>coverage.py</td><td>Python</td><td>Line / branch coverage</td></tr>
                 <tr><td>Istanbul / nyc / c8</td><td>Node.js / TypeScript</td><td>Coverage instrumentation</td></tr>
                 <tr><td><code>go test -cover</code></td><td>Go</td><td>Built into the toolchain</td></tr>
+                <tr><td><code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
                 <tr><td>coverlet</td><td>.NET</td><td>Cross-platform coverage collector</td></tr>
                 <tr><td>cargo tarpaulin / llvm-cov</td><td>Rust</td><td>Line coverage for Rust binaries</td></tr>
+                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call-graph visibility as a proxy for "is this hit"</td></tr>
+                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flag-wrapped code paths report their own usage over time</td></tr>
             </tbody>
         </table>
     </section>

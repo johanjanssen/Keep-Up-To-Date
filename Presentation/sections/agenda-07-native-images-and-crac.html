@@ -89,9 +89,28 @@
 
     <section>
         <h2>Which Runtime Distribution?</h2>
+        <p class="subtitle">Same runtime, multiple vendors: true across ecosystems</p>
         <div class="medium">
             <p>Most ecosystems have multiple vendors distributing the same runtime, all standards-compliant, but trading off differently on image size, tooling, and support model.</p>
         </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Ecosystem</th><th>Vendor choice looks like</th></tr></thead>
+                <tbody>
+                    <tr><td>Java / JVM</td><td>Temurin, Zulu, Corretto, Semeru, Liberica, Red Hat, Microsoft: same spec, different build</td></tr>
+                    <tr><td>.NET</td><td>Microsoft's own SDK is the primary distribution; Mono covers older/alternate runtimes</td></tr>
+                    <tr><td>Python</td><td>CPython (reference) vs PyPy (JIT-compiled): same language, different tradeoffs</td></tr>
+                    <tr><td>Node.js</td><td>Node.js, Deno, Bun: compatible-ish but genuinely different runtimes</td></tr>
+                    <tr><td>Go / Rust</td><td>One official toolchain each: little vendor fragmentation</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small" style="margin-top:0.4em;">The tradeoffs are the same shape everywhere: image size, tooling maturity, support model. Java just has the most vendors to choose from, next.</p>
+    </section>
+
+    <section>
+        <h2>☕ Which JVM Distribution?</h2>
+        <p class="subtitle">Eight vendors, one bytecode spec</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <table style="margin-top:0.4em;">
@@ -126,6 +145,26 @@
                 </tbody>
             </table>
             <p class="small" style="margin-top:0.4em;">CRaC's tradeoff isn't compatibility; it's operational: the checkpoint captures process state (open sockets, files) at a point in time, so you design your startup code around what's safe to snapshot.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>It's Not Just a Java Problem</h2>
+        <div class="medium">
+            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
+                <tbody>
+                    <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
+                    <tr><td>.NET</td><td>Native AOT: .NET's direct equivalent of GraalVM native-image</td></tr>
+                    <tr><td>Go</td><td>Compiles to a single static binary by default: <code>scratch</code> "just works"</td></tr>
+                    <tr><td>Rust</td><td>Same story as Go with a musl target: static binary, no runtime image needed</td></tr>
+                    <tr><td>Python / Node.js</td><td>Interpreted: always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
+                </tbody>
+            </table>
+            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
         </div>
     </section>
 

@@ -32,7 +32,7 @@
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
                 <li><span class="ic">✅</span><span>You consciously chose a small fraction of them</span></li>
-                <li><span class="ic">🎲</span><span>The rest came with the territory, and each carries potential CVEs</span></li>
+                <li><span class="ic">🎲</span><span>Each carries potential Common Vulnerabilities and Exposures (CVEs)</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
@@ -58,9 +58,6 @@
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
             Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
         </div>
-        <p class="medium" style="margin-top:0.6em;font-style:italic;color:#6c71c4;">
-            "If it hurts, do it more often." - Martin Fowler
-        </p>
     </section>
 
     <section>
@@ -68,8 +65,7 @@
         <div class="medium">
             <p>Regulators worldwide have turned "keep your dependencies patched" into law, with fines that scale with global turnover, not a fixed slap on the wrist.</p>
         </div>
-        <p class="subtitle" style="margin-top:0.8em;">Two regions, five laws: a sample</p>
-    </section>
+E    </section>
 
     <section>
         <h2>🇪🇺 EU: Patching Is Now Law</h2>
@@ -155,8 +151,7 @@
     </section>
 
     <section>
-        <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
-        <p class="subtitle">Same code, same hardware: JMH benchmarks across Java 25 → 28 EA</p>
+        <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java 17 → 25: zero code changes</span>
             <ul style="margin-top:0.3em;">
@@ -165,6 +160,10 @@
                 <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
             </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
             Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
@@ -257,11 +256,11 @@
     </section>
 
     <section>
-        <h2>🎯 Live Demo: Log4Shell → RCE → PwnKit</h2>
+        <h2>🎯 Log4Shell → Remote Code Execution (RCE) → PwnKit</h2>
         <p class="subtitle">One curl command, real network hops, on the projector</p>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🎯</span><span>A search box on a Java 11 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
+                <li><span class="ic">🎯</span><span>A REST endpoint build with Java 11 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
                 <li><span class="ic">📡</span><span>One query string triggers a JNDI lookup against an "attacker" LDAP server</span></li>
                 <li><span class="ic">💀</span><span>The attacker's class loads on the victim: recon, credential/env-var theft, exfiltration</span></li>
                 <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit)</strong> to escalate</span></li>
@@ -351,18 +350,16 @@
                 </ul>
             </div>
         </div>
-        <p class="small" style="margin-top:0.6em;color:#657b83;">OSV-Scanner is the only one that shows up in both columns: one tool, one database, either layer.</p>
     </section>
 
     <section>
-        <h2>Source-Level Scanning</h2>
-        <p class="subtitle">Layer 1: before the artifact even exists</p>
+        <h2>Layer 1 Before the Artifact exists: source-Level Scanning</h2>
         <div class="medium">
             <p>Scan dependency manifests against a vulnerability database as part of the build. Fail the build on high-severity findings.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check</span>
-            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and Ruby; this demo uses the Maven plugin.</p>
+            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.owasp&lt;/groupId&gt;
     &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
@@ -380,10 +377,9 @@
     </section>
 
     <section>
-        <h2>Image / Artifact Scanning</h2>
-        <p class="subtitle">Layer 2: after the build, on what actually ships</p>
+        <h2>Layer 2 after the build: Image / Artifact Scanning</h2>
         <div class="medium">
-            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies. These scanners are language-agnostic: they inspect the artifact itself, not a build file.</p>
+            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies.</p>
         </div>
         <div class="three-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
@@ -402,23 +398,20 @@
     </section>
 
     <section>
-        <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
-        <p class="subtitle">Layers 1 &amp; 2: one tool, one database, either side of the build</p>
+        <h2>OSV-Scanner operates on both layers</h2>
         <div class="medium">
-            <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path: one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
+            <p>One CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🌐 osv-scanner</span>
             <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
 osv-scanner scan image eclipse-temurin:25-jre
 osv-scanner scan --sbom=target/bom.json .</code></pre>
-            <small>Same DB, same tool, whether you're scanning a Java <code>pom.xml</code>, a Python <code>requirements.txt</code>, a Go <code>go.sum</code>, or the built image.</small>
         </div>
     </section>
 
     <section>
-        <h2>Different Scanners, Different Results</h2>
-        <p class="subtitle">Same layer, different database → different findings</p>
+        <h2>Different Tools, Different Databases, Different Results</h2>
         <div class="medium">
             <ul class="icon-list">
                 <li><span class="ic">🌐</span><span><strong>Grype</strong>: Anchore's own feed</span></li>
@@ -452,7 +445,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <div class="box box-red medium" style="margin-top:0.5em;">
             <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks; fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
         </div>
-        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote; a library nobody had reviewed in years, several layers down in the dependency tree. This is the exact CVE you just watched fire live.</p>
     </section>
 
     <section>
@@ -480,7 +472,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>It's Not Only Management's Fault</h2>
+        <h2>It's Not Only Management's Fault That You Run Old Software</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
