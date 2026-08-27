@@ -70,10 +70,12 @@
     <section>
         <h2>Integration Tests with Real Dependencies</h2>
         <div class="medium"><p>Spin up the real database / broker / service in a container for the test: no mocks, no in-memory fakes.</p></div>
-        <div class="two-col medium" style="margin-top:0.5em;">
-            <div class="box box-red">
-                <strong>Before: manual wiring</strong>
-                <pre><code class="language-java">@DynamicPropertySource
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            <div class="two-col" style="margin-top:0.4em;">
+                <div class="box box-red">
+                    <strong>Before: manual wiring</strong>
+                    <pre><code class="language-java">@DynamicPropertySource
 static void props(
   DynamicPropertyRegistry r) {
   r.add("spring.datasource.url",
@@ -81,16 +83,17 @@ static void props(
   r.add("spring.datasource.username",
     postgres::getUsername);
 }</code></pre>
-            </div>
-            <div class="box box-green">
-                <strong>After: <code>@ServiceConnection</code></strong>
-                <pre><code class="language-java">@Container
+                </div>
+                <div class="box box-green">
+                    <strong>After: <code>@ServiceConnection</code></strong>
+                    <pre><code class="language-java">@Container
 @ServiceConnection
 static PostgreSQLContainer&lt;?&gt; db
   = new PostgreSQLContainer&lt;&gt;(
       "postgres:16-alpine");
 
 // That's it! 🎉</code></pre>
+                </div>
             </div>
         </div>
         <p class="small">
