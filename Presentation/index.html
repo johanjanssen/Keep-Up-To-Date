@@ -99,6 +99,15 @@
         .box-blue  { background:rgba(38,139,210,0.1); border-color:rgba(38,139,210,0.4); }
         .reveal .subtitle { color:#268bd2; font-size:0.68em; }
         .reveal section img { border:none; box-shadow:none; }
+        /* Full-bleed photos (r-stretch .jpg only — logos/diagrams as .svg are left
+           untouched so their edges aren't clipped): soft corners + a gentle fade
+           toward the edges so they blend into the slide instead of sitting as a
+           hard rectangle. */
+        .reveal section img.r-stretch[src$=".jpg"] {
+            border-radius:16px;
+            -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 78%, transparent 100%);
+                    mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 78%, transparent 100%);
+        }
         .go-btn { display:inline-block; background:#859900; color:#fdf6e3 !important; padding:0.25em 0.7em; border-radius:6px; text-decoration:none !important; font-weight:bold; font-size:0.55em; margin:0.2em; }
         .go-btn:hover { background:#6b7a00; }
         .tag-good { color:#859900; font-weight:bold; }

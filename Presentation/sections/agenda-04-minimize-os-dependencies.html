@@ -6,7 +6,8 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h2>Small Docker image</h2>
+        <h2>Small Docker Image</h2>
+        <p class="subtitle">Smaller image → smaller attack surface, faster pulls, faster deploys</p>
     </section>
     <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
@@ -31,36 +32,61 @@
     </section>
 
     <section>
-        <h2>Use JRE Instead of JDK</h2>
-        <ul class="icon-list medium" style="max-width:560px;margin:0.8em auto 0;">
-            <li><span class="ic">🔧</span><span>Use jlink to create a custom (smaller) JRE</span></li>
-        </ul>
+        <h2>Vendor JRE vs. Custom jlink Runtime</h2>
+        <div class="medium">
+            <p>Both drop the compiler and dev tools a full JDK carries — a runtime-only image. They trade off differently.</p>
+        </div>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-blue">
+                <h3>Vendor JRE image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">📦</span><span>Every standard module included — bigger image</span></li>
+                    <li><span class="ic">⚡</span><span>Vendor tuning (e.g. a pre-built CDS archive) can lower startup CPU/memory per launch</span></li>
+                    <li><span class="ic">✅</span><span>Zero build effort — just pull the tag</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Custom jlink runtime</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">✂️</span><span>Only the modules your app uses — smaller image</span></li>
+                    <li><span class="ic">⚠️</span><span>No vendor pre-optimization; you own the build step</span></li>
+                    <li><span class="ic">🕵️</span><span>Miss a reflectively-used module → runtime failure</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Java example</span>
+            <pre><code class="language-bash">jdeps --print-module-deps --ignore-missing-deps app.jar    # 1. find required modules
+jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim runtime
+      --no-header-files --no-man-pages --output custom-jre</code></pre>
+        </div>
+        <p class="small" style="margin-top:0.4em;">Rule of thumb: start with a vendor JRE image; reach for jlink once size actually matters (edge, serverless, embedded).</p>
     </section>
 
     <section>
-        <h2>Base Images: Size vs CVE Count &amp; Packages</h2>
-        <p class="subtitle">Generic OS base images — <span id="baseImageCount">…</span> images, live size, Grype CVE, and package data</p>
+        <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
+        <p class="subtitle">Generic OS base images — <span id="baseImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
         </div>
     </section>
 
     <section>
-        <h2>Java Runtime Images: Size vs CVE Count &amp; Packages</h2>
-        <p class="subtitle">JDK / JRE / GraalVM base images — <span id="javaImageCount">…</span> images, live size, Grype CVE, and package data</p>
+        <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
+        <p class="subtitle">JDK / JRE / GraalVM base images — <span id="javaImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
         </div>
     </section>
 
     <section>
-        <h2>hello-conference: Size vs CVE Count &amp; Packages</h2>
-        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images — live size, Grype CVE, and package data</p>
+        <h2>hello-conference: Size vs Packages &amp; CVE Count</h2>
+        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images — live size, package, and Grype CVE data</p>
         <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartAppImages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartAppPackages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartAppImages" height="460"></canvas></div>
         </div>
     </section>
 
