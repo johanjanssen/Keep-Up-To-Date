@@ -63,6 +63,19 @@
     </section>
 
     <section>
+        <h2>Why Pin at All?</h2>
+        <div class="medium">
+            <p>Whether it's a Docker base image, a language runtime, or a build tool, <strong>floating version tags silently change under you</strong>. Pinning trades that surprise for a few concrete guarantees:</p>
+        </div>
+        <ul class="icon-list medium" style="margin-top:0.6em;">
+            <li><span class="ic">🔁</span><span><strong>Reproducible builds</strong>: the same tag produces the same bytes today and six months from now</span></li>
+            <li><span class="ic">⏪</span><span><strong>Rollback</strong>: revert to an exact known-good version when a release breaks something</span></li>
+            <li><span class="ic">🐞</span><span><strong>Debugging</strong>: you know precisely what's running, so "works on my machine" isn't a mystery</span></li>
+            <li><span class="ic">📋</span><span><strong>Auditability</strong>: prove exactly what shipped, for security reviews, incident response, and compliance</span></li>
+        </ul>
+    </section>
+
+    <section>
         <h2>A Specific Tag Still Isn't Immutable</h2>
         <div class="medium">
             <p>It's tempting to think <code>eclipse-temurin:25.0.4_7-jre-ubi10-minimal</code> is "specific enough" to be safe. It isn't: a Docker tag is just a mutable pointer, and the maintainer can repoint it whenever they rebuild the image.</p>
