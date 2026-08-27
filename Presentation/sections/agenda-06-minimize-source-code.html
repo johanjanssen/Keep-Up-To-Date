@@ -35,7 +35,7 @@
 
     <section>
         <h2>☕ How a JaCoCo Agent Measures Coverage</h2>
-        <p class="subtitle">Attach a probe to the running JVM — no code changes needed</p>
+        <p class="subtitle">Attach a probe to the running JVM: no code changes needed</p>
         <div class="medium" style="max-width:820px;margin:0.4em auto 0;">
             <svg viewBox="0 0 900 320" style="width:100%;height:auto;" role="img"
                  aria-label="Real traffic, from users or acceptance tests, sends requests into a running JVM. Inside the JVM, the application code runs and a JaCoCo agent attached via a javaagent flag records every method call. The agent dumps its in-memory counters to coverage data, either over TCP or when the JVM exits. That data becomes an HTML report marking each method as called or never called.">
@@ -87,124 +87,78 @@
                 <line x1="725" y1="155" x2="760" y2="155" stroke="#586e75" stroke-width="1.25" marker-end="url(#jcArrow)"/>
             </svg>
         </div>
-        <p class="small" style="margin-top:0.4em;color:#657b83;">Nothing in the application code changes — the agent instruments bytecode as the JVM loads it.</p>
+        <p class="small" style="margin-top:0.4em;color:#657b83;">Nothing in the application code changes: the agent instruments bytecode as the JVM loads it.</p>
     </section>
 
 
     <section>
-        <h2>☕ Retrieve Coverage — via Port (TCP Agent)</h2>
-        <p class="subtitle">Dump live coverage while the app keeps running — no restart, multiple snapshots</p>
+        <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
+        <p class="subtitle">Dump live coverage while the app keeps running: no restart, multiple snapshots</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo TCP agent</span>
             The agent opens a TCP server on the JVM. Connect a CLI client to it at any time to pull the
-            in-memory counters — the app never stops.
-            <pre><code class="language-bash"># 1 — Build the JAR (once per code change)
+            in-memory counters: the app never stops.
+            <pre><code class="language-bash"># 1: Build the JAR (once per code change)
 bash "scripts/Retrieve Coverage From Port/build.sh"
 
-# 2 — Terminal 1: start the app WITH the agent (keep it running)
+# 2: Terminal 1: start the app WITH the agent (keep it running)
 java "-javaagent:agent.jar=output=tcpserver,port=6300,includes=com.example.*" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
-# 3 — Terminal 2: exercise the endpoints
+# 3: Terminal 2: exercise the endpoints
 bash "scripts/Retrieve Coverage From Port/exercise-endpoints.sh"
 
-# 4 — Terminal 2: dump live coverage from the running JVM
+# 4: Terminal 2: dump live coverage from the running JVM
 java -jar jacoco-cli.jar dump --address localhost --port 6300 \
      --destfile target/jacoco-live.exec --reset
 
-# 5 — Terminal 2: generate the HTML report
+# 5: Terminal 2: generate the HTML report
 java -jar jacoco-cli.jar report target/jacoco-live.exec \
      --classfiles target/classes --sourcefiles src/main/java \
      --html target/coverage-report</code></pre>
         </div>
         <p class="small" style="margin-top:0.4em;">
-            <code>--reset</code> clears the counters after each dump — repeat steps 3–5 to take fresh snapshots without restarting.
+            <code>--reset</code> clears the counters after each dump: repeat steps 3–5 to take fresh snapshots without restarting.
         </p>
     </section>
 
     <section>
-        <h2>☕ Retrieve Coverage — via File (JVM Exit)</h2>
-        <p class="subtitle">Coverage flushes to disk when the JVM exits — no TCP hookup needed</p>
+        <h2>☕ Retrieve Coverage: via File (JVM Exit)</h2>
+        <p class="subtitle">Coverage flushes to disk when the JVM exits: no TCP hookup needed</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo file agent</span>
             Simplest mode: the agent registers a shutdown hook and writes the exec file the moment the JVM exits.
             Just stop the app and generate the report.
-            <pre><code class="language-bash"># 1 — Build the JAR (once per code change)
+            <pre><code class="language-bash"># 1: Build the JAR (once per code change)
 bash "scripts/Retrieve Coverage From File/build.sh"
 
-# 2 — Terminal 1: start the app WITH the agent
+# 2: Terminal 1: start the app WITH the agent
 java "-javaagent:agent.jar=destfile=target/jacoco.exec,output=file,append=false,includes=com.example.*" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
-# 3 — Terminal 2: exercise the endpoints
+# 3: Terminal 2: exercise the endpoints
 bash "scripts/Retrieve Coverage From File/exercise-endpoints.sh"
 
-# 4 — Terminal 1: Ctrl+C to stop the app
+# 4: Terminal 1: Ctrl+C to stop the app
 #     JaCoCo flushes coverage to target/jacoco.exec on JVM exit
 
-# 5 — Terminal 2: generate the HTML report
+# 5: Terminal 2: generate the HTML report
 java -jar jacoco-cli.jar report target/jacoco.exec \
      --classfiles target/classes --sourcefiles src/main/java \
      --html target/coverage-report</code></pre>
         </div>
         <p class="small" style="margin-top:0.4em;">
-            No TCP port to manage — best for simple, one-shot runs (e.g. a CI job or a short manual session).
+            No TCP port to manage: best for simple, one-shot runs (e.g. a CI job or a short manual session).
         </p>
     </section>
 
     <section>
-        <h2>🧪 JaCoCo — Demo Results</h2>
-        <p class="subtitle"><code>run-demo.sh</code>: build → start → exercise → dump → report → stop</p>
-        <div class="medium">
-            <p><code>exercise-endpoints.sh</code> deliberately calls every endpoint <strong>except</strong> <code>/admin/diagnostics</code> — simulating real traffic that never touches an unused code path.</p>
-        </div>
-        <pre><code class="language-text">── /hello ──────────────────────────────────────────────────
-  GET   /hello                       200
-  GET   /hello?name=Alice            200
-── /users ──────────────────────────────────────────────────
-  POST  /users  x3                   200 (Alice, Bob, Carol)
-  GET   /users                       200
-  GET   /users/1, /users/2           200
-  GET   /users/999                   404  ← orElse() branch covered
-── /admin/diagnostics — intentionally SKIPPED ───────────────
-   Will appear RED / 0% in the coverage report</code></pre>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <strong>Result:</strong> 3 of 10 methods across <code>HelloController</code> + <code>UserService</code> — <strong>30%</strong> — never execute under this traffic pattern.
-            Report opens at <code>target/coverage-report/index.html</code>.
-        </div>
-    </section>
-
-    <section>
-        <h2>🔍 JaCoCo — Full Coverage Report</h2>
+        <h2>🔍 JaCoCo: Full Coverage Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" loading="lazy" title="JaCoCo coverage report"></iframe>
         </div>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Detect Dead Code in Production</h2>
-        <div class="medium">
-            <p>Code coverage in CI tells you what your tests exercise. Coverage from a <em>production agent</em> tells you what real users actually call — revealing removal candidates.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo production agent</span>
-            Attach the agent to the running JVM. After a representative period, generate a report.
-            <table style="margin-top:0.4em;">
-                <tbody>
-                <tr><td><code>hello()</code>, <code>users()</code>, <code>user()</code>, <code>create()</code></td><td class="tag-good">🟢 Called — keep</td></tr>
-                <tr><td><code>HelloController.diagnostics()</code></td><td class="tag-bad">🔴 Endpoint exists, never hit — remove candidate</td></tr>
-                <tr><td><code>UserService.delete()</code></td><td class="tag-bad">🔴 No endpoint wired at all — dead from day one</td></tr>
-                </tbody>
-            </table>
-            <pre><code class="language-bash">bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml" target="_blank">▶ Run Demo</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml/badge.svg" alt="" style="vertical-align:middle;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">📊 View Live Report</a>
         </p>
     </section>
 

@@ -2,7 +2,7 @@
     <section class="chapter-slide">
         <div class="chapter-num">01</div>
         <span class="chapter-kicker">Chapter 01</span>
-        <h1>The Problem — Or the Solution!</h1>
+        <h1>The Problem, Or the Solution!</h1>
         <div class="chapter-rule"></div>
         <h2>Managing your software dependencies</h2>
     </section>
@@ -25,17 +25,17 @@
     <section>
         <h2>🚨 The "It Works, Don't Touch It" Trap</h2>
         <div class="medium">
-            <p style="font-style:italic;color:#6c71c4;">"Projects don't drift maliciously — just one sprint at a time."</p>
+            <p style="font-style:italic;color:#6c71c4;">"Projects don't drift maliciously: just one sprint at a time."</p>
             <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</span></li>
+                <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
                 <li><span class="ic">✅</span><span>You consciously chose a small fraction of them</span></li>
-                <li><span class="ic">🎲</span><span>The rest came with the territory — and each carries potential CVEs</span></li>
+                <li><span class="ic">🎲</span><span>The rest came with the territory, and each carries potential CVEs</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span><br>
             A typical Spring Boot app: <strong>50–80 direct</strong>, <strong>200–400 transitive</strong> dependencies.<br>
-            <code>./mvnw dependency:tree | wc -l</code> — prepare to be surprised.
+            <code>./mvnw dependency:tree | wc -l</code>. Prepare to be surprised.
         </div>
     </section>
 
@@ -46,34 +46,26 @@
         <div class="medium">
             <ul class="icon-list">
                 <li><span class="ic">🔐</span><span><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</span></li>
-                <li><span class="ic">⚡</span><span><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</span></li>
+                <li><span class="ic">⚡</span><span><strong>Performance:</strong> runtime improvements accumulate; you leave free speed on the table</span></li>
                 <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java 17 → 25 — zero code changes</span>
-            <ul style="margin-top:0.3em;">
-                <li><strong>Compact Object Headers</strong> (JEP 519, stable since 25) shrink every object header — less heap for boxed values &amp; small records</li>
-                <li><strong>Virtual Threads</strong> (JEP 444) remove the thread-per-task memory ceiling for I/O-bound workloads — the biggest, most reliable win in the suite</li>
-                <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span><br>
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
             Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
         </div>
         <p class="medium" style="margin-top:0.6em;font-style:italic;color:#6c71c4;">
-            "If it hurts, do it more often." — Martin Fowler
+            "If it hurts, do it more often." - Martin Fowler
         </p>
     </section>
 
     <section>
         <h2>⚖️ It's Not Just Best Practice Anymore</h2>
         <div class="medium">
-            <p>Regulators worldwide have turned "keep your dependencies patched" into law — with fines that scale with global turnover, not a fixed slap on the wrist.</p>
+            <p>Regulators worldwide have turned "keep your dependencies patched" into law, with fines that scale with global turnover, not a fixed slap on the wrist.</p>
         </div>
-        <p class="subtitle" style="margin-top:0.8em;">Two regions, five laws — a sample</p>
+        <p class="subtitle" style="margin-top:0.8em;">Two regions, five laws: a sample</p>
     </section>
 
     <section>
@@ -89,7 +81,7 @@
             </table>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
-            ⏰ The Cyber Resilience Act's "24h to notify, 72h detailed report" duty becomes mandatory in <strong>September 2026</strong> — the exact discipline this talk keeps coming back to is about to be law.
+            ⏰ The Cyber Resilience Act's "24h to notify, 72h detailed report" duty becomes mandatory in <strong>September 2026</strong>; the exact discipline this talk keeps coming back to is about to be law.
         </div>
     </section>
 
@@ -104,7 +96,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.6em;color:#657b83;">Figures current as of 2026 — verify before citing exact numbers in your own compliance work.</p>
+        <p class="small" style="margin-top:0.6em;color:#657b83;">Figures current as of 2026; verify before citing exact numbers in your own compliance work.</p>
     </section>
 
     <section>
@@ -142,16 +134,24 @@
 
     <section>
         <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
-        <p class="subtitle">Same code, same hardware — JMH benchmarks across Java 25 → 28 EA</p>
+        <p class="subtitle">Same code, same hardware: JMH benchmarks across Java 25 → 28 EA</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🔮 Java 25 → 28 EA — Valhalla preview</span>
+            <span class="java-pill">☕ Java 17 → 25: zero code changes</span>
+            <ul style="margin-top:0.3em;">
+                <li><strong>Compact Object Headers</strong> (JEP 519, stable since 25) shrink every object header: less heap for boxed values &amp; small records</li>
+                <li><strong>Virtual Threads</strong> (JEP 444) remove the thread-per-task memory ceiling for I/O-bound workloads: the biggest, most reliable win in the suite</li>
+                <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
             Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
-            Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong> — but only once fields are narrow enough to fit the JVM's current flattening size limit.
+            Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong>, but only once fields are narrow enough to fit the JVM's current flattening size limit.
         </div>
     </section>
 
     <section>
-        <h2>🔍 Performance Benchmarks — Full Report</h2>
+        <h2>🔍 Performance Benchmarks: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
         </div>
@@ -172,8 +172,8 @@
 
     <section>
         <h2>🔍 Two Layers of Scanning</h2>
-        <p class="subtitle">They find different things — you need both</p>
-        <div class="two-col medium" style="margin-top:0.8em;">
+        <p class="subtitle">They find different things; you need both</p>
+        <div class="two-col small" style="margin-top:0.8em;">
             <div class="box box-blue">
                 <h3>Layer 1: Source / Build Time</h3>
                 <p><em>What you declared</em></p>
@@ -193,20 +193,40 @@
                 </ul>
             </div>
         </div>
-        <div class="box box-blue small" style="margin-top:0.6em;">
-            <span class="java-pill">☕ Java example</span>
-            Layer 1: OWASP Dependency Check scans <code>pom.xml</code>. Layer 2: Trivy / Grype scan the Docker image (OS pkgs + all JARs). A transitive JAR pulled in by a framework won't appear in Layer 1 if it's not declared.
+    </section>
+
+    <section>
+        <h2>🔍 Four Tools, Two Layers</h2>
+        <p class="subtitle">Where each of today's scanners actually looks</p>
+        <div class="two-col medium" style="margin-top:0.8em;">
+            <div class="box box-blue">
+                <h3>Layer 1: Source / Build</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: manifest only, NVD database</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: lockfiles &amp; SBOMs, OSV.dev database</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Layer 2: Runtime / Image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">🌐</span><span><strong>Grype</strong>: built image, Anchore's own feed</span></li>
+                    <li><span class="ic">🌐</span><span><strong>Trivy</strong>: built image, widest DB + secrets/misconfig</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: built image too, same OSV.dev database</span></li>
+                </ul>
+            </div>
         </div>
+        <p class="small" style="margin-top:0.6em;color:#657b83;">OSV-Scanner is the only one that shows up in both columns: one tool, one database, either layer.</p>
     </section>
 
     <section>
         <h2>Source-Level Scanning</h2>
+        <p class="subtitle">Layer 1: before the artifact even exists</p>
         <div class="medium">
             <p>Scan dependency manifests against a vulnerability database as part of the build. Fail the build on high-severity findings.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check</span>
-            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and Ruby — this demo uses the Maven plugin.</p>
+            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and Ruby; this demo uses the Maven plugin.</p>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.owasp&lt;/groupId&gt;
     &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
@@ -225,29 +245,31 @@
 
     <section>
         <h2>Image / Artifact Scanning</h2>
+        <p class="subtitle">Layer 2: after the build, on what actually ships</p>
         <div class="medium">
-            <p>Scan the built artifact — container image, fat JAR, etc. — for vulnerabilities in the OS layer and bundled dependencies. These scanners are language-agnostic: they inspect the artifact itself, not a build file.</p>
+            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies. These scanners are language-agnostic: they inspect the artifact itself, not a build file.</p>
         </div>
-        <div class="two-col medium" style="margin-top:0.5em;">
+        <div class="three-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <span class="java-pill">🌐 Grype (Anchore)</span>
-                <ul><li>Generic — any container image</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
+                <ul><li>Generic: any container image</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
             </div>
             <div class="box box-blue">
                 <span class="java-pill">🌐 Trivy (Aqua)</span>
-                <ul><li>Generic — any container image</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
+                <ul><li>Generic: any container image</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
             </div>
             <div class="box box-blue">
                 <span class="java-pill">🌐 OSV-Scanner (Google)</span>
-                <ul><li>Generic — images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>One tool, one database: OSV.dev</li><li>Also scans source manifests — see Layer 1</li></ul>
+                <ul><li>Generic: images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>Same OSV.dev database it uses at Layer 1</li></ul>
             </div>
         </div>
     </section>
 
     <section>
         <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
+        <p class="subtitle">Layers 1 &amp; 2: one tool, one database, either side of the build</p>
         <div class="medium">
-            <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path — one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
+            <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path: one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🌐 osv-scanner</span>
@@ -260,19 +282,20 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
 
     <section>
         <h2>Different Scanners, Different Results</h2>
-        <p class="subtitle">Different databases, different scan targets → different findings</p>
+        <p class="subtitle">Same layer, different database → different findings</p>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🌐</span><span><strong>Grype</strong> &amp; <strong>Trivy</strong> — separate feeds, scan the built image</span></li>
-                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — the OSV.dev database, scans lockfiles, SBOMs and images</span></li>
-                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong> — the NVD database, scans the manifest at build time</span></li>
+                <li><span class="ic">🌐</span><span><strong>Grype</strong>: Anchore's own feed</span></li>
+                <li><span class="ic">🌐</span><span><strong>Trivy</strong>: Aqua's feed, widest DB coverage</span></li>
+                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: the open OSV.dev database</span></li>
+                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: the NVD database</span></li>
             </ul>
             <p style="margin-top:0.6em;">No two tools agree on every finding. Run more than one for full coverage.</p>
         </div>
     </section>
 
     <section>
-        <h2>🔍 Compare-Scans — Full Report</h2>
+        <h2>🔍 Compare-Scans: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
         </div>
@@ -283,26 +306,26 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
 
     <section>
         <h2>🔥 When Drift Becomes a Crisis: Log4Shell</h2>
-        <p class="subtitle">Dec 2021 — a logging library nobody had looked at in years</p>
+        <p class="subtitle">Dec 2021: a logging library nobody had looked at in years</p>
         <div class="stat-row medium">
-            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score — the maximum possible</span></div>
+            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
             <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
             <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
             <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
         </div>
         <div class="box box-red medium" style="margin-top:0.5em;">
-            <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks — fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
+            <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks; fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
         </div>
-        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote — a library nobody had reviewed in years, several layers down in the dependency tree.</p>
+        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote; a library nobody had reviewed in years, several layers down in the dependency tree.</p>
     </section>
 
     <section>
         <h2>😱 It Wasn't a One-Off: Spring4Shell</h2>
-        <p class="subtitle">2022 — same pattern, a different framework</p>
+        <p class="subtitle">2022: same pattern, a different framework</p>
         <div class="box box-red medium">
             <ul>
-                <li>CVE-2022-22965 — a critical RCE in the Spring framework itself, not a bundled library this time</li>
-                <li>Teams on old Spring versions couldn't patch directly — they had to upgrade the framework first</li>
+                <li>CVE-2022-22965: a critical RCE in the Spring framework itself, not a bundled library this time</li>
+                <li>Teams on old Spring versions couldn't patch directly; they had to upgrade the framework first</li>
             </ul>
             <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap turned a one-day fix into a multi-week project.</p>
         </div>
@@ -326,7 +349,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
                 <li><span class="ic">📉</span><span>Overestimating an upgrade results in delays or cancellations</span></li>
-                <li><span class="ic">⏱️</span><span>Spend one spare hour investigating — it's usually smaller than feared</span></li>
+                <li><span class="ic">⏱️</span><span>Spend one spare hour investigating; it's usually smaller than feared</span></li>
                 <li><span class="ic">🛠️</span><span>Modern tooling makes upgrades far easier than a few years ago</span></li>
                 <li><span class="ic">🗣️</span><span>It's not easy to convince management to spend time on it</span></li>
                 <li><span class="ic">😒</span><span>Even developers complain about automated upgrades</span></li>

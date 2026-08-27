@@ -8,7 +8,7 @@
     <section>
         <h2>Discover Stale Dependencies</h2>
         <div class="medium">
-            <p>Build-tool plugins can compare your locked versions against the latest available in the registry — without modifying anything.</p>
+            <p>Build-tool plugins can compare your locked versions against the latest available in the registry: without modifying anything.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Versions Plugin</span>
@@ -29,12 +29,12 @@
     <section>
         <h2>Catch Deprecated &amp; Renamed Packages</h2>
         <div class="medium">
-            <p>A dependency doesn't need a CVE to be a problem — sometimes it's just been renamed, moved to a new coordinate, or deprecated outright, and a version-only bot won't tell you.</p>
+            <p>A dependency doesn't need a CVE to be a problem: sometimes it's just been renamed, moved to a new coordinate, or deprecated outright, and a version-only bot won't tell you.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Old GroupIds Alerter (OGA)</span>
-            Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>) — the artifact still resolves under the old coordinate, so nothing else catches this.
-            <pre><code class="language-bash"># no pom.xml plugin config needed — invoked on-the-fly via Maven coordinates
+            Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>); the artifact still resolves under the old coordinate, so nothing else catches this.
+            <pre><code class="language-bash"># no pom.xml plugin config needed: invoked on-the-fly via Maven coordinates
 ./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only
 STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"                 # real default: build FAILS if any are found</code></pre>
         </div>
@@ -47,7 +47,7 @@ STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"                 # rea
     </section>
 
     <section>
-        <h2>🔍 Old GroupIds Alerter — Full Report</h2>
+        <h2>🔍 Old GroupIds Alerter: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" loading="lazy" title="Old GroupIds Alerter report"></iframe>
         </div>
@@ -59,9 +59,9 @@ STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"                 # rea
     <section>
         <h2>Automate Security Alerts</h2>
         <div class="medium">
-            <p>Don't wait for a scheduled scan — get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
+            <p>Don't wait for a scheduled scan: get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🚨</span><span><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</span></li>
+                <li><span class="ic">🚨</span><span><strong>GitHub Dependabot Security Alerts</strong>: free, notifies within minutes of NVD publication</span></li>
                 <li><span class="ic">🔧</span><span>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></span></li>
                 <li><span class="ic">🤝</span><span>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</span></li>
             </ul>
