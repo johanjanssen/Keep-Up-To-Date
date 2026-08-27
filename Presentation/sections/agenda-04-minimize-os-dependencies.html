@@ -18,15 +18,11 @@
             <span class="java-pill">☕ Java image hierarchy</span>
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Strategy</th><th>Base</th><th>CVEs (Grype)</th><th>Size</th></tr></thead>
-                <tbody>
-                    <tr><td>Full JRE</td><td>eclipse-temurin:25-jre</td><td class="tag-bad">96</td><td>477 MB</td></tr>
-                    <tr><td>jlink minimal</td><td>distroless/base-debian12</td><td class="tag-warn">15</td><td>33 MB</td></tr>
-                    <tr><td>GraalVM native</td><td>debian:12-slim</td><td class="tag-warn">79</td><td>116 MB</td></tr>
-                    <tr><td>GraalVM native minimal</td><td>distroless/static-debian12</td><td class="tag-good">0</td><td>6 MB</td></tr>
-                    <tr><td>GraalVM native scratch</td><td>scratch</td><td class="tag-good">0</td><td>0 MB</td></tr>
+                <tbody id="minimalImagesTableBody">
+                    <tr><td colspan="4" class="small">Loading live scan data…</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data: base images, not the app image.</p>
+            <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data from the hello-conference builds. (GraalVM native-image &amp; CRaC: covered in Chapter 07.)</p>
         </div>
         <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
     </section>

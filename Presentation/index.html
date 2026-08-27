@@ -536,6 +536,56 @@ function renderGroupCharts() {
         renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle));
         renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle));
     });
+    renderMinimalImagesTable();
+}
+
+// ─── "Reduce Attack Surface with Minimal Images" hierarchy table ───────────
+//
+// This table used to hardcode CVE/size numbers for a handful of hand-picked
+// hello-conference images. Those numbers drift every time the "Measure
+// Docker Images" / "Compare Security Scans" workflows re-run, so instead it
+// reads the same liveChartData.app rows the charts further down this chapter
+// already fetch (see loadLiveChartData above) — one shared fetch, no
+// hardcoded numbers here.
+//
+// GraalVM native-image and CRaC images are deliberately left out of this
+// list: they get their own comparison in Chapter 07 ("Native Images & CRaC"),
+// so this table only walks the non-native JRE → jlink progression.
+const MINIMAL_IMAGES_TABLE_ROWS = [
+    { image: 'hello-conference:jre-temurin',                      strategy: 'Full JRE',              base: 'eclipse-temurin:25-jre' },
+    { image: 'hello-conference:jre-temurin-alpine',                strategy: 'Full JRE (Alpine)',      base: 'eclipse-temurin:25-jre-alpine' },
+    { image: 'hello-conference:jlink-full-distroless-base-debian', strategy: 'jlink (full modules)',   base: 'distroless/base-debian13' },
+    { image: 'hello-conference:jlink-distroless-base-debian',      strategy: 'jlink (minimal modules)',base: 'distroless/base-debian13' },
+    { image: 'hello-conference:jlink-netty-distroless-base-debian',strategy: 'jlink + Netty',          base: 'distroless/base-debian13' },
+    { image: 'hello-conference:jlink-cds-distroless-base-debian',  strategy: 'jlink + CDS',            base: 'distroless/base-debian13' },
+];
+
+function cveTagClass(cves) {
+    if (cves === null || cves === undefined) return '';
+    if (cves === 0)  return 'tag-good';
+    if (cves < 80)   return 'tag-warn';
+    return 'tag-bad';
+}
+
+function renderMinimalImagesTable() {
+    const tbody = document.getElementById('minimalImagesTableBody');
+    if (!tbody) return; // not on this slide
+    if (!liveChartData && !liveChartFailed) return; // fetch still in flight, leave the "Loading…" row
+
+    const appByName = new Map((liveChartData && liveChartData.app || []).map(r => [r.name, r]));
+    if (!appByName.size) {
+        tbody.innerHTML = '<tr><td colspan="4" class="small">⚠ Live scan data isn’t available right now; see the latest workflow runs for current numbers.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = MINIMAL_IMAGES_TABLE_ROWS.map(row => {
+        const data = appByName.get(row.image);
+        const cves = data ? data.cves : null;
+        const size = data ? data.size_mb : null;
+        const cveText  = (cves === null || cves === undefined) ? '—' : cves;
+        const sizeText = (size === null || size === undefined) ? '—' : `${size} MB`;
+        return `<tr><td>${row.strategy}</td><td>${row.base}</td><td class="${cveTagClass(cves)}">${cveText}</td><td>${sizeText}</td></tr>`;
+    }).join('');
 }
 
 async function loadLiveChartData() {
