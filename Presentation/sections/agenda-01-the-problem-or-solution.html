@@ -173,7 +173,7 @@
     <section>
         <h2>🔍 Two Layers of Scanning</h2>
         <p class="subtitle">They find different things — you need both</p>
-        <div class="two-col medium" style="margin-top:0.8em;">
+        <div class="two-col small" style="margin-top:0.8em;">
             <div class="box box-blue">
                 <h3>Layer 1: Source / Build Time</h3>
                 <p><em>What you declared</em></p>
@@ -193,14 +193,34 @@
                 </ul>
             </div>
         </div>
-        <div class="box box-blue small" style="margin-top:0.6em;">
-            <span class="java-pill">☕ Java example</span>
-            Layer 1: OWASP Dependency Check scans <code>pom.xml</code>. Layer 2: Trivy / Grype scan the Docker image (OS pkgs + all JARs). A transitive JAR pulled in by a framework won't appear in Layer 1 if it's not declared.
+    </section>
+
+    <section>
+        <h2>🔍 Four Tools, Two Layers</h2>
+        <p class="subtitle">Where each of today's scanners actually looks</p>
+        <div class="two-col medium" style="margin-top:0.8em;">
+            <div class="box box-blue">
+                <h3>Layer 1: Source / Build</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong> — manifest only, NVD database</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — lockfiles &amp; SBOMs, OSV.dev database</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Layer 2: Runtime / Image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">🌐</span><span><strong>Grype</strong> — built image, Anchore's own feed</span></li>
+                    <li><span class="ic">🌐</span><span><strong>Trivy</strong> — built image, widest DB + secrets/misconfig</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — built image too, same OSV.dev database</span></li>
+                </ul>
+            </div>
         </div>
+        <p class="small" style="margin-top:0.6em;color:#657b83;">OSV-Scanner is the only one that shows up in both columns — one tool, one database, either layer.</p>
     </section>
 
     <section>
         <h2>Source-Level Scanning</h2>
+        <p class="subtitle">Layer 1 — before the artifact even exists</p>
         <div class="medium">
             <p>Scan dependency manifests against a vulnerability database as part of the build. Fail the build on high-severity findings.</p>
         </div>
@@ -225,10 +245,11 @@
 
     <section>
         <h2>Image / Artifact Scanning</h2>
+        <p class="subtitle">Layer 2 — after the build, on what actually ships</p>
         <div class="medium">
             <p>Scan the built artifact — container image, fat JAR, etc. — for vulnerabilities in the OS layer and bundled dependencies. These scanners are language-agnostic: they inspect the artifact itself, not a build file.</p>
         </div>
-        <div class="two-col medium" style="margin-top:0.5em;">
+        <div class="three-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <span class="java-pill">🌐 Grype (Anchore)</span>
                 <ul><li>Generic — any container image</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
@@ -239,13 +260,14 @@
             </div>
             <div class="box box-blue">
                 <span class="java-pill">🌐 OSV-Scanner (Google)</span>
-                <ul><li>Generic — images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>One tool, one database: OSV.dev</li><li>Also scans source manifests — see Layer 1</li></ul>
+                <ul><li>Generic — images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>Same OSV.dev database it uses at Layer 1</li></ul>
             </div>
         </div>
     </section>
 
     <section>
         <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
+        <p class="subtitle">Layers 1 &amp; 2 — one tool, one database, either side of the build</p>
         <div class="medium">
             <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path — one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
@@ -260,12 +282,13 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
 
     <section>
         <h2>Different Scanners, Different Results</h2>
-        <p class="subtitle">Different databases, different scan targets → different findings</p>
+        <p class="subtitle">Same layer, different database → different findings</p>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🌐</span><span><strong>Grype</strong> &amp; <strong>Trivy</strong> — separate feeds, scan the built image</span></li>
-                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — the OSV.dev database, scans lockfiles, SBOMs and images</span></li>
-                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong> — the NVD database, scans the manifest at build time</span></li>
+                <li><span class="ic">🌐</span><span><strong>Grype</strong> — Anchore's own feed</span></li>
+                <li><span class="ic">🌐</span><span><strong>Trivy</strong> — Aqua's feed, widest DB coverage</span></li>
+                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong> — the open OSV.dev database</span></li>
+                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong> — the NVD database</span></li>
             </ul>
             <p style="margin-top:0.6em;">No two tools agree on every finding. Run more than one for full coverage.</p>
         </div>

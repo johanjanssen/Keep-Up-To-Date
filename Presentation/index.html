@@ -93,6 +93,10 @@
         .puml-wrap { margin:0.6em auto 0; text-align:center; }
         .puml-wrap img { max-width:100%; max-height:56vh; width:auto; height:auto; }
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; text-align:left; }
+        /* Three-across variant for slides with exactly three tool/item boxes —
+           .two-col wraps a 3rd child onto its own half-width row, which looks
+           unbalanced; this keeps all three the same width in one row. */
+        .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:1em; text-align:left; }
         /* Agenda overview slide — number-bubble cards grouped into two
            color-coded tracks instead of a plain two-column numbered list. */
         .agenda-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.8em; text-align:left; margin-top:0.3em; }
