@@ -153,58 +153,12 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
     </section>
 
     <section>
-        <h2>🧪 JaCoCo — Demo Results</h2>
-        <p class="subtitle"><code>run-demo.sh</code>: build → start → exercise → dump → report → stop</p>
-        <div class="medium">
-            <p><code>exercise-endpoints.sh</code> deliberately calls every endpoint <strong>except</strong> <code>/admin/diagnostics</code> — simulating real traffic that never touches an unused code path.</p>
-        </div>
-        <pre><code class="language-text">── /hello ──────────────────────────────────────────────────
-  GET   /hello                       200
-  GET   /hello?name=Alice            200
-── /users ──────────────────────────────────────────────────
-  POST  /users  x3                   200 (Alice, Bob, Carol)
-  GET   /users                       200
-  GET   /users/1, /users/2           200
-  GET   /users/999                   404  ← orElse() branch covered
-── /admin/diagnostics — intentionally SKIPPED ───────────────
-   Will appear RED / 0% in the coverage report</code></pre>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <strong>Result:</strong> 3 of 10 methods across <code>HelloController</code> + <code>UserService</code> — <strong>30%</strong> — never execute under this traffic pattern.
-            Report opens at <code>target/coverage-report/index.html</code>.
-        </div>
-    </section>
-
-    <section>
         <h2>🔍 JaCoCo — Full Coverage Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" loading="lazy" title="JaCoCo coverage report"></iframe>
         </div>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Detect Dead Code in Production</h2>
-        <div class="medium">
-            <p>Code coverage in CI tells you what your tests exercise. Coverage from a <em>production agent</em> tells you what real users actually call — revealing removal candidates.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo production agent</span>
-            Attach the agent to the running JVM. After a representative period, generate a report.
-            <table style="margin-top:0.4em;">
-                <tbody>
-                <tr><td><code>hello()</code>, <code>users()</code>, <code>user()</code>, <code>create()</code></td><td class="tag-good">🟢 Called — keep</td></tr>
-                <tr><td><code>HelloController.diagnostics()</code></td><td class="tag-bad">🔴 Endpoint exists, never hit — remove candidate</td></tr>
-                <tr><td><code>UserService.delete()</code></td><td class="tag-bad">🔴 No endpoint wired at all — dead from day one</td></tr>
-                </tbody>
-            </table>
-            <pre><code class="language-bash">bash "JaCoCo/scripts/Retrieve Coverage From Port/run-demo.sh"</code></pre>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml" target="_blank">▶ Run Demo</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/jacoco.yml/badge.svg" alt="" style="vertical-align:middle;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/JaCoCo/" target="_blank">📊 View Live Report</a>
         </p>
     </section>
 

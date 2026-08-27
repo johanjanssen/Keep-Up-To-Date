@@ -355,14 +355,14 @@ let liveChartFailed = false;
 
 const GROUP_CHART_SPECS = [
     { key: 'generic', countEl: 'baseImageCount',
-      cveChartId: 'chartBaseImages', cveTitle: 'Base OS images — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images — size (MB) vs package count — live data' },
+      cveChartId: 'chartBaseImages', cveTitle: 'Base OS images: size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images: size (MB) vs package count, live data' },
     { key: 'java', countEl: 'javaImageCount',
-      cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs package count — live data' },
+      cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data' },
     { key: 'app', countEl: 'appImageCount',
-      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images — size (MB) vs package count — live data' },
+      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images: size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images: size (MB) vs package count, live data' },
 ];
 
 // sizeRows already carry "packages" straight from image-sizes.json — no
@@ -496,7 +496,7 @@ function showChartFallback(canvas) {
     const msg = document.createElement('p');
     msg.className = 'small';
     msg.style.color = '#dc322f';
-    msg.textContent = '⚠ Live chart data isn’t available right now — see the latest "Measure Docker Images" / "Compare Security Scans" workflow runs for current numbers.';
+    msg.textContent = '⚠ Live chart data isn’t available right now; see the latest "Measure Docker Images" / "Compare Security Scans" workflow runs for current numbers.';
     canvas.insertAdjacentElement('afterend', msg);
 }
 
