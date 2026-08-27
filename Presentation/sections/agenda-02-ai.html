@@ -35,6 +35,31 @@
     </section>
 
     <section>
+        <h2>🚧 When Blocked, It Detours Around the Problem</h2>
+        <p class="subtitle">The fastest fix isn't the same thing as the right fix</p>
+        <div class="medium">
+            <p>Stale training data isn't the only failure mode. Mid-task, hitting a wall, an agent optimizes for "the command now exits 0": not "this stays minimal and current". So it routes around friction instead of through it, and the detour usually adds size, packages, or old code.</p>
+        </div>
+        <table class="small" style="margin-top:0.6em;">
+            <thead><tr><th>Hits this friction</th><th>Its easy way out</th><th>What actually fixes it</th></tr></thead>
+            <tbody>
+                <tr><td>Package missing on a minimal/slim image</td><td>Swaps the whole base image for a bigger, less secure one</td><td>Find the right package name/repo for that distro, or add just the missing lib</td></tr>
+                <tr><td>Dependency version conflict</td><td>Pins the whole tree back to an old version that "just compiles"</td><td>Upgrade the actual conflicting sibling dependency</td></tr>
+                <tr><td>One missing binary</td><td><code>apt-get install build-essential</code>: a whole toolchain</td><td>Install only the specific package actually needed</td></tr>
+                <tr><td>A newer API mid-fix</td><td>Falls back to a deprecated call it's more confident about</td><td>Look the current API up instead of pattern-matching from memory</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>📦 Seen It Live: The Base-Image Swap</h2>
+        <div class="box box-red medium" style="margin-top:0.5em;">
+            <p><code>apt-get install</code> fails on a minimal image: wrong package name for that distro, or the repo just isn't there. Instead of finding the distro-correct package name (or adding the one missing <code>-dev</code> lib), it quietly rewrites the <code>FROM</code> line to a bigger, friendlier base image. The build goes green. Nobody notices the image just grew, gained a shell and a package manager, and picked up dozens of CVEs along the way.</p>
+        </div>
+        <p class="medium" style="margin-top:0.6em;">Exactly the trade-off Chapter 4 spent a dozen slides on: made silently, by a tool whose only goal was making the red text go away. <strong>Review the diff, not just whether it built.</strong></p>
+    </section>
+
+    <section>
         <h2>Something needs to be done</h2>
         <ul class="icon-list medium">
             <li><span class="ic">📈</span><span>Otherwise you end up with more and more old dependencies</span></li>
@@ -54,6 +79,9 @@
                 <li><span class="ic">add something cool</span><span>Fixing Git merge conflicts</span></li>
             </ul>
         </div>
+        <p class="medium" style="margin-top:0.6em;font-style:italic;color:#6c71c4;">
+            Same caveat as earlier this chapter, stale suggestions and silent scope creep both: verify, don't blindly merge.
+        </p>
     </section>
 
     <section>
