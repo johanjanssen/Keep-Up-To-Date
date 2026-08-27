@@ -16,8 +16,11 @@
 
     <section>
         <h2>Dependencies Example</h2>
-        <div class="puml-wrap">
-            <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span>
+            <div class="puml-wrap">
+                <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+            </div>
         </div>
     </section>
 
@@ -81,7 +84,16 @@
             </table>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
-            ⏰ The Cyber Resilience Act's "24h to notify, 72h detailed report" duty becomes mandatory in <strong>September 2026</strong>; the exact discipline this talk keeps coming back to is about to be law.
+            <strong>⏰ Who / what / when:</strong> from <strong>11 September 2026</strong>, if you sell a "product with digital elements" into the EU, an <strong>actively exploited vulnerability</strong> or a <strong>severe security incident</strong> starts a clock the moment you become aware of it; not routine, unexploited CVEs.
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Stage</th><th>Deadline</th><th>What you send</th></tr></thead>
+                <tbody>
+                    <tr><td>Early warning</td><td>24 hours</td><td>To ENISA / your national CSIRT: "we're aware of this"</td></tr>
+                    <tr><td>Notification</td><td>72 hours</td><td>Description, impact, any mitigation already available</td></tr>
+                    <tr><td>Final report</td><td>14 days / 1 month</td><td>Root cause and the fix (vulnerability / incident)</td></tr>
+                </tbody>
+            </table>
+            <p class="small" style="margin-top:0.4em;">Applies to products already on the market too, not just new releases; the exact discipline this talk keeps coming back to is about to be law.</p>
         </div>
     </section>
 
@@ -93,6 +105,16 @@
                 <tbody>
                     <tr><td>Privacy Act 1988</td><td>"Reasonable steps" to protect personal info</td><td>Greater of $50M AUD, 3× benefit gained, or a % of turnover</td></tr>
                     <tr><td>Cyber Security Act 2024</td><td>Mandatory ransomware-payment reporting within 72h</td><td>$99,000 AUD per missed report</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.6em;">
+            <strong>⚖️ What actually triggers a fine:</strong> under the Privacy Act, it's not the breach itself, it's a <strong>failure to take "reasonable steps"</strong> to secure personal data, or a late/non-compliant breach notification. Under the Cyber Security Act, it's failing to report a ransomware/extortion payment your business made within <strong>72 hours of paying it</strong> (turnover &gt; $3M AUD, or critical-infrastructure entities).
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Case</th><th>What happened</th></tr></thead>
+                <tbody>
+                    <tr><td>Australian Clinical Labs, 2025</td><td>First-ever penalty under the Act: <strong>$5.8M</strong>. The 2022 breach itself (223,000 people) wasn't the trigger; a ~3-week delay notifying the regulator was, despite knowing it could have notified within 2–3 days.</td></tr>
+                    <tr><td>Medibank, ongoing</td><td>9.7M people's health data exposed (2022). OAIC is suing for up to <strong>$2.22M per contravention</strong>; press has floated exposure running to trillions if that's read per affected person. Still before the Federal Court.</td></tr>
                 </tbody>
             </table>
         </div>
