@@ -56,19 +56,4 @@
             <p>Don't guess: measure. Track what your code actually calls in production before deleting it. Concrete solutions are covered later.</p>
         </div>
     </section>
-
-    <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Finding what's actually used in production: across ecosystems</p>
-        <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>What it does</th></tr></thead>
-            <tbody>
-                <tr><td>JaCoCo production agent</td><td>Java / JVM</td><td>Attach to a running JVM, dump live coverage on demand</td></tr>
-                <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial fleet-wide production usage tracking</td></tr>
-                <tr><td><code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
-                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call-graph visibility as a proxy for "is this hit"</td></tr>
-                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flag-wrapped code paths report their own usage over time</td></tr>
-            </tbody>
-        </table>
-    </section>
 </section>
