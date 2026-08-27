@@ -7,27 +7,29 @@
     </section>
     <section>
         <h2>How to find dead code?</h2>
-        <ul>
-            <li>IDE can help with simple cases</li>
-            <li>What if, for example, a REST endpoint is no longer used?</li>
-                <ul>
+        <ul class="icon-list medium">
+            <li><span class="ic">💡</span><span>IDE can help with simple cases</span></li>
+            <li><span class="ic">🤔</span><span>What if, for example, a REST endpoint is no longer used?
+                <ul style="margin-top:0.3em;">
                     <li>The REST endpoint can be removed</li>
                     <li>The code called by the REST endpoint can be removed</li>
                     <li>Maybe libraries can be removed</li>
                 </ul>
-            <li>But how do we know in a large application?</li>
+            </span></li>
+            <li><span class="ic">❓</span><span>But how do we know in a large application?</span></li>
         </ul>
     </section>
 
     <section>
         <h2>Advanced ways to find dead code</h2>
-        <ul>
-            <li>Commercial tools like Azul Code Inventory can measure code usage in production with real load</li>
-            <li>Using a Jacoco agent attached to your application</li>
-                <ul>
+        <ul class="icon-list medium">
+            <li><span class="ic">💼</span><span>Commercial tools like Azul Code Inventory can measure code usage in production with real load</span></li>
+            <li><span class="ic">☕</span><span>Using a Jacoco agent attached to your application
+                <ul style="margin-top:0.3em;">
                     <li>Recording on production has more performance overhead</li>
                     <li>Can be used with acceptance tests on a test environment</li>
                 </ul>
+            </span></li>
         </ul>
     </section>
 

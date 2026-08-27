@@ -34,6 +34,9 @@
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Old GroupIds Alerter (OGA)</span>
             Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>) — the artifact still resolves under the old coordinate, so nothing else catches this.
+            <pre><code class="language-bash"># no pom.xml plugin config needed — invoked on-the-fly via Maven coordinates
+./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only
+STRICT=true bash "Old GroupIds Alerter/scripts/run-oga.sh"                 # real default: build FAILS if any are found</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
             <span class="java-pill">🤖 Renovate <code>replacements</code> presets</span>
@@ -44,13 +47,23 @@
     </section>
 
     <section>
+        <h2>🔍 Old GroupIds Alerter — Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" loading="lazy" title="Old GroupIds Alerter report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/renamed/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
         <h2>Automate Security Alerts</h2>
         <div class="medium">
             <p>Don't wait for a scheduled scan — get notified <em>as soon as</em> a CVE that affects your dependencies is published.</p>
-            <ul style="margin-top:0.6em;">
-                <li><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</li>
-                <li>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></li>
-                <li>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</li>
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">🚨</span><span><strong>GitHub Dependabot Security Alerts</strong> — free, notifies within minutes of NVD publication</span></li>
+                <li><span class="ic">🔧</span><span>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></span></li>
+                <li><span class="ic">🤝</span><span>Combine with <strong>Renovate</strong> for scheduled updates + Dependabot for <em>immediate</em> security PRs</span></li>
             </ul>
         </div>
     </section>

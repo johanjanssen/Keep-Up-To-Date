@@ -12,7 +12,7 @@
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OpenRewrite</span>
-            Recipe-driven, AST-level refactoring. One command migrates the entire project.
+            Recipe-driven, AST-level refactoring. No <code>pom.xml</code> plugin config needed — the plugin and its recipes are supplied entirely on the Maven command line.
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Before</th><th>After</th></tr></thead>
                 <tbody>
@@ -21,12 +21,24 @@
                     <tr><td>String concatenation</td><td>Text blocks</td></tr>
                 </tbody>
             </table>
-            <pre><code class="language-bash">DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh  # preview
+            <pre><code class="language-bash"># the raw Maven invocation — plugin + recipes as -D properties, nothing baked into pom.xml
+./mvnw org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
+  -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:6.37.0,... \
+  -Drewrite.activeRecipes=org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,...
+
+# wrapped by the demo script (swap :run for :dryRun to preview only):
+DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh  # preview
 bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
         </div>
-        <p class="small">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml" target="_blank">▶ Run Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/openrewrite.yml/badge.svg" alt="" style="vertical-align:middle;">
+    </section>
+
+    <section>
+        <h2>🔍 OpenRewrite — Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/" loading="lazy" title="OpenRewrite report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/" target="_blank">↗ Open in new tab</a>
         </p>
     </section>
 

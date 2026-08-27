@@ -26,10 +26,10 @@
         <h2>🚨 The "It Works, Don't Touch It" Trap</h2>
         <div class="medium">
             <p style="font-style:italic;color:#6c71c4;">"Projects don't drift maliciously — just one sprint at a time."</p>
-            <ul style="margin-top:0.8em;">
-                <li>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</li>
-                <li>You consciously chose a small fraction of them</li>
-                <li>The rest came with the territory — and each carries potential CVEs</li>
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies — often hundreds</span></li>
+                <li><span class="ic">✅</span><span>You consciously chose a small fraction of them</span></li>
+                <li><span class="ic">🎲</span><span>The rest came with the territory — and each carries potential CVEs</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
@@ -44,10 +44,10 @@
     <section>
         <h2>The Compounding Cost of Delay</h2>
         <div class="medium">
-            <ul>
-                <li><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</li>
-                <li><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</li>
-                <li><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</li>
+            <ul class="icon-list">
+                <li><span class="ic">🔐</span><span><strong>Security:</strong> each skipped version = another version to jump over when a CVE forces your hand</span></li>
+                <li><span class="ic">⚡</span><span><strong>Performance:</strong> runtime improvements accumulate — you leave free speed on the table</span></li>
+                <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</span></li>
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
@@ -116,10 +116,11 @@
 
     <section>
         <h2>Concrete examples</h2>
-        <ul>
-            <li>Performance benefit</li>
-            <li>Vulnerable application</li>
-            <li>Known vulnerabilities</li>
+        <p class="subtitle">Three live demos, coming up</p>
+        <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
+            <li><span class="ic">🚀</span><span>Performance benefit</span></li>
+            <li><span class="ic">🦠</span><span>Vulnerable application</span></li>
+            <li><span class="ic">🔎</span><span>Known vulnerabilities</span></li>
         </ul>
     </section>
 
@@ -156,36 +157,39 @@
     <section>
         <h2>Image / Artifact Scanning</h2>
         <div class="medium">
-            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies.</p>
+            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in both the OS layer and bundled application dependencies. Several tools cover this ground, each with a different angle.</p>
         </div>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <span class="java-pill">☕ Grype (Anchore)</span>
                 <ul><li>OS packages + language deps</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
-                <pre><code class="language-bash">bash Grype/scripts/scan-image.sh \
-  eclipse-temurin:25-jre</code></pre>
             </div>
             <div class="box box-blue">
                 <span class="java-pill">☕ Trivy (Aqua)</span>
                 <ul><li>OS packages + language deps</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
-                <pre><code class="language-bash">bash Trivy/scripts/scan-image.sh \
-  eclipse-temurin:25-jre</code></pre>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">🔍 OSV-Scanner (Google)</span>
+                <ul><li>Images, lockfiles &amp; SBOMs — 20+ ecosystems</li><li>One tool, one database: OSV.dev</li><li>Also covers source manifests — see Layer 1</li></ul>
+            </div>
+            <div class="box box-blue">
+                <span class="java-pill">☕ OWASP Dependency Check</span>
+                <ul><li>Scans the declared manifest (e.g. <code>pom.xml</code>)</li><li>Checks against the NVD database</li><li>Build-time gate — misses OS-level packages</li></ul>
             </div>
         </div>
-        <p class="small">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Scans/" target="_blank">▶ Trivy vs Grype comparison</a>
-        </p>
     </section>
 
     <section>
-        <h2>Two Scanners, Different Results</h2>
-        <p class="subtitle">Different databases → different findings — use both for complete coverage</p>
-        <div class="chart-wrap"><canvas id="chartScanners" height="300"></canvas></div>
-        <p class="small" style="margin-top:0.4em;">Live data — <code>bash "Compare Security Scans/scripts/compare.sh"</code></p>
-        <p class="small" style="margin-top:0.2em;">
-            <a class="go-btn" href="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml" target="_blank">▶ Compare Workflow</a>
-            <img src="https://github.com/OWNER/REPO/actions/workflows/compare-scans.yml/badge.svg" alt="" style="vertical-align:middle;">
-        </p>
+        <h2>Different Scanners, Different Results</h2>
+        <p class="subtitle">Different databases, different scan targets → different findings</p>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">☕</span><span><strong>Grype</strong> &amp; <strong>Trivy</strong> — separate vulnerability feeds, scan OS packages + language deps in the built image</span></li>
+                <li><span class="ic">🔍</span><span><strong>OSV-Scanner</strong> — the open OSV.dev database, one CLI across lockfiles, SBOMs and images</span></li>
+                <li><span class="ic">📄</span><span><strong>OWASP Dependency Check</strong> — the NVD database, scans the declared manifest at build time</span></li>
+            </ul>
+            <p style="margin-top:0.6em;">No two tools agree on every finding — neither database is a superset of the others, and each looks at a different slice of the artifact. Running just one leaves gaps.</p>
+        </div>
     </section>
 
     <section>
@@ -229,22 +233,22 @@
         <h2>🔍 Two Layers of Scanning</h2>
         <p class="subtitle">They find different things — you need both</p>
         <div class="two-col medium" style="margin-top:0.8em;">
-            <div class="box">
+            <div class="box box-blue">
                 <h3>Layer 1: Source / Build Time</h3>
                 <p><em>What you declared</em></p>
-                <ul>
-                    <li>Scans your dependency manifest</li>
-                    <li>Fast, integrates with CI</li>
-                    <li>Misses OS-level and transitive-only packages</li>
+                <ul class="icon-list">
+                    <li><span class="ic">📄</span><span>Scans your dependency manifest</span></li>
+                    <li><span class="ic">⚡</span><span>Fast, integrates with CI</span></li>
+                    <li><span class="ic">⚠️</span><span>Misses OS-level and transitive-only packages</span></li>
                 </ul>
             </div>
-            <div class="box">
+            <div class="box box-green">
                 <h3>Layer 2: Runtime / Image</h3>
                 <p><em>What actually ships</em></p>
-                <ul>
-                    <li>Scans OS packages + language libs in the artifact</li>
-                    <li>Finds what build-time scanning misses</li>
-                    <li>Closer to what attackers see</li>
+                <ul class="icon-list">
+                    <li><span class="ic">🐳</span><span>Scans OS packages + language libs in the artifact</span></li>
+                    <li><span class="ic">🔎</span><span>Finds what build-time scanning misses</span></li>
+                    <li><span class="ic">🎯</span><span>Closer to what attackers see</span></li>
                 </ul>
             </div>
         </div>
@@ -268,7 +272,7 @@
         &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
     &lt;/configuration&gt;
 &lt;/plugin&gt;</code></pre>
-            <pre><code class="language-bash">bash "OWASP Dependency Check/scripts/run-check.sh"
+            <pre><code class="language-bash">./mvnw dependency-check:check
 # log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
 # jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
         </div>
@@ -281,7 +285,7 @@
     <section>
         <h2>One Scanner, Every Ecosystem: OSV-Scanner</h2>
         <div class="medium">
-            <p>Trivy and Grype are container-image-first. <strong>OSV-Scanner</strong> (Google / OSV.dev) starts from the other end — one CLI that reads lockfiles, SBOMs and images across 20+ ecosystems, all against the open OSV database.</p>
+            <p>Grype and Trivy scan built images; OWASP Dependency Check scans the manifest. <strong>OSV-Scanner</strong> (Google / OSV.dev) takes a third path — one CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🔍 osv-scanner</span>
@@ -293,47 +297,42 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>When Drift Becomes a Crisis</h2>
-        <div class="two-col medium">
-            <div class="box box-red">
-                <h3 style="color:#dc322f;">Log4Shell — Dec 2021</h3>
-                <ul>
-                    <li>CVSS <strong>10.0</strong> — maximum score</li>
-                    <li><strong>93%</strong> of cloud environments exposed</li>
-                    <li>Library vendor patched in <strong>2 hours</strong></li>
-                    <li>Most teams took <strong>weeks</strong> to deploy</li>
-                </ul>
-                <p class="small" style="margin-top:0.5em;color:#cb4b16;">Root cause: a logging library, unused by many teams, hadn't been reviewed in years</p>
-            </div>
-            <div class="box box-red">
-                <h3 style="color:#dc322f;">Spring4Shell — 2022</h3>
-                <ul>
-                    <li>CVE-2022-22965 in the framework itself</li>
-                    <li>Teams on old versions couldn't patch directly — had to upgrade the framework first</li>
-                </ul>
-                <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap made patching a multi-week project instead of a one-day fix</p>
-            </div>
+        <h2>🔥 When Drift Becomes a Crisis: Log4Shell</h2>
+        <p class="subtitle">Dec 2021 — a logging library nobody had looked at in years</p>
+        <div class="stat-row medium">
+            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score — the maximum possible</span></div>
+            <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
+            <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
+            <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
         </div>
+        <div class="box box-red medium" style="margin-top:0.5em;">
+            <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks — fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
+        </div>
+        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote — a library nobody had reviewed in years, several layers down in the dependency tree.</p>
     </section>
 
     <section>
-        <h2>Log4j Vulnerability (Log4Shell)</h2>
-        <ul>
-            <li>Cost billions of dollars in remediation, lost productivity, and subsequent cyberattacks</li>
-            <li>Fixing the issue consumed up to 12% of total annual budgets for IT, application development, and security departments</li>
-        </ul>
+        <h2>😱 It Wasn't a One-Off: Spring4Shell</h2>
+        <p class="subtitle">2022 — same pattern, a different framework</p>
+        <div class="box box-red medium">
+            <ul>
+                <li>CVE-2022-22965 — a critical RCE in the Spring framework itself, not a bundled library this time</li>
+                <li>Teams on old Spring versions couldn't patch directly — they had to upgrade the framework first</li>
+            </ul>
+            <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap turned a one-day fix into a multi-week project.</p>
+        </div>
     </section>
 
     <section>
         <h2>How's Your Situation?</h2>
         <div class="medium">
-            <ul style="margin-top:0.8em;">
-                <li>Do you know what operating system (version) you're using?</li>
-                <li>Do you know which operating system packages (versions) you're using?</li>
-                <li>Do you know which libraries (versions) you're packaging in your application?</li>
-                <li>How many known security vulnerabilities does your application have?</li>
-                <li>Do you remove dead code and unused operating system packages and libraries?</li>
-                <li>How often do you / your team upgrade the versions of the software you're using?</li>
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">❓</span><span>Do you know what operating system (version) you're using?</span></li>
+                <li><span class="ic">❓</span><span>Do you know which operating system packages (versions) you're using?</span></li>
+                <li><span class="ic">❓</span><span>Do you know which libraries (versions) you're packaging in your application?</span></li>
+                <li><span class="ic">❓</span><span>How many known security vulnerabilities does your application have?</span></li>
+                <li><span class="ic">❓</span><span>Do you remove dead code and unused operating system packages and libraries?</span></li>
+                <li><span class="ic">❓</span><span>How often do you / your team upgrade the versions of the software you're using?</span></li>
             </ul>
         </div>
     </section>
@@ -341,13 +340,13 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     <section>
         <h2>It's not only managements fault that you're on old software</h2>
         <div class="medium">
-            <ul style="margin-top:0.8em;">
-                <li>Who benefits most from new software?</li>
-                <li>Overestimating an upgrade results in delays or cancellations</li>
-                <li>Start with the upgrade in a lost hour to get better insights</li>
-                <li>Nowadays tools make the upgrade way easier</li>
-                <li>It's not easy to convince management to spend time on it</li>
-                <li>Even developers complain about automated upgrades</li>
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
+                <li><span class="ic">📉</span><span>Overestimating an upgrade results in delays or cancellations</span></li>
+                <li><span class="ic">⏱️</span><span>Start with the upgrade in a lost hour to get better insights</span></li>
+                <li><span class="ic">🛠️</span><span>Nowadays tools make the upgrade way easier</span></li>
+                <li><span class="ic">🗣️</span><span>It's not easy to convince management to spend time on it</span></li>
+                <li><span class="ic">😒</span><span>Even developers complain about automated upgrades</span></li>
             </ul>
         </div>
     </section>
