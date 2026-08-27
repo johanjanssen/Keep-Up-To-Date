@@ -20,6 +20,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
     <style>
         :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
+        /* Slide-in transitions animate `transform` on each <section> (and the
+           `.slides` wrapper carries `perspective`), which puts the entering
+           slide into its own GPU compositing layer for the duration of the
+           animation. WebKit/Blink render text in that state with plain
+           grayscale antialiasing instead of native subpixel antialiasing,
+           then switch back once the layer is torn down — that switch is the
+           "blurry, then sharpens" flash on every slide change/load. Pinning
+           font smoothing to one mode up front stops the mid-transition
+           antialiasing swap, so no visible re-sharpening happens after the
+           transition settles. */
+        .reveal { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .reveal h1,.reveal h2,.reveal h3 { text-transform:none; color:#6c71c4; }
         /* Theme sets .reveal h2{font-size:24pt!important}; override needs !important too */
         .reveal h2 { font-size:15pt!important; }
