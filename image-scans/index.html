@@ -80,14 +80,12 @@
 <body>
 <main>
   <h1>Container Image CVE Comparison — Trivy vs Grype vs OSV-Scanner</h1>
-  <p class="subtitle">Generated 2026-08-27 08:48 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; "Unk" = no severity rating available from that scanner (Total = Crit+High+Med+Low+Unk) &middot; "Unique in X" = found by X but by none of the other scanners &middot; see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a></p>
+  <p class="subtitle">Generated 2026-08-27 19:07 UTC &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and <strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; counts are unique CVEs (deduplicated by CVE ID) &middot; Total = Crit+High+Med+Low+Unk, but only Crit/High get their own column below &middot; "Unique in X" = found by X but by none of the other scanners &middot; see also <a href="../custom-image-scans/">hello-conference image CVE comparison</a></p>
   <p class="legend">
     <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
-    <span><span class="dot" style="background:var(--med)"></span>Medium</span>
-    <span><span class="dot" style="background:var(--low)"></span>Low</span>
-    <span><span class="dot" style="background:var(--unknown)"></span>Unknown</span>
   </p>
+  <p class="legend">Medium, Low, and Unknown severities are left out of the tables below to keep them readable — each Total still includes them.</p>
 
   <section>
     <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>
@@ -97,16 +95,16 @@
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="6" class="grype-hdr">Grype</th>
-            <th colspan="6" class="trivy-hdr">Trivy</th>
-            <th colspan="6" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="3" class="grype-hdr">Grype</th>
+            <th colspan="3" class="trivy-hdr">Trivy</th>
+            <th colspan="3" class="osv-hdr">OSV-Scanner</th>
             <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
             <th>Grype</th><th>Trivy</th><th>OSV</th>
           </tr>
         </thead>
@@ -114,102 +112,66 @@
           
         <tr>
           <td class="image-name">ubuntu:26.04</td>
-          <td class="num total grype">64</td>
+          <td class="num total grype">71</td>
           <td class="num muted">–</td>
           <td class="num high">4</td>
-          <td class="num med">52</td>
-          <td class="num low">8</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">48</td>
           <td class="num muted">–</td>
           <td class="num high">8</td>
-          <td class="num med">30</td>
-          <td class="num low">10</td>
-          <td class="num muted">–</td>
           <td class="num total osv">75</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">53</td>
-          <td class="num low">13</td>
-          <td class="num unk">9</td>
-          <td class="num total grype">1</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">debian:13</td>
-          <td class="num total grype">78</td>
+          <td class="num total grype">80</td>
           <td class="num crit">6</td>
           <td class="num high">22</td>
-          <td class="num med">21</td>
-          <td class="num low">3</td>
-          <td class="num unk">26</td>
-          <td class="num total trivy">84</td>
+          <td class="num total trivy">85</td>
           <td class="num crit">3</td>
           <td class="num high">11</td>
-          <td class="num med">30</td>
-          <td class="num low">36</td>
-          <td class="num unk">4</td>
           <td class="num total osv">82</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">82</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">4</td>
-          <td class="num total osv">2</td>
+          <td class="num total osv">1</td>
         </tr>
 
         <tr>
           <td class="image-name">debian:13-slim</td>
-          <td class="num total grype">78</td>
+          <td class="num total grype">80</td>
           <td class="num crit">6</td>
           <td class="num high">22</td>
-          <td class="num med">21</td>
-          <td class="num low">3</td>
-          <td class="num unk">26</td>
-          <td class="num total trivy">84</td>
+          <td class="num total trivy">85</td>
           <td class="num crit">3</td>
           <td class="num high">11</td>
-          <td class="num med">30</td>
-          <td class="num low">36</td>
-          <td class="num unk">4</td>
           <td class="num total osv">82</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">82</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">4</td>
-          <td class="num total osv">2</td>
+          <td class="num total osv">1</td>
         </tr>
 
         <tr>
           <td class="image-name">gcr.io/distroless/base-debian13</td>
-          <td class="num total grype">25</td>
+          <td class="num total grype">16</td>
           <td class="num crit">1</td>
-          <td class="num high">9</td>
-          <td class="num med">4</td>
-          <td class="num low">1</td>
-          <td class="num unk">10</td>
-          <td class="num total trivy">26</td>
+          <td class="num high">2</td>
+          <td class="num total trivy">17</td>
           <td class="num muted">–</td>
-          <td class="num high">1</td>
-          <td class="num med">12</td>
-          <td class="num low">13</td>
           <td class="num muted">–</td>
-          <td class="num total osv">27</td>
+          <td class="num total osv">17</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num unk">27</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num total osv">1</td>
         </tr>
 
         <tr>
@@ -217,19 +179,10 @@
           <td class="num total grype">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -239,50 +192,32 @@
 
         <tr>
           <td class="image-name">almalinux:10</td>
-          <td class="num total grype">285</td>
+          <td class="num total grype">286</td>
           <td class="num muted">–</td>
-          <td class="num high">27</td>
-          <td class="num med">148</td>
-          <td class="num low">110</td>
-          <td class="num muted">–</td>
+          <td class="num high">26</td>
           <td class="num total trivy">59</td>
           <td class="num muted">–</td>
           <td class="num high">33</td>
-          <td class="num med">23</td>
-          <td class="num low">3</td>
-          <td class="num muted">–</td>
           <td class="num total osv">37</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">4</td>
-          <td class="num low">1</td>
-          <td class="num unk">32</td>
-          <td class="num total grype">225</td>
+          <td class="num total grype">226</td>
           <td class="num muted">–</td>
           <td class="num total osv">31</td>
         </tr>
 
         <tr>
           <td class="image-name">almalinux/10-base</td>
-          <td class="num total grype">282</td>
+          <td class="num total grype">283</td>
           <td class="num muted">–</td>
-          <td class="num high">27</td>
-          <td class="num med">150</td>
-          <td class="num low">105</td>
-          <td class="num muted">–</td>
+          <td class="num high">26</td>
           <td class="num total trivy">59</td>
           <td class="num muted">–</td>
           <td class="num high">33</td>
-          <td class="num med">23</td>
-          <td class="num low">3</td>
-          <td class="num muted">–</td>
           <td class="num total osv">37</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">4</td>
-          <td class="num low">1</td>
-          <td class="num unk">32</td>
-          <td class="num total grype">222</td>
+          <td class="num total grype">223</td>
           <td class="num muted">–</td>
           <td class="num total osv">31</td>
         </tr>
@@ -292,21 +227,12 @@
           <td class="num total grype">156</td>
           <td class="num muted">–</td>
           <td class="num high">14</td>
-          <td class="num med">85</td>
-          <td class="num low">57</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">45</td>
           <td class="num muted">–</td>
           <td class="num high">21</td>
-          <td class="num med">21</td>
-          <td class="num low">3</td>
-          <td class="num muted">–</td>
           <td class="num total osv">19</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">19</td>
           <td class="num total grype">111</td>
           <td class="num muted">–</td>
           <td class="num total osv">19</td>
@@ -317,21 +243,12 @@
           <td class="num total grype">16</td>
           <td class="num muted">–</td>
           <td class="num high">1</td>
-          <td class="num med">14</td>
-          <td class="num low">1</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">9</td>
           <td class="num muted">–</td>
           <td class="num high">2</td>
-          <td class="num med">7</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">6</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">6</td>
           <td class="num total grype">7</td>
           <td class="num muted">–</td>
           <td class="num total osv">6</td>
@@ -339,27 +256,18 @@
 
         <tr>
           <td class="image-name">registry.access.redhat.com/ubi9-micro:latest</td>
-          <td class="num total grype">10</td>
+          <td class="num total grype">9</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">6</td>
-          <td class="num low">4</td>
+          <td class="num total trivy">6</td>
           <td class="num muted">–</td>
-          <td class="num total trivy">7</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num med">3</td>
-          <td class="num low">4</td>
           <td class="num muted">–</td>
           <td class="num total osv">23</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">23</td>
           <td class="num total grype">1</td>
           <td class="num muted">–</td>
-          <td class="num total osv">12</td>
+          <td class="num total osv">13</td>
         </tr>
 
         <tr>
@@ -367,21 +275,12 @@
           <td class="num total grype">11</td>
           <td class="num muted">–</td>
           <td class="num high">7</td>
-          <td class="num med">2</td>
-          <td class="num muted">–</td>
-          <td class="num unk">2</td>
           <td class="num total trivy">10</td>
           <td class="num muted">–</td>
           <td class="num high">1</td>
-          <td class="num med">3</td>
-          <td class="num low">6</td>
-          <td class="num muted">–</td>
           <td class="num total osv">10</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">10</td>
           <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -392,19 +291,10 @@
           <td class="num total grype">3</td>
           <td class="num muted">–</td>
           <td class="num high">3</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">3</td>
@@ -420,16 +310,16 @@
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="6" class="grype-hdr">Grype</th>
-            <th colspan="6" class="trivy-hdr">Trivy</th>
-            <th colspan="6" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="3" class="grype-hdr">Grype</th>
+            <th colspan="3" class="trivy-hdr">Trivy</th>
+            <th colspan="3" class="osv-hdr">OSV-Scanner</th>
             <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
             <th>Grype</th><th>Trivy</th><th>OSV</th>
           </tr>
         </thead>
@@ -437,175 +327,112 @@
           
         <tr>
           <td class="image-name">eclipse-temurin:25-jdk</td>
-          <td class="num total grype">110</td>
+          <td class="num total grype">117</td>
           <td class="num muted">–</td>
           <td class="num high">4</td>
-          <td class="num med">89</td>
-          <td class="num low">17</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">51</td>
           <td class="num muted">–</td>
           <td class="num high">8</td>
-          <td class="num med">32</td>
-          <td class="num low">11</td>
-          <td class="num muted">–</td>
           <td class="num total osv">121</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">90</td>
-          <td class="num low">22</td>
-          <td class="num unk">9</td>
-          <td class="num total grype">1</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">eclipse-temurin:25-jdk-alpine</td>
-          <td class="num total grype">25</td>
+          <td class="num total grype">27</td>
           <td class="num muted">–</td>
           <td class="num high">12</td>
-          <td class="num med">11</td>
-          <td class="num muted">–</td>
-          <td class="num unk">2</td>
           <td class="num total trivy">10</td>
           <td class="num muted">–</td>
           <td class="num high">1</td>
-          <td class="num med">3</td>
-          <td class="num low">6</td>
-          <td class="num muted">–</td>
           <td class="num total osv">10</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">10</td>
-          <td class="num total grype">15</td>
+          <td class="num total grype">17</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">eclipse-temurin:25-jre</td>
-          <td class="num total grype">91</td>
+          <td class="num total grype">98</td>
           <td class="num muted">–</td>
           <td class="num high">4</td>
-          <td class="num med">79</td>
-          <td class="num low">8</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">50</td>
           <td class="num muted">–</td>
           <td class="num high">8</td>
-          <td class="num med">32</td>
-          <td class="num low">10</td>
-          <td class="num muted">–</td>
           <td class="num total osv">102</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">80</td>
-          <td class="num low">13</td>
-          <td class="num unk">9</td>
-          <td class="num total grype">1</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">eclipse-temurin:25-jre-alpine</td>
-          <td class="num total grype">12</td>
+          <td class="num total grype">14</td>
           <td class="num muted">–</td>
           <td class="num high">7</td>
-          <td class="num med">3</td>
-          <td class="num muted">–</td>
-          <td class="num unk">2</td>
           <td class="num total trivy">10</td>
           <td class="num muted">–</td>
           <td class="num high">1</td>
-          <td class="num med">3</td>
-          <td class="num low">6</td>
-          <td class="num muted">–</td>
           <td class="num total osv">10</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">10</td>
-          <td class="num total grype">2</td>
+          <td class="num total grype">4</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk:25-jre</td>
-          <td class="num total grype">77</td>
+          <td class="num total grype">70</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">57</td>
-          <td class="num low">16</td>
-          <td class="num unk">4</td>
           <td class="num total trivy">14</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num med">6</td>
-          <td class="num low">8</td>
           <td class="num muted">–</td>
           <td class="num total osv">71</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">52</td>
-          <td class="num low">19</td>
           <td class="num muted">–</td>
-          <td class="num total grype">7</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk:25-jre-headless</td>
-          <td class="num total grype">76</td>
+          <td class="num total grype">69</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">57</td>
-          <td class="num low">15</td>
-          <td class="num unk">4</td>
           <td class="num total trivy">14</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num med">6</td>
-          <td class="num low">8</td>
           <td class="num muted">–</td>
           <td class="num total osv">70</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">52</td>
-          <td class="num low">18</td>
           <td class="num muted">–</td>
-          <td class="num total grype">7</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk:25-jre-crac</td>
-          <td class="num total grype">50</td>
+          <td class="num total grype">43</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">31</td>
-          <td class="num low">15</td>
-          <td class="num unk">4</td>
           <td class="num total trivy">13</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num med">5</td>
-          <td class="num low">8</td>
           <td class="num muted">–</td>
           <td class="num total osv">44</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">26</td>
-          <td class="num low">18</td>
           <td class="num muted">–</td>
-          <td class="num total grype">7</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
@@ -615,19 +442,10 @@
           <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">1</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">1</td>
@@ -640,19 +458,10 @@
           <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">1</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">1</td>
@@ -662,27 +471,18 @@
 
         <tr>
           <td class="image-name">gcr.io/distroless/java25-debian13</td>
-          <td class="num total grype">25</td>
+          <td class="num total grype">27</td>
           <td class="num crit">1</td>
           <td class="num high">3</td>
-          <td class="num med">8</td>
-          <td class="num low">1</td>
-          <td class="num unk">12</td>
           <td class="num total trivy">27</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">12</td>
-          <td class="num low">11</td>
-          <td class="num unk">4</td>
           <td class="num total osv">27</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
+          <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num unk">27</td>
-          <td class="num muted">–</td>
-          <td class="num total trivy">1</td>
-          <td class="num total osv">1</td>
         </tr>
 
         <tr>
@@ -690,19 +490,10 @@
           <td class="num total grype">17</td>
           <td class="num muted">–</td>
           <td class="num high">8</td>
-          <td class="num med">7</td>
-          <td class="num low">2</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">17</td>
@@ -715,21 +506,12 @@
           <td class="num total grype">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total osv">21</td>
           <td class="num muted">–</td>
           <td class="num high">3</td>
-          <td class="num med">6</td>
-          <td class="num low">1</td>
-          <td class="num unk">11</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total osv">11</td>
@@ -740,21 +522,12 @@
           <td class="num total grype">11</td>
           <td class="num muted">–</td>
           <td class="num high">7</td>
-          <td class="num med">2</td>
-          <td class="num muted">–</td>
-          <td class="num unk">2</td>
           <td class="num total trivy">10</td>
           <td class="num muted">–</td>
           <td class="num high">1</td>
-          <td class="num med">3</td>
-          <td class="num low">6</td>
-          <td class="num muted">–</td>
           <td class="num total osv">10</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num unk">10</td>
           <td class="num total grype">1</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -762,52 +535,34 @@
 
         <tr>
           <td class="image-name">ibm-semeru-runtimes:open-25-jre</td>
-          <td class="num total grype">97</td>
+          <td class="num total grype">104</td>
           <td class="num muted">–</td>
           <td class="num high">4</td>
-          <td class="num med">84</td>
-          <td class="num low">9</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">51</td>
           <td class="num muted">–</td>
           <td class="num high">8</td>
-          <td class="num med">33</td>
-          <td class="num low">10</td>
-          <td class="num muted">–</td>
           <td class="num total osv">109</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num med">85</td>
-          <td class="num low">14</td>
-          <td class="num unk">10</td>
-          <td class="num total grype">1</td>
+          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total osv">1</td>
         </tr>
 
         <tr>
           <td class="image-name">registry.access.redhat.com/ubi9/openjdk-25-runtime:latest</td>
-          <td class="num total grype">183</td>
+          <td class="num total grype">182</td>
           <td class="num muted">–</td>
-          <td class="num high">7</td>
-          <td class="num med">113</td>
-          <td class="num low">63</td>
-          <td class="num muted">–</td>
+          <td class="num high">5</td>
           <td class="num total trivy">159</td>
           <td class="num muted">–</td>
           <td class="num high">5</td>
-          <td class="num med">96</td>
-          <td class="num low">58</td>
-          <td class="num muted">–</td>
-          <td class="num total osv">176</td>
+          <td class="num total osv">177</td>
           <td class="num muted">–</td>
           <td class="num high">3</td>
-          <td class="num med">6</td>
-          <td class="num low">1</td>
-          <td class="num unk">166</td>
           <td class="num total grype">25</td>
           <td class="num total trivy">8</td>
-          <td class="num total osv">87</td>
+          <td class="num total osv">88</td>
         </tr>
 
         <tr>
@@ -815,19 +570,10 @@
           <td class="num total grype">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -840,19 +586,10 @@
           <td class="num total grype">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
@@ -865,19 +602,10 @@
           <td class="num total grype">3</td>
           <td class="num muted">–</td>
           <td class="num high">3</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">3</td>
@@ -890,19 +618,10 @@
           <td class="num total grype">10</td>
           <td class="num crit">1</td>
           <td class="num high">5</td>
-          <td class="num med">4</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total trivy">0</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num total osv">0</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
-          <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num muted">–</td>
           <td class="num total grype">10</td>
@@ -928,33 +647,33 @@
         <div class="barchart-row">
           <div class="barchart-label" title="ubuntu:26.04">ubuntu:26.04</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 64"><div class="bar-outer"><div class="bar grype" style="width:22.5%"></div></div><span class="bar-val">64</span></div>
+            <div class="bar-track" title="Grype: 71"><div class="bar-outer"><div class="bar grype" style="width:24.8%"></div></div><span class="bar-val">71</span></div>
             <div class="bar-track" title="Trivy: 48"><div class="bar-outer"><div class="bar trivy" style="width:16.8%"></div></div><span class="bar-val">48</span></div>
-            <div class="bar-track" title="OSV-Scanner: 75"><div class="bar-outer"><div class="bar osv" style="width:26.3%"></div></div><span class="bar-val">75</span></div>
+            <div class="bar-track" title="OSV-Scanner: 75"><div class="bar-outer"><div class="bar osv" style="width:26.2%"></div></div><span class="bar-val">75</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="debian:13">debian:13</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 78"><div class="bar-outer"><div class="bar grype" style="width:27.4%"></div></div><span class="bar-val">78</span></div>
-            <div class="bar-track" title="Trivy: 84"><div class="bar-outer"><div class="bar trivy" style="width:29.5%"></div></div><span class="bar-val">84</span></div>
-            <div class="bar-track" title="OSV-Scanner: 82"><div class="bar-outer"><div class="bar osv" style="width:28.8%"></div></div><span class="bar-val">82</span></div>
+            <div class="bar-track" title="Grype: 80"><div class="bar-outer"><div class="bar grype" style="width:28.0%"></div></div><span class="bar-val">80</span></div>
+            <div class="bar-track" title="Trivy: 85"><div class="bar-outer"><div class="bar trivy" style="width:29.7%"></div></div><span class="bar-val">85</span></div>
+            <div class="bar-track" title="OSV-Scanner: 82"><div class="bar-outer"><div class="bar osv" style="width:28.7%"></div></div><span class="bar-val">82</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="debian:13-slim">debian:13-slim</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 78"><div class="bar-outer"><div class="bar grype" style="width:27.4%"></div></div><span class="bar-val">78</span></div>
-            <div class="bar-track" title="Trivy: 84"><div class="bar-outer"><div class="bar trivy" style="width:29.5%"></div></div><span class="bar-val">84</span></div>
-            <div class="bar-track" title="OSV-Scanner: 82"><div class="bar-outer"><div class="bar osv" style="width:28.8%"></div></div><span class="bar-val">82</span></div>
+            <div class="bar-track" title="Grype: 80"><div class="bar-outer"><div class="bar grype" style="width:28.0%"></div></div><span class="bar-val">80</span></div>
+            <div class="bar-track" title="Trivy: 85"><div class="bar-outer"><div class="bar trivy" style="width:29.7%"></div></div><span class="bar-val">85</span></div>
+            <div class="bar-track" title="OSV-Scanner: 82"><div class="bar-outer"><div class="bar osv" style="width:28.7%"></div></div><span class="bar-val">82</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="gcr.io/distroless/base-debian13">gcr.io/distroless/base-debian13</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 25"><div class="bar-outer"><div class="bar grype" style="width:8.8%"></div></div><span class="bar-val">25</span></div>
-            <div class="bar-track" title="Trivy: 26"><div class="bar-outer"><div class="bar trivy" style="width:9.1%"></div></div><span class="bar-val">26</span></div>
-            <div class="bar-track" title="OSV-Scanner: 27"><div class="bar-outer"><div class="bar osv" style="width:9.5%"></div></div><span class="bar-val">27</span></div>
+            <div class="bar-track" title="Grype: 16"><div class="bar-outer"><div class="bar grype" style="width:5.6%"></div></div><span class="bar-val">16</span></div>
+            <div class="bar-track" title="Trivy: 17"><div class="bar-outer"><div class="bar trivy" style="width:5.9%"></div></div><span class="bar-val">17</span></div>
+            <div class="bar-track" title="OSV-Scanner: 17"><div class="bar-outer"><div class="bar osv" style="width:5.9%"></div></div><span class="bar-val">17</span></div>
           </div>
         </div>
         <div class="barchart-row">
@@ -968,47 +687,47 @@
         <div class="barchart-row">
           <div class="barchart-label" title="almalinux:10">almalinux:10</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 285"><div class="bar-outer"><div class="bar grype" style="width:100.0%"></div></div><span class="bar-val">285</span></div>
-            <div class="bar-track" title="Trivy: 59"><div class="bar-outer"><div class="bar trivy" style="width:20.7%"></div></div><span class="bar-val">59</span></div>
-            <div class="bar-track" title="OSV-Scanner: 37"><div class="bar-outer"><div class="bar osv" style="width:13.0%"></div></div><span class="bar-val">37</span></div>
+            <div class="bar-track" title="Grype: 286"><div class="bar-outer"><div class="bar grype" style="width:100.0%"></div></div><span class="bar-val">286</span></div>
+            <div class="bar-track" title="Trivy: 59"><div class="bar-outer"><div class="bar trivy" style="width:20.6%"></div></div><span class="bar-val">59</span></div>
+            <div class="bar-track" title="OSV-Scanner: 37"><div class="bar-outer"><div class="bar osv" style="width:12.9%"></div></div><span class="bar-val">37</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="almalinux/10-base">almalinux/10-base</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 282"><div class="bar-outer"><div class="bar grype" style="width:98.9%"></div></div><span class="bar-val">282</span></div>
-            <div class="bar-track" title="Trivy: 59"><div class="bar-outer"><div class="bar trivy" style="width:20.7%"></div></div><span class="bar-val">59</span></div>
-            <div class="bar-track" title="OSV-Scanner: 37"><div class="bar-outer"><div class="bar osv" style="width:13.0%"></div></div><span class="bar-val">37</span></div>
+            <div class="bar-track" title="Grype: 283"><div class="bar-outer"><div class="bar grype" style="width:99.0%"></div></div><span class="bar-val">283</span></div>
+            <div class="bar-track" title="Trivy: 59"><div class="bar-outer"><div class="bar trivy" style="width:20.6%"></div></div><span class="bar-val">59</span></div>
+            <div class="bar-track" title="OSV-Scanner: 37"><div class="bar-outer"><div class="bar osv" style="width:12.9%"></div></div><span class="bar-val">37</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="almalinux:10-minimal">almalinux:10-minimal</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 156"><div class="bar-outer"><div class="bar grype" style="width:54.7%"></div></div><span class="bar-val">156</span></div>
-            <div class="bar-track" title="Trivy: 45"><div class="bar-outer"><div class="bar trivy" style="width:15.8%"></div></div><span class="bar-val">45</span></div>
-            <div class="bar-track" title="OSV-Scanner: 19"><div class="bar-outer"><div class="bar osv" style="width:6.7%"></div></div><span class="bar-val">19</span></div>
+            <div class="bar-track" title="Grype: 156"><div class="bar-outer"><div class="bar grype" style="width:54.5%"></div></div><span class="bar-val">156</span></div>
+            <div class="bar-track" title="Trivy: 45"><div class="bar-outer"><div class="bar trivy" style="width:15.7%"></div></div><span class="bar-val">45</span></div>
+            <div class="bar-track" title="OSV-Scanner: 19"><div class="bar-outer"><div class="bar osv" style="width:6.6%"></div></div><span class="bar-val">19</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="almalinux/10-micro">almalinux/10-micro</div>
           <div class="barchart-bars">
             <div class="bar-track" title="Grype: 16"><div class="bar-outer"><div class="bar grype" style="width:5.6%"></div></div><span class="bar-val">16</span></div>
-            <div class="bar-track" title="Trivy: 9"><div class="bar-outer"><div class="bar trivy" style="width:3.2%"></div></div><span class="bar-val">9</span></div>
+            <div class="bar-track" title="Trivy: 9"><div class="bar-outer"><div class="bar trivy" style="width:3.1%"></div></div><span class="bar-val">9</span></div>
             <div class="bar-track" title="OSV-Scanner: 6"><div class="bar-outer"><div class="bar osv" style="width:2.1%"></div></div><span class="bar-val">6</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="registry.access.redhat.com/ubi9-micro:latest">registry.access.redhat.com/ubi9-micro:latest</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 10"><div class="bar-outer"><div class="bar grype" style="width:3.5%"></div></div><span class="bar-val">10</span></div>
-            <div class="bar-track" title="Trivy: 7"><div class="bar-outer"><div class="bar trivy" style="width:2.5%"></div></div><span class="bar-val">7</span></div>
-            <div class="bar-track" title="OSV-Scanner: 23"><div class="bar-outer"><div class="bar osv" style="width:8.1%"></div></div><span class="bar-val">23</span></div>
+            <div class="bar-track" title="Grype: 9"><div class="bar-outer"><div class="bar grype" style="width:3.1%"></div></div><span class="bar-val">9</span></div>
+            <div class="bar-track" title="Trivy: 6"><div class="bar-outer"><div class="bar trivy" style="width:2.1%"></div></div><span class="bar-val">6</span></div>
+            <div class="bar-track" title="OSV-Scanner: 23"><div class="bar-outer"><div class="bar osv" style="width:8.0%"></div></div><span class="bar-val">23</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="alpine:3">alpine:3</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 11"><div class="bar-outer"><div class="bar grype" style="width:3.9%"></div></div><span class="bar-val">11</span></div>
+            <div class="bar-track" title="Grype: 11"><div class="bar-outer"><div class="bar grype" style="width:3.8%"></div></div><span class="bar-val">11</span></div>
             <div class="bar-track" title="Trivy: 10"><div class="bar-outer"><div class="bar trivy" style="width:3.5%"></div></div><span class="bar-val">10</span></div>
             <div class="bar-track" title="OSV-Scanner: 10"><div class="bar-outer"><div class="bar osv" style="width:3.5%"></div></div><span class="bar-val">10</span></div>
           </div>
@@ -1016,7 +735,7 @@
         <div class="barchart-row">
           <div class="barchart-label" title="busybox:latest">busybox:latest</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 3"><div class="bar-outer"><div class="bar grype" style="width:1.1%"></div></div><span class="bar-val">3</span></div>
+            <div class="bar-track" title="Grype: 3"><div class="bar-outer"><div class="bar grype" style="width:1.0%"></div></div><span class="bar-val">3</span></div>
             <div class="bar-track" title="Trivy: 0"><div class="bar-outer"><div class="bar trivy" style="width:0.0%"></div></div><span class="bar-val">0</span></div>
             <div class="bar-track" title="OSV-Scanner: 0"><div class="bar-outer"><div class="bar osv" style="width:0.0%"></div></div><span class="bar-val">0</span></div>
           </div>
@@ -1035,15 +754,15 @@
         <div class="barchart-row">
           <div class="barchart-label" title="eclipse-temurin:25-jdk">eclipse-temurin:25-jdk</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 110"><div class="bar-outer"><div class="bar grype" style="width:60.1%"></div></div><span class="bar-val">110</span></div>
-            <div class="bar-track" title="Trivy: 51"><div class="bar-outer"><div class="bar trivy" style="width:27.9%"></div></div><span class="bar-val">51</span></div>
-            <div class="bar-track" title="OSV-Scanner: 121"><div class="bar-outer"><div class="bar osv" style="width:66.1%"></div></div><span class="bar-val">121</span></div>
+            <div class="bar-track" title="Grype: 117"><div class="bar-outer"><div class="bar grype" style="width:64.3%"></div></div><span class="bar-val">117</span></div>
+            <div class="bar-track" title="Trivy: 51"><div class="bar-outer"><div class="bar trivy" style="width:28.0%"></div></div><span class="bar-val">51</span></div>
+            <div class="bar-track" title="OSV-Scanner: 121"><div class="bar-outer"><div class="bar osv" style="width:66.5%"></div></div><span class="bar-val">121</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="eclipse-temurin:25-jdk-alpine">eclipse-temurin:25-jdk-alpine</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 25"><div class="bar-outer"><div class="bar grype" style="width:13.7%"></div></div><span class="bar-val">25</span></div>
+            <div class="bar-track" title="Grype: 27"><div class="bar-outer"><div class="bar grype" style="width:14.8%"></div></div><span class="bar-val">27</span></div>
             <div class="bar-track" title="Trivy: 10"><div class="bar-outer"><div class="bar trivy" style="width:5.5%"></div></div><span class="bar-val">10</span></div>
             <div class="bar-track" title="OSV-Scanner: 10"><div class="bar-outer"><div class="bar osv" style="width:5.5%"></div></div><span class="bar-val">10</span></div>
           </div>
@@ -1051,15 +770,15 @@
         <div class="barchart-row">
           <div class="barchart-label" title="eclipse-temurin:25-jre">eclipse-temurin:25-jre</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 91"><div class="bar-outer"><div class="bar grype" style="width:49.7%"></div></div><span class="bar-val">91</span></div>
-            <div class="bar-track" title="Trivy: 50"><div class="bar-outer"><div class="bar trivy" style="width:27.3%"></div></div><span class="bar-val">50</span></div>
-            <div class="bar-track" title="OSV-Scanner: 102"><div class="bar-outer"><div class="bar osv" style="width:55.7%"></div></div><span class="bar-val">102</span></div>
+            <div class="bar-track" title="Grype: 98"><div class="bar-outer"><div class="bar grype" style="width:53.8%"></div></div><span class="bar-val">98</span></div>
+            <div class="bar-track" title="Trivy: 50"><div class="bar-outer"><div class="bar trivy" style="width:27.5%"></div></div><span class="bar-val">50</span></div>
+            <div class="bar-track" title="OSV-Scanner: 102"><div class="bar-outer"><div class="bar osv" style="width:56.0%"></div></div><span class="bar-val">102</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="eclipse-temurin:25-jre-alpine">eclipse-temurin:25-jre-alpine</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 12"><div class="bar-outer"><div class="bar grype" style="width:6.6%"></div></div><span class="bar-val">12</span></div>
+            <div class="bar-track" title="Grype: 14"><div class="bar-outer"><div class="bar grype" style="width:7.7%"></div></div><span class="bar-val">14</span></div>
             <div class="bar-track" title="Trivy: 10"><div class="bar-outer"><div class="bar trivy" style="width:5.5%"></div></div><span class="bar-val">10</span></div>
             <div class="bar-track" title="OSV-Scanner: 10"><div class="bar-outer"><div class="bar osv" style="width:5.5%"></div></div><span class="bar-val">10</span></div>
           </div>
@@ -1067,25 +786,25 @@
         <div class="barchart-row">
           <div class="barchart-label" title="azul/zulu-openjdk:25-jre">azul/zulu-openjdk:25-jre</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 77"><div class="bar-outer"><div class="bar grype" style="width:42.1%"></div></div><span class="bar-val">77</span></div>
+            <div class="bar-track" title="Grype: 70"><div class="bar-outer"><div class="bar grype" style="width:38.5%"></div></div><span class="bar-val">70</span></div>
             <div class="bar-track" title="Trivy: 14"><div class="bar-outer"><div class="bar trivy" style="width:7.7%"></div></div><span class="bar-val">14</span></div>
-            <div class="bar-track" title="OSV-Scanner: 71"><div class="bar-outer"><div class="bar osv" style="width:38.8%"></div></div><span class="bar-val">71</span></div>
+            <div class="bar-track" title="OSV-Scanner: 71"><div class="bar-outer"><div class="bar osv" style="width:39.0%"></div></div><span class="bar-val">71</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="azul/zulu-openjdk:25-jre-headless">azul/zulu-openjdk:25-jre-headless</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 76"><div class="bar-outer"><div class="bar grype" style="width:41.5%"></div></div><span class="bar-val">76</span></div>
+            <div class="bar-track" title="Grype: 69"><div class="bar-outer"><div class="bar grype" style="width:37.9%"></div></div><span class="bar-val">69</span></div>
             <div class="bar-track" title="Trivy: 14"><div class="bar-outer"><div class="bar trivy" style="width:7.7%"></div></div><span class="bar-val">14</span></div>
-            <div class="bar-track" title="OSV-Scanner: 70"><div class="bar-outer"><div class="bar osv" style="width:38.3%"></div></div><span class="bar-val">70</span></div>
+            <div class="bar-track" title="OSV-Scanner: 70"><div class="bar-outer"><div class="bar osv" style="width:38.5%"></div></div><span class="bar-val">70</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="azul/zulu-openjdk:25-jre-crac">azul/zulu-openjdk:25-jre-crac</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 50"><div class="bar-outer"><div class="bar grype" style="width:27.3%"></div></div><span class="bar-val">50</span></div>
+            <div class="bar-track" title="Grype: 43"><div class="bar-outer"><div class="bar grype" style="width:23.6%"></div></div><span class="bar-val">43</span></div>
             <div class="bar-track" title="Trivy: 13"><div class="bar-outer"><div class="bar trivy" style="width:7.1%"></div></div><span class="bar-val">13</span></div>
-            <div class="bar-track" title="OSV-Scanner: 44"><div class="bar-outer"><div class="bar osv" style="width:24.0%"></div></div><span class="bar-val">44</span></div>
+            <div class="bar-track" title="OSV-Scanner: 44"><div class="bar-outer"><div class="bar osv" style="width:24.2%"></div></div><span class="bar-val">44</span></div>
           </div>
         </div>
         <div class="barchart-row">
@@ -1107,7 +826,7 @@
         <div class="barchart-row">
           <div class="barchart-label" title="gcr.io/distroless/java25-debian13">gcr.io/distroless/java25-debian13</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 25"><div class="bar-outer"><div class="bar grype" style="width:13.7%"></div></div><span class="bar-val">25</span></div>
+            <div class="bar-track" title="Grype: 27"><div class="bar-outer"><div class="bar grype" style="width:14.8%"></div></div><span class="bar-val">27</span></div>
             <div class="bar-track" title="Trivy: 27"><div class="bar-outer"><div class="bar trivy" style="width:14.8%"></div></div><span class="bar-val">27</span></div>
             <div class="bar-track" title="OSV-Scanner: 27"><div class="bar-outer"><div class="bar osv" style="width:14.8%"></div></div><span class="bar-val">27</span></div>
           </div>
@@ -1139,17 +858,17 @@
         <div class="barchart-row">
           <div class="barchart-label" title="ibm-semeru-runtimes:open-25-jre">ibm-semeru-runtimes:open-25-jre</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 97"><div class="bar-outer"><div class="bar grype" style="width:53.0%"></div></div><span class="bar-val">97</span></div>
-            <div class="bar-track" title="Trivy: 51"><div class="bar-outer"><div class="bar trivy" style="width:27.9%"></div></div><span class="bar-val">51</span></div>
-            <div class="bar-track" title="OSV-Scanner: 109"><div class="bar-outer"><div class="bar osv" style="width:59.6%"></div></div><span class="bar-val">109</span></div>
+            <div class="bar-track" title="Grype: 104"><div class="bar-outer"><div class="bar grype" style="width:57.1%"></div></div><span class="bar-val">104</span></div>
+            <div class="bar-track" title="Trivy: 51"><div class="bar-outer"><div class="bar trivy" style="width:28.0%"></div></div><span class="bar-val">51</span></div>
+            <div class="bar-track" title="OSV-Scanner: 109"><div class="bar-outer"><div class="bar osv" style="width:59.9%"></div></div><span class="bar-val">109</span></div>
           </div>
         </div>
         <div class="barchart-row">
           <div class="barchart-label" title="registry.access.redhat.com/ubi9/openjdk-25-runtime:latest">registry.access.redhat.com/ubi9/openjdk-25-runtime:latest</div>
           <div class="barchart-bars">
-            <div class="bar-track" title="Grype: 183"><div class="bar-outer"><div class="bar grype" style="width:100.0%"></div></div><span class="bar-val">183</span></div>
-            <div class="bar-track" title="Trivy: 159"><div class="bar-outer"><div class="bar trivy" style="width:86.9%"></div></div><span class="bar-val">159</span></div>
-            <div class="bar-track" title="OSV-Scanner: 176"><div class="bar-outer"><div class="bar osv" style="width:96.2%"></div></div><span class="bar-val">176</span></div>
+            <div class="bar-track" title="Grype: 182"><div class="bar-outer"><div class="bar grype" style="width:100.0%"></div></div><span class="bar-val">182</span></div>
+            <div class="bar-track" title="Trivy: 159"><div class="bar-outer"><div class="bar trivy" style="width:87.4%"></div></div><span class="bar-val">159</span></div>
+            <div class="bar-track" title="OSV-Scanner: 177"><div class="bar-outer"><div class="bar osv" style="width:97.3%"></div></div><span class="bar-val">177</span></div>
           </div>
         </div>
         <div class="barchart-row">
