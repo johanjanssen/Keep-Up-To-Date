@@ -82,21 +82,12 @@ def summary_rows_html(items):
           <td class="num total grype">{g['_total']}</td>
           {sev_cell(g['CRITICAL'], 'crit')}
           {sev_cell(g['HIGH'], 'high')}
-          {sev_cell(g['MEDIUM'], 'med')}
-          {sev_cell(g['LOW'], 'low')}
-          {sev_cell(g['UNKNOWN'], 'unk')}
           <td class="num total trivy">{t['_total']}</td>
           {sev_cell(t['CRITICAL'], 'crit')}
           {sev_cell(t['HIGH'], 'high')}
-          {sev_cell(t['MEDIUM'], 'med')}
-          {sev_cell(t['LOW'], 'low')}
-          {sev_cell(t['UNKNOWN'], 'unk')}
           <td class="num total osv">{o['_total']}</td>
           {sev_cell(o['CRITICAL'], 'crit')}
           {sev_cell(o['HIGH'], 'high')}
-          {sev_cell(o['MEDIUM'], 'med')}
-          {sev_cell(o['LOW'], 'low')}
-          {sev_cell(o['UNKNOWN'], 'unk')}
           {unique_cell(unique_grype, 'grype')}
           {unique_cell(unique_trivy, 'trivy')}
           {unique_cell(unique_osv, 'osv')}
@@ -104,6 +95,10 @@ def summary_rows_html(items):
     return "\n".join(rows)
 
 
+# Medium/Low/Unknown severities are deliberately left out of the columns
+# below — Total already includes them (see the "folded into each Total" note
+# in subtitle_common), and breaking all five out per tool made the table too
+# wide to read at a glance. Only Critical/High get their own column.
 def severity_table_html(subtitle, rows_html):
     return f"""
     <h3>{subtitle}</h3>
@@ -112,16 +107,16 @@ def severity_table_html(subtitle, rows_html):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="6" class="grype-hdr">Grype</th>
-            <th colspan="6" class="trivy-hdr">Trivy</th>
-            <th colspan="6" class="osv-hdr">OSV-Scanner</th>
+            <th colspan="3" class="grype-hdr">Grype</th>
+            <th colspan="3" class="trivy-hdr">Trivy</th>
+            <th colspan="3" class="osv-hdr">OSV-Scanner</th>
             <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
             <th>Grype</th><th>Trivy</th><th>OSV</th>
           </tr>
         </thead>
@@ -179,13 +174,14 @@ def barchart_html(items):
 # OWASP Dependency Check scans the hello-conference app's dependency tree
 # (Vulnerable Application/pom.xml) once — not per Docker image, since every
 # hello-conference:* image embeds the same built jar. So this renders a
-# single-row table, using the same Total/Crit/High/Med/Low columns as the
-# Grype/Trivy/OSV table above, plus a "Unique in OWASP" column (CVEs OWASP DC
+# single-row table, using the same Total/Crit/High columns as the Grype/Trivy/OSV
+# table above (Medium/Low/Unknown left out for the same readability reason —
+# see severity_table_html), plus a "Unique in OWASP" column (CVEs OWASP DC
 # found that neither Grype, Trivy, nor OSV found in any scanned image — see
 # generate-charts.py::load_all's owasp_ids handling).
 def owasp_table_html(owasp_counts, owasp_unique):
     if owasp_counts is None:
-        rows_html = '<tr><td colspan="8" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
+        rows_html = '<tr><td colspan="5" class="muted">No OWASP Dependency Check report found — run "OWASP Dependency Check/scripts/run-check.sh" first.</td></tr>'
     else:
         c = owasp_counts
 
@@ -198,9 +194,6 @@ def owasp_table_html(owasp_counts, owasp_unique):
           <td class="num total owasp">{c['_total']}</td>
           {sev_cell(c['CRITICAL'], 'crit')}
           {sev_cell(c['HIGH'], 'high')}
-          {sev_cell(c['MEDIUM'], 'med')}
-          {sev_cell(c['LOW'], 'low')}
-          {sev_cell(c['UNKNOWN'], 'unk')}
           <td class="num total owasp">{owasp_unique if owasp_unique else "–"}</td>
         </tr>"""
     return f"""
@@ -210,12 +203,12 @@ def owasp_table_html(owasp_counts, owasp_unique):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
-            <th colspan="6" class="owasp-hdr">OWASP Dependency Check</th>
+            <th colspan="3" class="owasp-hdr">OWASP Dependency Check</th>
             <th class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Application</th>
-            <th>Total</th><th>Crit</th><th>High</th><th>Med</th><th>Low</th><th>Unk</th>
+            <th>Total</th><th>Crit</th><th>High</th>
             <th>Unique in OWASP</th>
           </tr>
         </thead>
@@ -317,10 +310,8 @@ PAGE_HEAD = """<!doctype html>
   <p class="legend">
     <span><span class="dot" style="background:var(--crit)"></span>Critical</span>
     <span><span class="dot" style="background:var(--high)"></span>High</span>
-    <span><span class="dot" style="background:var(--med)"></span>Medium</span>
-    <span><span class="dot" style="background:var(--low)"></span>Low</span>
-    <span><span class="dot" style="background:var(--unknown)"></span>Unknown</span>
   </p>
+  <p class="legend">Medium, Low, and Unknown severities are left out of the tables below to keep them readable — each Total still includes them.</p>
 """
 
 PAGE_FOOT = """
@@ -400,13 +391,13 @@ def main():
     generic_items, java_items, app_items = split_three(items, load_java_base_image_names())
     print(f"  images: {len(generic_items)} generic base + {len(java_items)} java base + {len(app_items)} app rows")
 
-    no_results = '<tr><td colspan="22">No results.</td></tr>'
+    no_results = '<tr><td colspan="13">No results.</td></tr>'
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     subtitle_common = (
         f"Generated {generated} &middot; images scanned with <strong>Grype</strong>, <strong>Trivy</strong>, and "
         f'<strong>OSV-Scanner</strong> (Google, matched against OSV.dev) &middot; '
         f'counts are unique CVEs (deduplicated by CVE ID) &middot; '
-        f'"Unk" = no severity rating available from that scanner (Total = Crit+High+Med+Low+Unk) &middot; '
+        f'Total = Crit+High+Med+Low+Unk, but only Crit/High get their own column below &middot; '
         f'"Unique in X" = found by X but by none of the other scanners &middot; '
     )
 
