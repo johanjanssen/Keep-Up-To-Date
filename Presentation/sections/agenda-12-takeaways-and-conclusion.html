@@ -9,13 +9,14 @@
         <h2>🏁 Key Takeaways</h2>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🔄</span><span><strong>Update incrementally and frequently</strong> — big jumps are big risks</span></li>
-                <li><span class="ic">📌</span><span><strong>Pin versions, not floating tags</strong> — reproducibility ≠ security</span></li>
-                <li><span class="ic">🔍</span><span><strong>Scan both source and artifact</strong> — they find different vulnerabilities</span></li>
-                <li><span class="ic">🤖</span><span><strong>Automate with a bot</strong> — policy belongs in config, not in people's heads</span></li>
-                <li><span class="ic">🧪</span><span><strong>Tests make automation safe</strong> — a bot without tests is automated risk</span></li>
-                <li><span class="ic">⏱️</span><span><strong>MTTP is your metric</strong> — CVE published → production in &lt; 72 hours</span></li>
-                <li><span class="ic">🛡️</span><span><strong>Smaller images = smaller attack surface</strong> — distroless / scratch = 0 OS CVEs</span></li>
+                <li><span class="ic">🗑️</span><span><strong>Remove what you don't need first</strong>: the cheapest dependency, or line of code, to maintain is the one that's gone</span></li>
+                <li><span class="ic">🔄</span><span><strong>Update incrementally and frequently</strong>: big jumps are big risks</span></li>
+                <li><span class="ic">📌</span><span><strong>Pin versions, not floating tags</strong>: reproducibility ≠ security</span></li>
+                <li><span class="ic">🔍</span><span><strong>Scan both source and artifact</strong>: they find different vulnerabilities</span></li>
+                <li><span class="ic">🤖</span><span><strong>Automate version bumps and code migrations</strong>: policy belongs in config, not in people's heads</span></li>
+                <li><span class="ic">🧪</span><span><strong>Tests make automation safe</strong>: a bot or migration tool without tests is automated risk</span></li>
+                <li><span class="ic">🛡️</span><span><strong>Smaller images = smaller attack surface</strong>: distroless / scratch = 0 OS CVEs</span></li>
+                <li><span class="ic">⏱️</span><span><strong>MTTP is your metric</strong>: CVE published → production in &lt; 72 hours</span></li>
             </ul>
         </div>
     </section>
@@ -30,7 +31,7 @@
                 <tr><td>Python</td><td>Renovate + <code>deptry</code> + <code>pip-audit</code></td></tr>
                 <tr><td>Node.js / TypeScript</td><td>Renovate + <code>depcheck</code> + <code>npm audit</code></td></tr>
                 <tr><td>Go</td><td>Renovate + <code>go mod tidy</code> + <code>govulncheck</code></td></tr>
-                <tr><td>.NET</td><td>Renovate + <code>dotnet-outdated</code> + <code>dotnet list package --vulnerable</code></td></tr>
+                <tr><td>.NET</td><td>Renovate + <code>dotnet list package --outdated</code> + <code>dotnet list package --vulnerable</code></td></tr>
                 <tr><td>Rust</td><td>Renovate + <code>cargo-udeps</code> + <code>cargo-audit</code></td></tr>
                 <tr><td>Any</td><td>Trivy or OSV-Scanner on the built image, Testcontainers in CI</td></tr>
             </tbody>

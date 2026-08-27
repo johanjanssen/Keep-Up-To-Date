@@ -8,18 +8,47 @@
     <section>
         <h2>When a Version Bump Isn't Just a Version Bump</h2>
         <div class="medium">
-            <p>Chapters 8 and 9 covered bumping version numbers. Some upgrades also <strong>break your source code</strong> — renamed packages, removed APIs, changed method signatures. A dependency bot can open the PR, but it can't rewrite your code — that needs a dedicated migration tool.</p>
+            <p>Chapters 8 and 9 covered bumping version numbers. Some upgrades also <strong>break your source code</strong>: renamed packages, removed APIs, changed method signatures. A dependency bot can open the PR, but it can't rewrite your code: that needs a dedicated migration tool.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ What Is OpenRewrite?</h2>
+        <p class="subtitle">A refactoring engine, not a text-based find/replace</p>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">🌳</span><span>Parses your code into a full AST with types resolved, so recipes understand semantics, not just text patterns</span></li>
+                <li><span class="ic">📦</span><span>Recipes compose: a big migration (e.g. "upgrade to Spring Boot 4") is really hundreds of small, independently-tested recipes chained together</span></li>
+                <li><span class="ic">🔍</span><span>Every recipe can run in dry-run mode first, so you review a diff before anything is applied</span></li>
+            </ul>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Languages &amp; formats</span>
+            Java, Kotlin, Groovy, XML, YAML, JSON, Properties files, Protobuf, plus early Python support. Curated recipe libraries exist for Spring, Jakarta EE, JUnit, Hibernate, Micronaut, Quarkus, and more.
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Alternatives to OpenRewrite</h2>
+        <p class="subtitle">Within the JVM, and beyond it</p>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">☕</span><span><strong>Error Prone + Refaster</strong> (Google): compile-time bug-pattern checks, plus template-based Java-to-Java rewrites</span></li>
+                <li><span class="ic">🏢</span><span><strong>Moderne</strong>: the commercial platform built on OpenRewrite itself, for running recipes org-wide across thousands of repos at once</span></li>
+                <li><span class="ic">🖱️</span><span><strong>IDE-assisted migrations</strong> (e.g. IntelliJ IDEA's structural search/replace and migration inspections): powerful, but manually triggered per project, not CI-automatable</span></li>
+            </ul>
+            <p class="small" style="margin-top:0.6em;">Every other ecosystem has its own equivalent: see the alternatives table at the end of this chapter.</p>
         </div>
     </section>
 
     <section>
         <h2>Automate the Migration Itself</h2>
         <div class="medium">
-            <p>When a framework or language version change requires code edits, automated migration tools can apply the changes — consistently and at scale across your whole codebase.</p>
+            <p>When a framework or language version change requires code edits, automated migration tools can apply the changes: consistently and at scale across your whole codebase.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OpenRewrite</span>
-            Recipe-driven, AST-level refactoring. No <code>pom.xml</code> plugin config needed — the plugin and its recipes are supplied entirely on the Maven command line.
+            Recipe-driven, AST-level refactoring. No <code>pom.xml</code> plugin config needed: the plugin and its recipes are supplied entirely on the Maven command line.
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Before</th><th>After</th></tr></thead>
                 <tbody>
@@ -28,7 +57,7 @@
                     <tr><td>String concatenation</td><td>Text blocks</td></tr>
                 </tbody>
             </table>
-            <pre><code class="language-bash"># the raw Maven invocation — plugin + recipes as -D properties, nothing baked into pom.xml
+            <pre><code class="language-bash"># the raw Maven invocation: plugin + recipes as -D properties, nothing baked into pom.xml
 ./mvnw org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
   -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:6.37.0,... \
   -Drewrite.activeRecipes=org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,...
@@ -40,7 +69,7 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
     </section>
 
     <section>
-        <h2>🔍 OpenRewrite — Full Report</h2>
+        <h2>🔍 OpenRewrite: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/" loading="lazy" title="OpenRewrite report"></iframe>
         </div>
@@ -56,7 +85,7 @@ bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
                 <tr><td>OpenRewrite</td><td>Java (also XML / YAML / Kotlin recipes)</td><td>Recipe-driven, AST-level automated code migration</td></tr>
-                <tr><td>.NET Upgrade Assistant</td><td>.NET</td><td>Automated project &amp; API migration — .NET's OpenRewrite</td></tr>
+                <tr><td>.NET Upgrade Assistant</td><td>.NET</td><td>Automated project &amp; API migration: .NET's OpenRewrite</td></tr>
                 <tr><td>LibCST codemods / Bowler</td><td>Python</td><td>AST-based automated rewrites</td></tr>
                 <tr><td>jscodeshift / ts-migrate</td><td>JavaScript / TypeScript</td><td>Codemod-driven automated rewrites</td></tr>
                 <tr><td><code>go fix</code> / <code>gofmt -r</code></td><td>Go</td><td>Simple automated syntax rewrites, built into the toolchain</td></tr>

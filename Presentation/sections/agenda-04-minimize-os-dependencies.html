@@ -26,7 +26,7 @@
                     <tr><td>GraalVM native scratch</td><td>scratch</td><td class="tag-good">0</td><td>0 MB</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data — base images, not the app image.</p>
+            <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data: base images, not the app image.</p>
         </div>
         <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
     </section>
@@ -34,26 +34,31 @@
     <section>
         <h2>Vendor JRE vs. Custom jlink Runtime</h2>
         <div class="medium">
-            <p>Both drop the compiler and dev tools a full JDK carries — a runtime-only image. They trade off differently.</p>
+            <p>Both drop the compiler and dev tools a full JDK carries: a runtime-only image. They trade off differently.</p>
         </div>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <h3>Vendor JRE image</h3>
                 <ul class="icon-list">
-                    <li><span class="ic">📦</span><span>Every standard module included — bigger image</span></li>
+                    <li><span class="ic">📦</span><span>Every standard module included: bigger image</span></li>
                     <li><span class="ic">⚡</span><span>Vendor tuning (e.g. a pre-built CDS archive) can lower startup CPU/memory per launch</span></li>
-                    <li><span class="ic">✅</span><span>Zero build effort — just pull the tag</span></li>
+                    <li><span class="ic">✅</span><span>Zero build effort: just pull the tag</span></li>
                 </ul>
             </div>
             <div class="box box-green">
                 <h3>Custom jlink runtime</h3>
                 <ul class="icon-list">
-                    <li><span class="ic">✂️</span><span>Only the modules your app uses — smaller image</span></li>
+                    <li><span class="ic">✂️</span><span>Only the modules your app uses: smaller image</span></li>
                     <li><span class="ic">⚠️</span><span>No vendor pre-optimization; you own the build step</span></li>
                     <li><span class="ic">🕵️</span><span>Miss a reflectively-used module → runtime failure</span></li>
                 </ul>
             </div>
         </div>
+    </section>
+
+    <section>
+        <h2>Building a Custom jlink Runtime</h2>
+        <p class="subtitle">Two commands: find what you use, then link only that</p>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span>
             <pre><code class="language-bash">jdeps --print-module-deps --ignore-missing-deps app.jar    # 1. find required modules
@@ -65,7 +70,7 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">Generic OS base images — <span id="baseImageCount">…</span> images, live size, package, and Grype CVE data</p>
+        <p class="subtitle">Generic OS base images: <span id="baseImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
@@ -74,7 +79,7 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">JDK / JRE / GraalVM base images — <span id="javaImageCount">…</span> images, live size, package, and Grype CVE data</p>
+        <p class="subtitle">JDK / JRE / GraalVM base images: <span id="javaImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
@@ -83,7 +88,7 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>hello-conference: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images — live size, package, and Grype CVE data</p>
+        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images: live size, package, and Grype CVE data</p>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartAppPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartAppImages" height="460"></canvas></div>
@@ -91,7 +96,7 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
     </section>
 
     <section>
-        <h2>🔍 Build Docker Images — Full Report</h2>
+        <h2>🔍 Build Docker Images: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
         </div>
@@ -103,20 +108,20 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
     <section>
         <h2>It's Not Just a Java Problem</h2>
         <div class="medium">
-            <p>Every language faces the same "does my image need a full runtime?" question — the shape of the answer just differs.</p>
+            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <table style="margin-top:0.2em;">
                 <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
                 <tbody>
                     <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
-                    <tr><td>.NET</td><td>Native AOT — .NET's direct equivalent of GraalVM native-image</td></tr>
-                    <tr><td>Go</td><td>Compiles to a single static binary by default — <code>scratch</code> "just works"</td></tr>
-                    <tr><td>Rust</td><td>Same story as Go with a musl target — static binary, no runtime image needed</td></tr>
-                    <tr><td>Python / Node.js</td><td>Interpreted — always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
+                    <tr><td>.NET</td><td>Native AOT: .NET's direct equivalent of GraalVM native-image</td></tr>
+                    <tr><td>Go</td><td>Compiles to a single static binary by default: <code>scratch</code> "just works"</td></tr>
+                    <tr><td>Rust</td><td>Same story as Go with a musl target: static binary, no runtime image needed</td></tr>
+                    <tr><td>Python / Node.js</td><td>Interpreted: always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all — only smaller.</p>
+            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
         </div>
     </section>
 
@@ -131,8 +136,8 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
                 <tr><td><code>gcr.io/distroless/*</code></td><td>Java, Python, Node.js, static (Go/Rust/C++)</td><td>No shell, no package manager, per-language variants</td></tr>
                 <tr><td><code>python:slim</code> / <code>python:alpine</code></td><td>Python</td><td>Smaller CPython base images</td></tr>
                 <tr><td><code>node:alpine</code></td><td>Node.js</td><td>Smaller Node.js base image</td></tr>
-                <tr><td>Static binary + <code>scratch</code></td><td>Go</td><td>Compiles to one static binary — no runtime image at all</td></tr>
-                <tr><td>.NET Native AOT</td><td>.NET</td><td>AOT-compiles to a native binary — the JVM-less path for .NET</td></tr>
+                <tr><td>Static binary + <code>scratch</code></td><td>Go</td><td>Compiles to one static binary: no runtime image at all</td></tr>
+                <tr><td>.NET Native AOT</td><td>.NET</td><td>AOT-compiles to a native binary: the JVM-less path for .NET</td></tr>
                 <tr><td>musl static binary + <code>scratch</code></td><td>Rust</td><td>Same static-binary story as Go</td></tr>
             </tbody>
         </table>

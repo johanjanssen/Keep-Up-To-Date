@@ -38,6 +38,14 @@ count_packages() {
     LAYERS=$(docker inspect "${IMG}" --format '{{len .RootFS.Layers}}' 2>/dev/null || true)
     [[ "${LAYERS}" == "0" ]] && { echo "0"; return; }
 
+    # busybox ships no package manager at all (verified: dpkg-query and apk
+    # aren't present in the image, and its own built-in `rpm` applet exits
+    # with "invalid option" and prints nothing to stdout) — like "scratch"
+    # above, this is a real 0, not merely "couldn't be determined".
+    case "${IMG}" in
+        busybox:*) echo "0"; return ;;
+    esac
+
     # Debian / Ubuntu: dpkg-query outputs one line per installed package
     COUNT=$(docker run --rm --entrypoint "" "${IMG}" \
         dpkg-query -f 'x\n' -W 2>/dev/null | wc -l | tr -d ' ' || true)

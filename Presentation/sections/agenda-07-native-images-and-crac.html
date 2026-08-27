@@ -12,19 +12,19 @@
             <table>
                 <thead><tr><th>Approach</th><th>What it is</th></tr></thead>
                 <tbody>
-                    <tr><td>Normal JRE image</td><td>A full, unmodified JVM — the default Docker base image</td></tr>
+                    <tr><td>Normal JRE image</td><td>A full, unmodified JVM: the default Docker base image</td></tr>
                     <tr><td>jlink runtime</td><td>Still a real JVM, but custom-built with only the modules your app needs</td></tr>
-                    <tr><td>CRaC checkpoint</td><td>Still a real JVM — restored from a snapshot of an already-warmed-up process</td></tr>
-                    <tr><td>GraalVM native-image</td><td>No JVM at all — ahead-of-time compiled to a native binary</td></tr>
+                    <tr><td>CRaC checkpoint</td><td>Still a real JVM: restored from a snapshot of an already-warmed-up process</td></tr>
+                    <tr><td>GraalVM native-image</td><td>No JVM at all: ahead-of-time compiled to a native binary</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.5em;">The first three still run on a JVM; native-image is the odd one out — that's the dashed path in the next diagram.</p>
+        <p class="small" style="margin-top:0.5em;">The first three still run on a JVM; native-image is the odd one out: that's the dashed path in the next diagram.</p>
     </section>
 
     <section>
         <h2>🧱 Anatomy of a Container Image</h2>
-        <p class="subtitle">Every layer this talk touches — in one picture</p>
+        <p class="subtitle">Every layer this talk touches: in one picture</p>
         <div class="medium" style="max-width:760px;margin:0.4em auto 0;">
             <svg viewBox="0 0 720 380" style="width:100%;height:auto;" role="img"
                  aria-label="An application bundles its dependencies and runs on a runtime, which runs on an operating system that has its own packages installed. A dashed pink path shows GraalVM native-image builds skipping the runtime layer entirely, running the compiled binary directly on the OS.">
@@ -83,14 +83,14 @@
         </div>
         <p class="small" style="margin-top:0.4em;color:#657b83;">
             Every image in <code>images.conf</code> follows the solid path. The dashed one is
-            <code>native-scratch</code> / <code>native-netty-scratch</code> — no separate JVM layer, so the app lands directly on <code>scratch</code>.
+            <code>native-scratch</code> / <code>native-netty-scratch</code>: no separate JVM layer, so the app lands directly on <code>scratch</code>.
         </p>
     </section>
 
     <section>
         <h2>Which Runtime Distribution?</h2>
         <div class="medium">
-            <p>Most ecosystems have multiple vendors distributing the same runtime — all standards-compliant, but trading off differently on image size, tooling, and support model.</p>
+            <p>Most ecosystems have multiple vendors distributing the same runtime, all standards-compliant, but trading off differently on image size, tooling, and support model.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
@@ -101,34 +101,35 @@
                     <tr><td>Azul Zulu</td><td>Azul</td><td>CRaC checkpointing (patched JVM)</td><td>Balanced, enterprise support</td></tr>
                     <tr><td>GraalVM CE</td><td>Oracle / community</td><td>Native image compilation</td><td class="tag-warn">🔧 Extra AOT tooling, larger JDK</td></tr>
                     <tr><td>Amazon Corretto</td><td>AWS</td><td>AWS-native workloads</td><td>Long-term free patches</td></tr>
-                    <tr><td>BellSoft Liberica</td><td>BellSoft</td><td>Smallest containers, embedded/IoT</td><td class="tag-good">📦 Musl/Alpine builds — smallest images</td></tr>
-                    <tr><td>IBM Semeru</td><td>IBM</td><td>Memory-constrained containers</td><td class="tag-good">📦 OpenJ9 JVM — lower RAM footprint</td></tr>
+                    <tr><td>BellSoft Liberica</td><td>BellSoft</td><td>Smallest containers, embedded/IoT</td><td class="tag-good">📦 Musl/Alpine builds: smallest images</td></tr>
+                    <tr><td>IBM Semeru</td><td>IBM</td><td>Memory-constrained containers</td><td class="tag-good">📦 OpenJ9 JVM: lower RAM footprint</td></tr>
                     <tr><td>Red Hat build of OpenJDK</td><td>Red Hat</td><td>RHEL / UBI-based enterprise images</td><td class="tag-warn">🔧 RHEL toolchain &amp; CVE backports</td></tr>
                     <tr><td>Microsoft Build of OpenJDK</td><td>Microsoft</td><td>Azure-native workloads</td><td class="tag-warn">🔧 Azure &amp; VS Code tooling</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.5em;">📦 Smaller image → less attack surface and faster pulls. 🔧 More tooling → faster builds/AOT/cloud integration, at the cost of a bigger base image. 💡 It matters less than you'd think day-to-day — all are standards-compliant. Pick one and commit to updating it.</p>
+        <p class="small" style="margin-top:0.5em;">📦 Smaller image → less attack surface and faster pulls. 🔧 More tooling → faster builds/AOT/cloud integration, at the cost of a bigger base image. 💡 It matters less than you'd think day-to-day: all are standards-compliant. Pick one and commit to updating it.</p>
     </section>
 
     <section>
         <h2>⚖️ jlink vs GraalVM native-image vs CRaC</h2>
-        <p class="subtitle">Three ways to fix "JVM cold-start is slow" — different tradeoffs</p>
+        <p class="subtitle">A normal JVM, and three ways to speed up its cold start</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <table style="margin-top:0.2em;">
                 <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
                 <tbody>
-                    <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full — still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                    <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow — full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT — good but not peak HotSpot</td></tr>
+                    <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                    <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                    <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
                     <tr><td>Azul CRaC checkpoint/restore</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">CRaC's tradeoff isn't compatibility — it's operational: the checkpoint captures process state (open sockets, files) at a point in time, so you design your startup code around what's safe to snapshot.</p>
+            <p class="small" style="margin-top:0.4em;">CRaC's tradeoff isn't compatibility; it's operational: the checkpoint captures process state (open sockets, files) at a point in time, so you design your startup code around what's safe to snapshot.</p>
         </div>
     </section>
 
     <section>
-        <h2>🔍 Compare-Scans — Full Report</h2>
+        <h2>🔍 Compare-Scans: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
         </div>
@@ -147,7 +148,7 @@
                 <tr><td>Azul CRaC</td><td>Java / JVM</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
                 <tr><td>CRIU</td><td>Any (OS-level process checkpoint)</td><td>The Linux checkpoint/restore mechanism CRaC itself builds on</td></tr>
                 <tr><td>.NET Native AOT / ReadyToRun</td><td>.NET</td><td>AOT compilation and pre-JIT for faster cold start</td></tr>
-                <tr><td>Go / Rust static binaries</td><td>Go, Rust</td><td>Already compiled — no JIT warm-up phase to begin with</td></tr>
+                <tr><td>Go / Rust static binaries</td><td>Go, Rust</td><td>Already compiled: no JIT warm-up phase to begin with</td></tr>
                 <tr><td>Node.js V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialised heap to skip re-parsing/re-executing startup code</td></tr>
             </tbody>
         </table>

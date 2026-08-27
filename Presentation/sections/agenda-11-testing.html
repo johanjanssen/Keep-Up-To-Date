@@ -14,7 +14,7 @@
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
-            💡 Automation without tests is just automated risk. Every bot, scanner, and migration tool in this deck assumes CI will catch it if something breaks — that assumption is only as good as your test suite.
+            💡 Automation without tests is just automated risk. Every bot, scanner, and migration tool in this deck assumes CI will catch it if something breaks; that assumption is only as good as your test suite.
         </div>
     </section>
 
@@ -42,14 +42,14 @@
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Example</span>
-            <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted — all silently breaking JSON contracts.
+            <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted, all silently breaking JSON contracts.
         </div>
     </section>
 
     <section>
         <h2>The Minimal Safety Net</h2>
         <div class="medium">
-            <p>You don't need 90% line coverage. You need coverage of your <strong>integration boundaries</strong> — the surfaces that actually break when a dependency changes.</p>
+            <p>You don't need 90% line coverage. You need coverage of your <strong>integration boundaries</strong>: the surfaces that actually break when a dependency changes.</p>
         </div>
         <div class="medium" style="margin-top:0.6em;">
             <table>
@@ -63,13 +63,13 @@
             </table>
         </div>
         <div class="box box-blue small" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Concrete targets</span> — every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
+            <span class="java-pill">☕ Concrete targets</span>: every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
         </div>
     </section>
 
     <section>
         <h2>Integration Tests with Real Dependencies</h2>
-        <div class="medium"><p>Spin up the real database / broker / service in a container for the test — no mocks, no in-memory fakes.</p></div>
+        <div class="medium"><p>Spin up the real database / broker / service in a container for the test: no mocks, no in-memory fakes.</p></div>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-red">
                 <strong>Before: manual wiring</strong>
@@ -102,8 +102,8 @@ static PostgreSQLContainer&lt;?&gt; db
     </section>
 
     <section>
-        <h2>🔍 Testcontainers — Full Test Source</h2>
-        <p class="subtitle"><code>UserRepositoryIntegrationTest.java</code> — real Postgres container, no mocks</p>
+        <h2>🔍 Testcontainers: Full Test Source</h2>
+        <p class="subtitle"><code>UserRepositoryIntegrationTest.java</code>: real Postgres container, no mocks</p>
         <!-- GitHub sends X-Frame-Options: deny / frame-ancestors 'none' on both the
              blob view and raw.githubusercontent.com, so this can't be embedded as a
              live iframe like the JaCoCo/Scans/Testcontainers report pages below —
@@ -141,7 +141,7 @@ class UserRepositoryIntegrationTest {
     </section>
 
     <section>
-        <h2>🔍 Testcontainers — Latest Maven Result</h2>
+        <h2>🔍 Testcontainers: Latest Maven Result</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/testcontainers/" loading="lazy" title="Testcontainers Maven result report"></iframe>
         </div>
@@ -152,7 +152,7 @@ class UserRepositoryIntegrationTest {
 
     <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Testing tooling that makes update/removal safe — across ecosystems</p>
+        <p class="subtitle">Testing tooling that makes update/removal safe: across ecosystems</p>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>

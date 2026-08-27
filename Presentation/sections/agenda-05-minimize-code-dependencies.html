@@ -8,7 +8,7 @@
     <section>
         <h2>📦 The Dependency Graph Problem</h2>
         <div class="medium">
-            <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast — and most of it is invisible to you.</p>
+            <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast, and most of it is invisible to you.</p>
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🧑‍💻</span><span>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</span></li>
                 <li><span class="ic">🕸️</span><span>Each node is a potential CVE, a potential breaking change, a potential licence issue</span></li>
@@ -20,10 +20,10 @@
     <section>
         <h2>Use a Bill of Materials (BOM)</h2>
         <div class="medium">
-            <p>A BOM declares a curated, tested set of dependency versions. Upgrade the BOM, get a tested, compatible stack upgrade — not dozens of independent version decisions.</p>
+            <p>A BOM declares a curated, tested set of dependency versions. Upgrade the BOM, get a tested, compatible stack upgrade, not dozens of independent version decisions.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">☕ Java example</span> — Spring Boot parent POM
+            <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
             <pre><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
     &lt;version&gt;4.1.0&lt;/version&gt;  &lt;!-- one bump = 300+ libs updated --&gt;
@@ -34,12 +34,12 @@
     </section>
 
     <section>
-        <h2>SBOM — Know What You Ship</h2>
+        <h2>SBOM: Know What You Ship</h2>
         <div class="medium">
-            <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact — like a nutrition label for software.</p>
+            <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact, like a nutrition label for software.</p>
             <ul class="icon-list" style="margin-top:0.5em;">
                 <li><span class="ic">🇺🇸</span><span>Required by US federal procurement (Executive Order 2021)</span></li>
-                <li><span class="ic">🇪🇺</span><span>EU Cyber Resilience Act — mandatory for regulated products</span></li>
+                <li><span class="ic">🇪🇺</span><span>EU Cyber Resilience Act: mandatory for regulated products</span></li>
                 <li><span class="ic">🔎</span><span>Enables automated CVE matching across your entire fleet</span></li>
             </ul>
         </div>
@@ -48,13 +48,13 @@
     <section>
         <h2>Tools to Create an SBOM</h2>
         <div class="medium">
-            <p>Generate the SBOM as part of your build or CI pipeline — not as a one-off, manual export.</p>
+            <p>Generate the SBOM as part of your build or CI pipeline, not as a one-off, manual export.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <ul class="icon-list">
-                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin</strong> (Java): <code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
-                <li><span class="ic">🌐</span><span><strong>Trivy</strong> (generic, from an image): <code>trivy image --format cyclonedx --output sbom.json</code></span></li>
-                <li><span class="ic">🌐</span><span><strong>Syft</strong> (generic, from a filesystem or image): <code>syft . -o cyclonedx-json</code></span></li>
+                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin</strong> (Java)<br><code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
+                <li><span class="ic">🌐</span><span><strong>Trivy</strong> (generic, from an image)<br><code>trivy image --format cyclonedx --output sbom.json</code></span></li>
+                <li><span class="ic">🌐</span><span><strong>Syft</strong> (generic, from a filesystem or image)<br><code>syft . -o cyclonedx-json</code></span></li>
             </ul>
         </div>
     </section>
@@ -93,7 +93,7 @@
     <section>
         <h2>Enforce Constraints at Build Time</h2>
         <div class="medium">
-            <p>Don't just warn — <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
+            <p>Don't just warn: <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin</span>

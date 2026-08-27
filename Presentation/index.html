@@ -17,9 +17,33 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/solarized.css" id="theme">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+    <!-- Monokai's own bundled theme colored annotations/meta tokens (e.g. Java's
+         @Test, @Container) a dull olive-grey (#75715e) on its near-black
+         background — 3:1 contrast, hard to read from the back of a room —
+         while keywords and strings sat at the opposite extreme in
+         high-saturation pink/green. Atom One Dark's palette is calmer and
+         every token category clears WCAG AA (4.5:1) against its background
+         except comments, which are bumped in the override below. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/atom-one-dark.css">
     <style>
+        /* Atom One Dark's own comment color (#5c6370) is ~2.3:1 on its
+           background — fine for de-emphasized comments in an editor, too
+           low when this deck's demo code leans on step-numbered comments
+           (e.g. "# 1: Build the JAR") as part of the narration. Lightened
+           to clear 4.5:1 while staying visibly muted. */
+        .hljs-comment { color: #9099a6; }
         :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
+        /* Slide-in transitions animate `transform` on each <section> (and the
+           `.slides` wrapper carries `perspective`), which puts the entering
+           slide into its own GPU compositing layer for the duration of the
+           animation. WebKit/Blink render text in that state with plain
+           grayscale antialiasing instead of native subpixel antialiasing,
+           then switch back once the layer is torn down — that switch is the
+           "blurry, then sharpens" flash on every slide change/load. Pinning
+           font smoothing to one mode up front stops the mid-transition
+           antialiasing swap, so no visible re-sharpening happens after the
+           transition settles. */
+        .reveal { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .reveal h1,.reveal h2,.reveal h3 { text-transform:none; color:#6c71c4; }
         /* Theme sets .reveal h2{font-size:24pt!important}; override needs !important too */
         .reveal h2 { font-size:15pt!important; }
@@ -82,6 +106,10 @@
         .puml-wrap { margin:0.6em auto 0; text-align:center; }
         .puml-wrap img { max-width:100%; max-height:56vh; width:auto; height:auto; }
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; text-align:left; }
+        /* Three-across variant for slides with exactly three tool/item boxes —
+           .two-col wraps a 3rd child onto its own half-width row, which looks
+           unbalanced; this keeps all three the same width in one row. */
+        .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:1em; text-align:left; }
         /* Agenda overview slide — number-bubble cards grouped into two
            color-coded tracks instead of a plain two-column numbered list. */
         .agenda-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.8em; text-align:left; margin-top:0.3em; }
@@ -340,14 +368,14 @@ let liveChartFailed = false;
 
 const GROUP_CHART_SPECS = [
     { key: 'generic', countEl: 'baseImageCount',
-      cveChartId: 'chartBaseImages', cveTitle: 'Base OS images — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images — size (MB) vs package count — live data' },
+      cveChartId: 'chartBaseImages', cveTitle: 'Base OS images: size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images: size (MB) vs package count, live data' },
     { key: 'java', countEl: 'javaImageCount',
-      cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM) — size (MB) vs package count — live data' },
+      cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data' },
     { key: 'app', countEl: 'appImageCount',
-      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images — size (MB) vs CVE count (Grype) — live data',
-      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images — size (MB) vs package count — live data' },
+      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images: size (MB) vs CVE count (Grype), live data',
+      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images: size (MB) vs package count, live data' },
 ];
 
 // sizeRows already carry "packages" straight from image-sizes.json — no
@@ -481,7 +509,7 @@ function showChartFallback(canvas) {
     const msg = document.createElement('p');
     msg.className = 'small';
     msg.style.color = '#dc322f';
-    msg.textContent = '⚠ Live chart data isn’t available right now — see the latest "Measure Docker Images" / "Compare Security Scans" workflow runs for current numbers.';
+    msg.textContent = '⚠ Live chart data isn’t available right now; see the latest "Measure Docker Images" / "Compare Security Scans" workflow runs for current numbers.';
     canvas.insertAdjacentElement('afterend', msg);
 }
 
