@@ -371,7 +371,7 @@ def main():
     parser.add_argument("base_output_html", help="Output path for the base-images report (published at /image-scans)")
     parser.add_argument("custom_output_html", help="Output path for the hello-conference report (published at /custom-image-scans)")
     parser.add_argument("--title", default="Container Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
-    parser.add_argument("--custom-title", default="hello-conference Image CVE Comparison — Trivy vs Grype vs OSV-Scanner")
+    parser.add_argument("--custom-title", default="hello-conference Image CVE Comparison — Trivy vs Grype vs OSV-Scanner vs OWASP Dependency Check")
     parser.add_argument("--json-out", default=None,
                          help="Optional path to also write a JSON summary (image name + Grype CVE "
                               "count, grouped generic/java/app) for the presentation's live charts")
@@ -412,9 +412,11 @@ def main():
 
     base_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner</h2>" + \
         severity_table_html("Base Images", summary_rows_html(generic_items) if generic_items else no_results) + \
-        barchart_html(generic_items) + \
         severity_table_html("Java Runtime Images (JDK / JRE / GraalVM)", summary_rows_html(java_items) if java_items else no_results) + \
-        barchart_html(java_items) + \
+        "\n  </section>\n" + \
+        "\n  <section>\n    <h2>Total Vulnerabilities per Image — Grype vs Trivy vs OSV-Scanner</h2>" + \
+        "\n    <h3>Base Images</h3>" + barchart_html(generic_items) + \
+        "\n    <h3>Java Runtime Images (JDK / JRE / GraalVM)</h3>" + barchart_html(java_items) + \
         "\n  </section>\n"
     base_page = render_page(
         title=html.escape(args.title),
@@ -425,8 +427,10 @@ def main():
 
     custom_section = "\n  <section>\n    <h2>Severity Comparison — Grype vs Trivy vs OSV-Scanner vs OWASP Dependency Check</h2>" + \
         severity_table_html("hello-conference Images", summary_rows_html(app_items) if app_items else no_results) + \
-        barchart_html(app_items) + \
         owasp_table_html(owasp_counts, owasp_unique) + \
+        "\n  </section>\n" + \
+        "\n  <section>\n    <h2>Total Vulnerabilities per Image — Grype vs Trivy vs OSV-Scanner</h2>" + \
+        barchart_html(app_items) + \
         "\n  </section>\n"
     custom_page = render_page(
         title=html.escape(args.custom_title),

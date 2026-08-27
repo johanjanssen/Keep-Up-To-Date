@@ -121,8 +121,8 @@ jobs:
             "Compare Security Scans/target/results/osv" \
             "Compare Security Scans/target/results/html/index.html" \
             "Compare Security Scans/target/results/html-custom/index.html" \
-            --title "Container Image CVE Comparison — Trivy vs Grype" \
-            --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype" \
+            --title "Container Image CVE Comparison — Trivy vs Grype vs OSV-Scanner" \
+            --custom-title "hello-conference Image CVE Comparison — Trivy vs Grype vs OSV-Scanner vs OWASP Dependency Check" \
             --json-out "Compare Security Scans/target/results/cve-counts.json" \
             --owasp-json "Vulnerable Application/target/dependency-check-report.json"
 
