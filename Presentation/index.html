@@ -17,8 +17,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/solarized.css" id="theme">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+    <!-- Monokai's own bundled theme colored annotations/meta tokens (e.g. Java's
+         @Test, @Container) a dull olive-grey (#75715e) on its near-black
+         background — 3:1 contrast, hard to read from the back of a room —
+         while keywords and strings sat at the opposite extreme in
+         high-saturation pink/green. Atom One Dark's palette is calmer and
+         every token category clears WCAG AA (4.5:1) against its background
+         except comments, which are bumped in the override below. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/atom-one-dark.css">
     <style>
+        /* Atom One Dark's own comment color (#5c6370) is ~2.3:1 on its
+           background — fine for de-emphasized comments in an editor, too
+           low when this deck's demo code leans on step-numbered comments
+           (e.g. "# 1: Build the JAR") as part of the narration. Lightened
+           to clear 4.5:1 while staying visibly muted. */
+        .hljs-comment { color: #9099a6; }
         :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
         /* Slide-in transitions animate `transform` on each <section> (and the
            `.slides` wrapper carries `perspective`), which puts the entering
