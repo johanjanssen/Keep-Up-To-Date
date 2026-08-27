@@ -51,14 +51,6 @@
             </ul>
         </div>
         <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java 17 → 25 — zero code changes</span>
-            <ul style="margin-top:0.3em;">
-                <li><strong>Compact Object Headers</strong> (JEP 519, stable since 25) shrink every object header — less heap for boxed values &amp; small records</li>
-                <li><strong>Virtual Threads</strong> (JEP 444) remove the thread-per-task memory ceiling for I/O-bound workloads — the biggest, most reliable win in the suite</li>
-                <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span><br>
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
             Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
@@ -143,6 +135,14 @@
     <section>
         <h2>🎬 Demo: Free Performance from Upgrading Java</h2>
         <p class="subtitle">Same code, same hardware — JMH benchmarks across Java 25 → 28 EA</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java 17 → 25 — zero code changes</span>
+            <ul style="margin-top:0.3em;">
+                <li><strong>Compact Object Headers</strong> (JEP 519, stable since 25) shrink every object header — less heap for boxed values &amp; small records</li>
+                <li><strong>Virtual Threads</strong> (JEP 444) remove the thread-per-task memory ceiling for I/O-bound workloads — the biggest, most reliable win in the suite</li>
+                <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
+            </ul>
+        </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🔮 Java 25 → 28 EA — Valhalla preview</span>
             Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
