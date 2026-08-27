@@ -1,181 +1,224 @@
 {
-  "generated": "2026-08-25T15:40:35Z",
+  "generated": "2026-08-27T08:41:58Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
-      "size_mb": 100.0
+      "size_mb": 100.0,
+      "packages": 87
     },
     {
       "name": "debian:13",
-      "size_mb": 120.0
+      "size_mb": 120.0,
+      "packages": 78
     },
     {
       "name": "debian:13-slim",
-      "size_mb": 78.6
+      "size_mb": 78.6,
+      "packages": 78
     },
     {
       "name": "gcr.io/distroless/base-debian13",
-      "size_mb": 24.3
+      "size_mb": 24.3,
+      "packages": 10
     },
     {
       "name": "gcr.io/distroless/static-debian13",
-      "size_mb": 2.2
+      "size_mb": 2.2,
+      "packages": 6
     },
     {
       "name": "almalinux:10",
-      "size_mb": 187.0
+      "size_mb": 187.0,
+      "packages": 136
     },
     {
       "name": "almalinux/10-base",
-      "size_mb": 193.0
+      "size_mb": 193.0,
+      "packages": 147
     },
     {
       "name": "almalinux:10-minimal",
-      "size_mb": 74.1
+      "size_mb": 74.1,
+      "packages": 84
     },
     {
       "name": "almalinux/10-micro",
-      "size_mb": 18.7
+      "size_mb": 18.7,
+      "packages": 26
     },
     {
       "name": "registry.access.redhat.com/ubi9-micro:latest",
-      "size_mb": 23.0
+      "size_mb": 23.0,
+      "packages": 22
     },
     {
       "name": "alpine:3",
-      "size_mb": 8.4
+      "size_mb": 8.4,
+      "packages": 16
     },
     {
       "name": "busybox:latest",
-      "size_mb": 4.5
+      "size_mb": 4.5,
+      "packages": null
     },
     {
       "name": "scratch-probe:local",
-      "size_mb": 0.0
+      "size_mb": 0.0,
+      "packages": 0
     }
   ],
   "java": [
     {
       "name": "eclipse-temurin:25-jdk",
-      "size_mb": 414.0
+      "size_mb": 414.0,
+      "packages": 115
     },
     {
       "name": "eclipse-temurin:25-jdk-alpine",
-      "size_mb": 303.0
+      "size_mb": 303.0,
+      "packages": 49
     },
     {
       "name": "eclipse-temurin:25-jre",
-      "size_mb": 336.0
+      "size_mb": 336.0,
+      "packages": 106
     },
     {
       "name": "eclipse-temurin:25-jre-alpine",
-      "size_mb": 226.0
+      "size_mb": 226.0,
+      "packages": 44
     },
     {
       "name": "azul/zulu-openjdk:25-jre",
-      "size_mb": 363.0
+      "size_mb": 377.0,
+      "packages": 132
     },
     {
       "name": "azul/zulu-openjdk:25-jre-headless",
-      "size_mb": 358.0
+      "size_mb": 371.0,
+      "packages": 116
     },
     {
       "name": "azul/zulu-openjdk:25-jre-crac",
-      "size_mb": 310.0
+      "size_mb": 323.0,
+      "packages": 103
     },
     {
       "name": "azul/zulu-openjdk-alpine:25-jre",
-      "size_mb": 267.0
+      "size_mb": 273.0,
+      "packages": 33
     },
     {
       "name": "azul/zulu-openjdk-alpine:25-jre-headless",
-      "size_mb": 259.0
+      "size_mb": 265.0,
+      "packages": 20
     },
     {
       "name": "gcr.io/distroless/java25-debian13",
-      "size_mb": 226.0
+      "size_mb": 226.0,
+      "packages": 25
     },
     {
       "name": "ghcr.io/graalvm/native-image-community:25i2",
-      "size_mb": 1150.0
+      "size_mb": 1150.0,
+      "packages": 148
     },
     {
       "name": "amazoncorretto:25",
-      "size_mb": 532.0
+      "size_mb": 532.0,
+      "packages": 144
     },
     {
       "name": "amazoncorretto:25-alpine",
-      "size_mb": 371.0
+      "size_mb": 371.0,
+      "packages": 29
     },
     {
       "name": "ibm-semeru-runtimes:open-25-jre",
-      "size_mb": 344.0
+      "size_mb": 344.0,
+      "packages": 123
     },
     {
       "name": "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest",
-      "size_mb": 429.0
+      "size_mb": 429.0,
+      "packages": 131
     },
     {
       "name": "cgr.dev/chainguard/jdk:latest",
-      "size_mb": 391.0
+      "size_mb": 392.0,
+      "packages": 41
     },
     {
       "name": "cgr.dev/chainguard/jre:latest",
-      "size_mb": 326.0
+      "size_mb": 326.0,
+      "packages": 37
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-musl",
-      "size_mb": 140.0
+      "size_mb": 140.0,
+      "packages": 16
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-glibc",
-      "size_mb": 153.0
+      "size_mb": 153.0,
+      "packages": 16
     }
   ],
   "app": [
     {
       "name": "hello-conference:jre-temurin",
-      "size_mb": 360.0
+      "size_mb": 360.0,
+      "packages": 106
     },
     {
       "name": "hello-conference:jre-temurin-alpine",
-      "size_mb": 249.0
+      "size_mb": 249.0,
+      "packages": 44
     },
     {
       "name": "hello-conference:jlink-full-distroless-base-debian",
-      "size_mb": 156.0
+      "size_mb": 156.0,
+      "packages": 10
     },
     {
       "name": "hello-conference:jlink-distroless-base-debian",
-      "size_mb": 116.0
+      "size_mb": 116.0,
+      "packages": 10
     },
     {
       "name": "hello-conference:jlink-netty-distroless-base-debian",
-      "size_mb": 131.0
+      "size_mb": 131.0,
+      "packages": 10
     },
     {
       "name": "hello-conference:jlink-cds-distroless-base-debian",
-      "size_mb": 160.0
+      "size_mb": 160.0,
+      "packages": 10
     },
     {
       "name": "hello-conference:crac-azul-distroless-base-debian",
-      "size_mb": 263.0
+      "size_mb": 265.0,
+      "packages": 10
     },
     {
       "name": "hello-conference:native-debian-slim",
-      "size_mb": 148.0
+      "size_mb": 148.0,
+      "packages": 78
     },
     {
       "name": "hello-conference:native-minimal-distroless-static-debian",
-      "size_mb": 58.9
+      "size_mb": 58.9,
+      "packages": 6
     },
     {
       "name": "hello-conference:native-scratch",
-      "size_mb": 56.6
+      "size_mb": 56.6,
+      "packages": null
     },
     {
       "name": "hello-conference:native-netty-scratch",
-      "size_mb": 89.2
+      "size_mb": 89.2,
+      "packages": null
     }
   ]
 }
