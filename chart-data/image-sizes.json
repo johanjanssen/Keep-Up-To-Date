@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-27T08:41:58Z",
+  "generated": "2026-08-27T16:03:01Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
@@ -59,7 +59,7 @@
     {
       "name": "busybox:latest",
       "size_mb": 4.5,
-      "packages": null
+      "packages": 0
     },
     {
       "name": "scratch-probe:local",
@@ -140,7 +140,7 @@
     },
     {
       "name": "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest",
-      "size_mb": 429.0,
+      "size_mb": 431.0,
       "packages": 131
     },
     {
@@ -197,7 +197,7 @@
     },
     {
       "name": "hello-conference:crac-azul-distroless-base-debian",
-      "size_mb": 265.0,
+      "size_mb": 252.0,
       "packages": 10
     },
     {
