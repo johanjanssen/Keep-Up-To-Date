@@ -9,10 +9,10 @@
         <h2>📦 The Dependency Graph Problem</h2>
         <div class="medium">
             <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast — and most of it is invisible to you.</p>
-            <ul style="margin-top:0.6em;">
-                <li>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</li>
-                <li>Each node is a potential CVE, a potential breaking change, a potential licence issue</li>
-                <li>Without tooling, the graph is effectively unmanageable</li>
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">🧑‍💻</span><span>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</span></li>
+                <li><span class="ic">🕸️</span><span>Each node is a potential CVE, a potential breaking change, a potential licence issue</span></li>
+                <li><span class="ic">🚫</span><span>Without tooling, the graph is effectively unmanageable</span></li>
             </ul>
         </div>
     </section>
@@ -37,10 +37,10 @@
         <h2>SBOM — Know What You Ship</h2>
         <div class="medium">
             <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact — like a nutrition label for software.</p>
-            <ul style="margin-top:0.5em;">
-                <li>Required by US federal procurement (Executive Order 2021)</li>
-                <li>EU Cyber Resilience Act — mandatory for regulated products</li>
-                <li>Enables automated CVE matching across your entire fleet</li>
+            <ul class="icon-list" style="margin-top:0.5em;">
+                <li><span class="ic">🇺🇸</span><span>Required by US federal procurement (Executive Order 2021)</span></li>
+                <li><span class="ic">🇪🇺</span><span>EU Cyber Resilience Act — mandatory for regulated products</span></li>
+                <li><span class="ic">🔎</span><span>Enables automated CVE matching across your entire fleet</span></li>
             </ul>
         </div>
     </section>
@@ -48,10 +48,10 @@
     <section>
         <h2>Tools to create SBOM</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <ul>
-                <li>CycloneDX Maven Plugin: mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</li>
-                <li>Trivy: trivy image --format cyclonedx --output sbom.json</li>
-                <li>Syft: syft . -o cyclonexd-json</li>
+            <ul class="icon-list">
+                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin:</strong> <code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
+                <li><span class="ic">🔍</span><span><strong>Trivy:</strong> <code>trivy image --format cyclonedx --output sbom.json</code></span></li>
+                <li><span class="ic">📦</span><span><strong>Syft:</strong> <code>syft . -o cyclonedx-json</code></span></li>
             </ul>
         </div>
     </section>
