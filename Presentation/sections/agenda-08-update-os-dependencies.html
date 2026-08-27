@@ -8,12 +8,12 @@
     <section>
         <h2>🐳 The Layer You Forgot</h2>
         <div class="medium">
-            <p>Every containerised application is built on a base image. That base image is a dependency — one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
+            <p>Every containerised application is built on a base image. That base image is a dependency: one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
             <ol style="margin-top:0.6em;">
                 <li>You wrote <code>FROM mybase:v2</code> six months ago</li>
-                <li>That tag now points to a <strong>different image</strong> — rebuilt with OS patches</li>
+                <li>That tag now points to a <strong>different image</strong>: rebuilt with OS patches</li>
                 <li>Your CI uses the <strong>cached layer from six months ago</strong></li>
-                <li>You are running vulnerable OS packages — <span class="tag-bad">and you don't know it</span></li>
+                <li>You are running vulnerable OS packages, <span class="tag-bad">and you don't know it</span></li>
             </ol>
         </div>
     </section>
@@ -21,10 +21,10 @@
     <section>
         <h2>☕ Ride the Release Train</h2>
         <div class="medium">
-            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong> — not when they feel ready, but on a fixed schedule.</p>
+            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong>: not when they feel ready, but on a fixed schedule.</p>
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">📅</span><span>Regular releases → smaller, manageable changes each time</span></li>
-                <li><span class="ic">🛡️</span><span><strong>LTS (Long-Term Support)</strong> releases get extended security patches — safe for production</span></li>
+                <li><span class="ic">🛡️</span><span><strong>LTS (Long-Term Support)</strong> releases get extended security patches: safe for production</span></li>
                 <li><span class="ic">🧪</span><span>Non-LTS releases are production-quality for short-lived or internal services</span></li>
             </ul>
         </div>
@@ -48,30 +48,30 @@
     <section>
         <h2>Update FROM in Dockerfiles</h2>
         <div class="medium">
-            <p>Treat the base image tag like any other dependency version — bump it deliberately, on a schedule, not by accident when the tag silently moves underneath you.</p>
+            <p>Treat the base image tag like any other dependency version: bump it deliberately, on a schedule, not by accident when the tag silently moves underneath you.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <pre><code class="language-dockerfile">- FROM eclipse-temurin:21-jre
 + FROM eclipse-temurin:25-jre</code></pre>
-            A one-line diff — but it pulls in the latest JVM, security patches, and OS package updates all at once.
+            A one-line diff, but it pulls in the latest JVM, security patches, and OS package updates all at once.
         </div>
     </section>
 
     <section>
         <h2>Pin Versions, Not Floating Tags</h2>
         <div class="medium">
-            <p>Whether it's a Docker base image, a language runtime, or a build tool — <strong>floating version tags silently change under you</strong>.</p>
+            <p>Whether it's a Docker base image, a language runtime, or a build tool, <strong>floating version tags silently change under you</strong>.</p>
         </div>
         <div class="two-col medium" style="margin-top:0.6em;">
             <div class="box box-red">
-                <strong class="tag-bad">❌ Floating — dangerous</strong>
+                <strong class="tag-bad">❌ Floating: dangerous</strong>
                 <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre
 # Rebuilt weekly. CI uses a stale
 # cached layer from months ago.</code></pre>
             </div>
             <div class="box box-green">
-                <strong class="tag-good">✅ Pinned — reproducible</strong>
+                <strong class="tag-good">✅ Pinned: reproducible</strong>
                 <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre\
 @sha256:7ea65de6...</code></pre>
                 <small>Use automation to update the pin via PR.</small>
@@ -79,7 +79,7 @@
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java tooling</span>
-            Commit <code>.sdkmanrc</code> (<code>java=25.0.1-tem</code>) and <code>mvnw</code> / <code>gradlew</code> wrappers — everyone and CI run the exact same versions.
+            Commit <code>.sdkmanrc</code> (<code>java=25.0.1-tem</code>) and <code>mvnw</code> / <code>gradlew</code> wrappers: everyone and CI run the exact same versions.
         </div>
     </section>
 
@@ -89,8 +89,8 @@
             <p>As a project grows, the number of dependencies that need attention <strong>grows faster than the team's capacity to review them</strong>.</p>
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🤖</span><span>Dependency bots watch registries continuously and open PRs automatically</span></li>
-                <li><span class="ic">📋</span><span>The policy (what to group, what to auto-merge, what needs review) lives in config — not in people's heads</span></li>
-                <li><span class="ic">✅</span><span>CI verifies each update before it lands — humans only intervene for breaking changes</span></li>
+                <li><span class="ic">📋</span><span>The policy (what to group, what to auto-merge, what needs review) lives in config: not in people's heads</span></li>
+                <li><span class="ic">✅</span><span>CI verifies each update before it lands: humans only intervene for breaking changes</span></li>
             </ul>
         </div>
     </section>
@@ -114,14 +114,14 @@
 
     <section>
         <h2>Policy as Code</h2>
-        <p class="subtitle">🔧 Renovate config — <code>renovate.json</code>, checked into the repo</p>
-        <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo — not in a wiki, not in a person's memory.</p></div>
+        <p class="subtitle">🔧 Renovate config: <code>renovate.json</code>, checked into the repo</p>
+        <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo: not in a wiki, not in a person's memory.</p></div>
         <pre><code class="language-json">// renovate.json
 {
   "extends": ["config:base"],
   "packageRules": [
     {
-      "description": "Group all Docker base-image bumps — one PR, one review",
+      "description": "Group all Docker base-image bumps: one PR, one review",
       "matchDatasources": ["docker"],
       "groupName": "Docker base images",
       "schedule": ["every weekend"]
@@ -161,7 +161,7 @@
     </section>
 
     <section>
-        <h2>🔍 Renovate — Full Report</h2>
+        <h2>🔍 Renovate: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renovate/" loading="lazy" title="Renovate demo report"></iframe>
         </div>
@@ -174,7 +174,7 @@
 
 <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Keeping the base image &amp; runtime version current — across ecosystems</p>
+        <p class="subtitle">Keeping the base image &amp; runtime version current: across ecosystems</p>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
