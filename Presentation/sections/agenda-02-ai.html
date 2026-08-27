@@ -8,12 +8,31 @@
 
     <section>
         <h2>AI regularly uses old software</h2>
+        <p class="subtitle">Its training data has a cutoff date — its suggestions don't say so</p>
         <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
             <li><span class="ic">🔌</span><span>APIs</span></li>
             <li><span class="ic">📚</span><span>Libraries</span></li>
             <li><span class="ic">🐳</span><span>Docker images</span></li>
             <li><span class="ic">➕</span><span>...</span></li>
         </ul>
+    </section>
+
+    <section>
+        <h2>Concrete AI Mistakes</h2>
+        <div class="medium">
+            <table>
+                <thead><tr><th>AI suggests</th><th>Problem</th><th>Use instead</th></tr></thead>
+                <tbody>
+                    <tr><td><code>FROM openjdk:8-jre</code></td><td>Official image deprecated since 2021 — no more updates</td><td><code>FROM eclipse-temurin:25-jre</code></td></tr>
+                    <tr><td><code>import javax.persistence.Entity</code></td><td>Spring Boot 3 / Jakarta EE 9 renamed the whole namespace</td><td><code>import jakarta.persistence.Entity</code></td></tr>
+                    <tr><td><code>log4j:log4j:1.2.17</code></td><td>Log4j 1.x — EOL since 2015, unpatched CVEs</td><td><code>org.apache.logging.log4j:log4j-core:2.x</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">☕ Java example</span>
+            Ask an LLM for a Spring Security config and it may still suggest <code>@EnableGlobalMethodSecurity</code> — deprecated in 5.6, removed in Spring Security 6. The replacement, <code>@EnableMethodSecurity</code>, postdates its training data.
+        </div>
     </section>
 
     <section>
