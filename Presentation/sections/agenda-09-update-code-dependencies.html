@@ -11,7 +11,7 @@
             <p>Build-tool plugins can compare your locked versions against the latest available in the registry: without modifying anything.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Maven Versions Plugin</span>
+            <span class="java-pill">☕ Maven Versions Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw versions:display-dependency-updates
 
 # [INFO] org.postgresql:postgresql ...... 42.7.3 -> 42.8.0
@@ -19,7 +19,7 @@
 # [INFO] log4j-core .................... 2.0    -> 2.24.3  ← 🔴 CVE!</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
-            <span class="java-pill">☕ Also useful</span>
+            <span class="java-pill">☕ Also useful (Java)</span>
             <pre><code class="language-bash">./mvnw versions:display-plugin-updates      # build plugins too
 ./mvnw versions:display-property-updates    # ${my.version} properties</code></pre>
             <small>Gradle equivalent: <code>com.github.ben-manes.versions</code> plugin → <code>./gradlew dependencyUpdates</code></small>
@@ -32,7 +32,7 @@
             <p>A dependency doesn't need a CVE to be a problem: sometimes it's just been renamed, moved to a new coordinate, or deprecated outright, and a version-only bot won't tell you.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Old GroupIds Alerter (OGA)</span>
+            <span class="java-pill">☕ Old GroupIds Alerter (OGA, Java)</span>
             Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>); the artifact still resolves under the old coordinate, so nothing else catches this.
             <pre><code class="language-bash"># no pom.xml plugin config needed: invoked on-the-fly via Maven coordinates
 ./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only
