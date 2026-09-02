@@ -51,72 +51,58 @@
 
     <section>
         <h2>Update FROM in Dockerfiles</h2>
-        <div class="medium">
-            <p>Treat the base image tag like any other dependency version: bump it deliberately, on a schedule, not by accident when the tag silently moves underneath you.</p>
-        </div>
+        <ul class="icon-list medium">
+            <li><span class="ic">📅</span><span>Treat the base image tag like any other dependency: bump it deliberately, on a schedule</span></li>
+            <li><span class="ic">🚫</span><span>Not by accident, when the tag silently moves underneath you</span></li>
+        </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <pre><code class="language-dockerfile">- FROM eclipse-temurin:21-jre
 + FROM eclipse-temurin:25-jre</code></pre>
-            A one-line diff, but it pulls in the latest JVM, security patches, and OS package updates all at once.
+            One-line diff → latest JVM, security patches, and OS packages all at once.
         </div>
     </section>
 
     <section>
         <h2>Why Pin at All?</h2>
         <div class="medium">
-            <p>Whether it's a Docker base image, a language runtime, or a build tool, <strong>floating version tags silently change under you</strong>. Pinning trades that surprise for a few concrete guarantees:</p>
+            <p><strong>Floating version tags silently change under you.</strong> Pinning trades that surprise for:</p>
         </div>
         <ul class="icon-list medium" style="margin-top:0.6em;">
             <li><span class="ic">🔁</span><span><strong>Reproducible builds</strong>: the same tag produces the same bytes today and six months from now</span></li>
             <li><span class="ic">⏪</span><span><strong>Rollback</strong>: revert to an exact known-good version when a release breaks something</span></li>
             <li><span class="ic">🐞</span><span><strong>Debugging</strong>: you know precisely what's running, so "works on my machine" isn't a mystery</span></li>
-            <li><span class="ic">📋</span><span><strong>Auditability</strong>: prove exactly what shipped, for security reviews, incident response, and compliance</span></li>
+            <li><span class="ic">📋</span><span><strong>Auditability</strong>: prove exactly what shipped, for security reviews and compliance</span></li>
         </ul>
     </section>
 
     <section>
-        <h2>A Specific Tag Still Isn't Immutable</h2>
-        <div class="medium">
-            <p>It's tempting to think <code>eclipse-temurin:25.0.4_7-jre-ubi10-minimal</code> is "specific enough" to be safe. It isn't: a Docker tag is just a mutable pointer, and the maintainer can repoint it whenever they rebuild the image.</p>
-        </div>
-        <div class="two-col medium" style="margin-top:0.6em;">
+        <h2>Docker Tags Aren't Truly Immutable</h2>
+        <div class="two-col medium">
             <div class="box box-green">
                 <strong class="tag-good">✅ Maven: release = immutable</strong>
-                <p style="margin:0.3em 0 0;">Once <code>25.0.4</code> is published to Maven Central, that artifact can never change. Republishing the same coordinate is rejected.</p>
+                <p style="margin:0.3em 0 0;">Once published to Maven Central, an artifact can never change.</p>
             </div>
             <div class="box box-red">
                 <strong class="tag-bad">❌ Docker: a tag can move</strong>
-                <p style="margin:0.3em 0 0;"><code>eclipse-temurin:25.0.4_7-jre-ubi10-minimal</code> can be rebuilt and re-pushed: new OS packages, same tag, different bytes.</p>
+                <p style="margin:0.3em 0 0;">A maintainer can rebuild and re-push the same tag: same name, different bytes.</p>
             </div>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            So the only truly immutable reference is the image <strong>digest</strong> (<code>@sha256:...</code>), not the version tag.
-        </div>
-    </section>
-
-    <section>
-        <h2>The Same Tag, Two Different SHAs</h2>
-        <div class="medium">
-            <p>Pinning by digest is safer, but the digest itself isn't a single global truth: <strong>Docker Hub and your local Docker cache can disagree</strong> on which SHA a tag currently points to.</p>
-        </div>
         <ul class="icon-list medium" style="margin-top:0.6em;">
-            <li><span class="ic">☁️</span><span>Docker Hub always shows the <em>current</em> digest for a tag: whatever was last pushed.</span></li>
-            <li><span class="ic">💻</span><span>Your local cache keeps whatever digest you pulled last: it doesn't refresh on its own.</span></li>
-            <li><span class="ic">🧭</span><span>Two developers (or dev vs. CI) can end up building from different SHAs for the "same" tag, just because they pulled at different times.</span></li>
+            <li><span class="ic">🔒</span><span>Only the image <strong>digest</strong> (<code>@sha256:...</code>) is truly immutable, not the tag</span></li>
+            <li><span class="ic">☁️</span><span>Docker Hub always shows the <em>current</em> digest for a tag</span></li>
+            <li><span class="ic">💻</span><span>Your local cache keeps whatever digest you pulled last: it doesn't refresh on its own</span></li>
+            <li><span class="ic">🧭</span><span>Dev vs. CI can silently build from <strong>different SHAs</strong> for the "same" tag</span></li>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            Always resolve and record the digest explicitly (<code>docker pull</code> + <code>docker inspect --format='{{index .RepoDigests 0}}'</code>), then commit that exact <code>@sha256:...</code> to the Dockerfile: don't rely on whichever SHA happened to be cached.
+            <span class="java-pill">☕ Fix</span>
+            Resolve &amp; commit the exact digest (<code>docker pull</code> + <code>docker inspect --format='{{index .RepoDigests 0}}'</code>): don't rely on the cached SHA.
         </div>
     </section>
 
     <section>
         <h2>Pin Versions, Not Floating Tags</h2>
-        <div class="medium">
-            <p>Whether it's a Docker base image, a language runtime, or a build tool, <strong>floating version tags silently change under you</strong>.</p>
-        </div>
-        <div class="two-col medium" style="margin-top:0.6em;">
+        <div class="two-col medium">
             <div class="box box-red">
                 <strong class="tag-bad">❌ Floating: dangerous</strong>
                 <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre
