@@ -6,9 +6,13 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h2>When a Version Bump Isn't Just a Version Bump</h2>
+        <h2>Beyond the Version Bump</h2>
         <div class="medium">
-            <p>Chapters 8 and 9 covered bumping version numbers. Some upgrades also <strong>break your source code</strong>: renamed packages, removed APIs, changed method signatures. A dependency bot can open the PR, but it can't rewrite your code: that needs a dedicated migration tool.</p>
+            <ul class="icon-list">
+                <li><span class="ic">🔢</span><span>Chapters 8 and 9 covered bumping version numbers</span></li>
+                <li><span class="ic">💥</span><span>Some upgrades also <strong>break your source code</strong>: renamed packages, removed APIs, changed method signatures</span></li>
+                <li><span class="ic">🤖</span><span>A dependency bot can open the PR, but it can't rewrite your code: that needs a dedicated migration tool</span></li>
+            </ul>
         </div>
     </section>
 
@@ -47,7 +51,7 @@
             <p>When a framework or language version change requires code edits, automated migration tools can apply the changes: consistently and at scale across your whole codebase.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ OpenRewrite</span>
+            <span class="java-pill">☕ OpenRewrite (Java)</span>
             Recipe-driven, AST-level refactoring. No <code>pom.xml</code> plugin config needed: the plugin and its recipes are supplied entirely on the Maven command line.
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Before</th><th>After</th></tr></thead>

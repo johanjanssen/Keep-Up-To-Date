@@ -20,9 +20,17 @@
     <section>
         <h2>Use a Bill of Materials (BOM)</h2>
         <div class="medium">
-            <p>A BOM declares a curated, tested set of dependency versions. Upgrade the BOM, get a tested, compatible stack upgrade, not dozens of independent version decisions.</p>
+            <ul class="icon-list">
+                <li><span class="ic">📋</span><span>A BOM declares a <strong>curated, tested set</strong> of dependency versions</span></li>
+                <li><span class="ic">⬆️</span><span>Upgrade the BOM, get a tested, compatible stack upgrade &mdash; not dozens of independent version decisions</span></li>
+                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together, so you don't have to</span></li>
+            </ul>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
+    </section>
+
+    <section>
+        <h2>Use a Bill of Materials (BOM)</h2>
+        <div class="box box-blue medium">
             <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
             <pre><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
@@ -61,8 +69,8 @@
 
     <section>
         <h2>Find and Remove Unused Dependencies</h2>
-S        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Maven Dependency Plugin</span>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw dependency:analyze
 
 # [WARNING] Unused declared dependencies found:
@@ -71,7 +79,7 @@ S        <div class="box box-blue medium" style="margin-top:0.5em;">
 # [WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
-            <span class="java-pill">☕ Fail the build on it</span>
+            <span class="java-pill">☕ Fail the build on it (Java)</span>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
     &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
@@ -93,7 +101,7 @@ S        <div class="box box-blue medium" style="margin-top:0.5em;">
             <p>Don't just warn: <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Maven Enforcer Plugin</span>
+            <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
             <pre><code class="language-xml">&lt;rules&gt;
     &lt;requireJavaVersion&gt;&lt;version&gt;[21,)&lt;/version&gt;&lt;/requireJavaVersion&gt;
     &lt;bannedDependencies&gt;

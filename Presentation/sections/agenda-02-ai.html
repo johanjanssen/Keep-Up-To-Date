@@ -54,9 +54,13 @@
     <section>
         <h2>📦 Seen It Live: The Base-Image Swap</h2>
         <div class="box box-red medium" style="margin-top:0.5em;">
-            <p><code>apt-get install</code> fails on a minimal image: wrong package name for that distro, or the repo just isn't there. Instead of finding the distro-correct package name (or adding the one missing <code>-dev</code> lib), it quietly rewrites the <code>FROM</code> line to a bigger, friendlier base image. The build goes green. Nobody notices the image just grew, gained a shell and a package manager, and picked up dozens of CVEs along the way.</p>
+            <ul class="icon-list">
+                <li><span class="ic">❌</span><span><code>apt-get install</code> fails: wrong package name for the distro, or the repo isn't there</span></li>
+                <li><span class="ic">🔀</span><span>Instead of fixing the package name, it quietly swaps the <code>FROM</code> line for a bigger base image</span></li>
+                <li><span class="ic">✅</span><span>Build goes green — but the image gained a shell, a package manager, and dozens of CVEs</span></li>
+            </ul>
         </div>
-        <p class="medium" style="margin-top:0.6em;">Exactly the trade-off Chapter 4 spent a dozen slides on: made silently, by a tool whose only goal was making the red text go away. <strong>Review the diff, not just whether it built.</strong></p>
+        <p class="medium" style="margin-top:0.6em;">Made silently, by a tool whose only goal was making the red text go away. <strong>Review the diff, not just whether it built.</strong></p>
     </section>
 
     <section>
