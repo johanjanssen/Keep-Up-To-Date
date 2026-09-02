@@ -20,9 +20,17 @@
     <section>
         <h2>Use a Bill of Materials (BOM)</h2>
         <div class="medium">
-            <p>A BOM declares a curated, tested set of dependency versions. Upgrade the BOM, get a tested, compatible stack upgrade, not dozens of independent version decisions.</p>
+            <ul class="icon-list">
+                <li><span class="ic">📋</span><span>A BOM declares a <strong>curated, tested set</strong> of dependency versions</span></li>
+                <li><span class="ic">⬆️</span><span>Upgrade the BOM, get a tested, compatible stack upgrade &mdash; not dozens of independent version decisions</span></li>
+                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together, so you don't have to</span></li>
+            </ul>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
+    </section>
+
+    <section>
+        <h2>Use a Bill of Materials (BOM)</h2>
+        <div class="box box-blue medium">
             <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
             <pre><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
