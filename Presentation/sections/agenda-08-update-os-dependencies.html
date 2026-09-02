@@ -6,6 +6,18 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
+        <h2>What Counts as "OS" Here</h2>
+        <div class="medium">
+            <p>This chapter is about everything underneath your application code:</p>
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">🐳</span><span>Docker <strong>base image versions</strong>: the tag your <code>FROM</code> line points to</span></li>
+                <li><span class="ic">💻</span><span><strong>Virtual machine images</strong>: the OS version your servers actually boot</span></li>
+                <li><span class="ic">⚙️</span><span>The <strong>software installed on top</strong>: language runtimes, and OS packages like <code>openssl</code></span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
         <h2>🐳 The Layer You Forgot</h2>
         <div class="medium">
             <p>Every containerised application is built on a base image. That base image is a dependency: one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
