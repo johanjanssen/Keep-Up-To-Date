@@ -149,26 +149,6 @@
     </section>
 
     <section>
-        <h2>It's Not Just a Java Problem</h2>
-        <div class="medium">
-            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <table style="margin-top:0.2em;">
-                <thead><tr><th>Language</th><th>Small-image lever</th></tr></thead>
-                <tbody>
-                    <tr><td>Java</td><td><code>jlink</code> custom JRE, or GraalVM <code>native-image</code> (AOT) to drop the JVM entirely</td></tr>
-                    <tr><td>.NET</td><td>Native AOT: .NET's direct equivalent of GraalVM native-image</td></tr>
-                    <tr><td>Go</td><td>Compiles to a single static binary by default: <code>scratch</code> "just works"</td></tr>
-                    <tr><td>Rust</td><td>Same story as Go with a musl target: static binary, no runtime image needed</td></tr>
-                    <tr><td>Python / Node.js</td><td>Interpreted: always need a runtime layer; lever is <code>-slim</code> / <code>-alpine</code> / distroless base images</td></tr>
-                </tbody>
-            </table>
-            <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
-        </div>
-    </section>
-
-    <section>
         <h2>🔍 Compare-Scans: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/custom-image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
@@ -179,19 +159,24 @@
     </section>
 
     <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <h2>🛠️ It's Not Just a Java Problem</h2>
         <p class="subtitle">Fast-startup / low-footprint runtime strategies across ecosystems</p>
-        <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+        <div class="medium">
+            <p>Every language faces the same "does my image need a full runtime?" question: the shape of the answer just differs.</p>
+        </div>
+        <table class="small" style="margin-top:0.5em;">
+            <thead><tr><th>Tool / Lever</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td>GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary</td></tr>
+                <tr><td><code>jlink</code> custom JRE, GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary, or trims the JRE to drop the JVM entirely</td></tr>
                 <tr><td>Azul CRaC</td><td>Java / JVM</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
                 <tr><td>CRIU</td><td>Any (OS-level process checkpoint)</td><td>The Linux checkpoint/restore mechanism CRaC itself builds on</td></tr>
-                <tr><td>.NET Native AOT / ReadyToRun</td><td>.NET</td><td>AOT compilation and pre-JIT for faster cold start</td></tr>
-                <tr><td>Go / Rust static binaries</td><td>Go, Rust</td><td>Already compiled: no JIT warm-up phase to begin with</td></tr>
-                <tr><td>Node.js V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialised heap to skip re-parsing/re-executing startup code</td></tr>
+                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>.NET's direct equivalent of GraalVM native-image, plus pre-JIT for faster cold start</td></tr>
+                <tr><td>Static binaries</td><td>Go, Rust</td><td>Compiled to a single static binary by default (<code>scratch</code>/musl "just works"): no runtime image or JIT warm-up needed</td></tr>
+                <tr><td>Slim/alpine/distroless base images</td><td>Python, Node.js</td><td>Interpreted: always need a runtime layer, so the lever is a smaller base image, not dropping it</td></tr>
+                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialised heap to skip re-parsing/re-executing startup code</td></tr>
             </tbody>
         </table>
+        <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
     </section>
 
 </section>
