@@ -28,6 +28,23 @@
     </section>
 
     <section>
+        <h2>Ship the Runtime, Not the Toolchain</h2>
+        <div class="medium">
+            <p>Every ecosystem draws the same line: <strong>build-time tools</strong> (compilers, debuggers, package managers) vs. <strong>what production needs to run the app</strong>. Only the latter belongs in the image.</p>
+        </div>
+        <table class="small" style="margin-top:0.5em;">
+            <thead><tr><th>Language</th><th>Dev toolchain</th><th>Ships to prod</th></tr></thead>
+            <tbody>
+                <tr><td>Java</td><td>JDK (compiler, debugger, jshell)</td><td>JRE only</td></tr>
+                <tr><td>.NET</td><td>SDK</td><td>Runtime only</td></tr>
+                <tr><td>Go / Rust</td><td>Compiler toolchain</td><td>Static binary — no toolchain at all</td></tr>
+                <tr><td>Python / Node.js</td><td>Same interpreter, plus dev packages</td><td>Interpreter, shorn of dev tooling (<code>-slim</code>, <code>--omit=dev</code>)</td></tr>
+            </tbody>
+        </table>
+        <p class="small" style="margin-top:0.5em;">Leftover dev tools in prod are a double cost: extra CVEs to patch for code that's never called, and extra tools an attacker can use once they get a shell.</p>
+    </section>
+
+    <section>
         <h2>JDK vs. JRE: What Actually Ships to Production</h2>
         <div class="medium">
             <p>The JDK is a superset: <strong>JDK = JRE + development tools</strong> (compiler, debugger, doc generator, jshell, …). Ship the JRE, not the JDK.</p>
@@ -48,7 +65,6 @@
                 </ul>
             </div>
         </div>
-        <p class="small" style="margin-top:0.5em;">Not just Java: <strong>.NET</strong> splits SDK vs. Runtime the same way; <strong>Go/Rust</strong> compile to a static binary, so prod needs no toolchain at all; <strong>Python/Node.js</strong> keep the same interpreter but should still shed dev-only tooling and packages (<code>-slim</code>, <code>--omit=dev</code>).</p>
     </section>
 
     <section>
