@@ -283,7 +283,12 @@
                 <tr><td><code>vuln-app:safe</code></td><td>ubuntu (1000)</td><td>temurin:25-jre, no extra packages</td><td class="tag-good">✅ Remote class-loading step is blocked; attack fails silently</td></tr>
             </tbody>
         </table>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
+    </section>
+
+    <section>
+        <h2>☕ Java Example: One JVM Flag Decides the Outcome</h2>
+        <p class="subtitle">The log4j jar itself is never patched</p>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span>
             All three images ship the exact same <code>log4j-core 2.14.1</code>, still vulnerable, still doing the JNDI lookup. What differs is one JVM flag:
             <pre><code class="language-bash"># root & escalation images deliberately force the flag back on
