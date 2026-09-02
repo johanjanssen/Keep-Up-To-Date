@@ -72,6 +72,80 @@
     </section>
 
     <section>
+        <h2>🐳 How the Testcontainers Test Is Wired</h2>
+        <p class="subtitle">A real Postgres container, wired into Spring automatically: no manual config, no mocks</p>
+        <div class="medium" style="max-width:900px;margin:0.4em auto 0;">
+            <svg viewBox="0 0 950 300" style="width:100%;height:auto;" role="img"
+                 aria-label="The test class starts a real Postgres container in Docker via the Container annotation. ServiceConnection detects the running container and auto-wires its JDBC URL into the Spring context, no manual DynamicPropertySource needed. Spring injects the real UserRepository bean into the test. The test then calls the repository, which runs real SQL over JDBC straight against the container: no mocks, no in-memory fakes.">
+                <defs>
+                    <marker id="tcArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#586e75"/>
+                    </marker>
+                    <marker id="tcArrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#859900"/>
+                    </marker>
+                </defs>
+
+                <!-- Test Class -->
+                <rect x="15" y="105" width="150" height="90" rx="8" fill="rgba(88,110,117,0.06)" stroke="rgba(88,110,117,0.35)" stroke-width="1.5"/>
+                <text x="90" y="135" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="14" fill="#586e75">Test Class</text>
+                <text x="90" y="155" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">@SpringBootTest</text>
+                <text x="90" y="170" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">@Testcontainers</text>
+
+                <!-- Docker band -->
+                <rect x="205" y="40" width="200" height="200" rx="8" fill="rgba(42,161,152,0.06)" stroke="#2aa198" stroke-width="1.5"/>
+                <text x="305" y="60" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="13" fill="#586e75">Docker</text>
+
+                <rect x="225" y="110" width="160" height="90" rx="7" fill="rgba(42,161,152,0.14)" stroke="#2aa198" stroke-width="1.25"/>
+                <text x="305" y="136" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#586e75">Postgres Container</text>
+                <text x="305" y="154" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">postgres:16-alpine</text>
+                <text x="305" y="169" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">@Container</text>
+
+                <!-- Spring Context -->
+                <rect x="445" y="105" width="230" height="90" rx="8" fill="rgba(38,139,210,0.1)" stroke="#268bd2" stroke-width="1.5"/>
+                <text x="560" y="128" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="13" fill="#586e75">Spring Context</text>
+                <text x="560" y="149" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">DataSource — @ServiceConnection</text>
+                <text x="560" y="164" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">UserRepository — @Autowired</text>
+
+                <!-- Test Method -->
+                <rect x="760" y="105" width="170" height="90" rx="8" fill="rgba(133,153,0,0.08)" stroke="#859900" stroke-width="1.5"/>
+                <text x="845" y="132" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="13" fill="#586e75">Test Method</text>
+                <text x="845" y="152" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">calls repository,</text>
+                <text x="845" y="167" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">asserts real result</text>
+
+                <!-- Arrow 1: Test Class -> Container -->
+                <line x1="165" y1="150" x2="221" y2="150" stroke="#586e75" stroke-width="1.25" marker-end="url(#tcArrow)"/>
+                <circle cx="193" cy="150" r="10" fill="#fdf6e3" stroke="#586e75" stroke-width="1.1"/>
+                <text x="193" y="154" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="10.5" fill="#586e75">1</text>
+
+                <!-- Arrow 2: Container -> Spring Context -->
+                <line x1="385" y1="150" x2="441" y2="150" stroke="#586e75" stroke-width="1.25" marker-end="url(#tcArrow)"/>
+                <circle cx="413" cy="150" r="10" fill="#fdf6e3" stroke="#586e75" stroke-width="1.1"/>
+                <text x="413" y="154" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="10.5" fill="#586e75">2</text>
+
+                <!-- Arrow 3: Spring Context -> Test Method -->
+                <line x1="675" y1="150" x2="756" y2="150" stroke="#586e75" stroke-width="1.25" marker-end="url(#tcArrow)"/>
+                <circle cx="716" cy="150" r="10" fill="#fdf6e3" stroke="#586e75" stroke-width="1.1"/>
+                <text x="716" y="154" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="10.5" fill="#586e75">3</text>
+
+                <!-- Arrow 4: Test Method -> Container (real SQL, feedback loop) -->
+                <path d="M845,195 L845,262 L305,262 L305,203" fill="none" stroke="#859900" stroke-width="1.25" stroke-dasharray="4 3" marker-end="url(#tcArrowGreen)"/>
+                <circle cx="575" cy="262" r="10" fill="#fdf6e3" stroke="#859900" stroke-width="1.1"/>
+                <text x="575" y="266" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="10.5" fill="#859900">4</text>
+                <text x="575" y="248" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">real SQL over JDBC — no mocks</text>
+            </svg>
+        </div>
+        <div class="medium" style="margin-top:0.5em;">
+            <ul class="icon-list" style="margin-top:0.2em;">
+                <li><span class="ic">1️⃣</span><span><code>@Container</code> starts a real Postgres container in Docker</span></li>
+                <li><span class="ic">2️⃣</span><span><code>@ServiceConnection</code> auto-detects it and wires the datasource, no manual <code>@DynamicPropertySource</code></span></li>
+                <li><span class="ic">3️⃣</span><span>Spring injects the real <code>UserRepository</code> bean into the test</span></li>
+                <li><span class="ic">4️⃣</span><span>The test calls the repository; queries run as real SQL against the container</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
         <h2>Integration Tests with Real Dependencies</h2>
         <div class="medium"><p>Spin up the real database / broker / service in a container for the test: no mocks, no in-memory fakes.</p></div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
