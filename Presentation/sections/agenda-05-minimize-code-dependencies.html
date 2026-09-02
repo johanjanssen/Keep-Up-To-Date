@@ -61,8 +61,8 @@
 
     <section>
         <h2>Find and Remove Unused Dependencies</h2>
-S        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Maven Dependency Plugin</span>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw dependency:analyze
 
 # [WARNING] Unused declared dependencies found:
@@ -71,7 +71,7 @@ S        <div class="box box-blue medium" style="margin-top:0.5em;">
 # [WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
-            <span class="java-pill">☕ Fail the build on it</span>
+            <span class="java-pill">☕ Fail the build on it (Java)</span>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
     &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
@@ -93,7 +93,7 @@ S        <div class="box box-blue medium" style="margin-top:0.5em;">
             <p>Don't just warn: <strong>fail the build</strong> when forbidden or outdated dependencies appear. This prevents regressions from slipping in silently.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Maven Enforcer Plugin</span>
+            <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
             <pre><code class="language-xml">&lt;rules&gt;
     &lt;requireJavaVersion&gt;&lt;version&gt;[21,)&lt;/version&gt;&lt;/requireJavaVersion&gt;
     &lt;bannedDependencies&gt;

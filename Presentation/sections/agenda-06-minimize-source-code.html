@@ -95,7 +95,7 @@
         <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
         <p class="subtitle">Dump live coverage while the app keeps running: no restart, multiple snapshots</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo TCP agent</span>
+            <span class="java-pill">☕ JaCoCo TCP agent (Java)</span>
             The agent opens a TCP server on the JVM. Connect a CLI client to it at any time to pull the
             in-memory counters: the app never stops.
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
@@ -126,7 +126,7 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
         <h2>☕ Retrieve Coverage: via File (JVM Exit)</h2>
         <p class="subtitle">Coverage flushes to disk when the JVM exits: no TCP hookup needed</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo file agent</span>
+            <span class="java-pill">☕ JaCoCo file agent (Java)</span>
             Simplest mode: the agent registers a shutdown hook and writes the exec file the moment the JVM exits.
             Just stop the app and generate the report.
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
