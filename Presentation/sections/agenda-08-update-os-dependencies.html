@@ -96,18 +96,18 @@
     </section>
 
     <section>
-        <h2>The Same Tag, Two Different SHAs</h2>
+        <h2>One Image, Two Registries, Two SHAs</h2>
         <div class="medium">
-            <p>Pinning by digest is safer, but the digest itself isn't a single global truth: <strong>Docker Hub and your local Docker cache can disagree</strong> on which SHA a tag currently points to.</p>
+            <p>Pinning by digest is safer, but the digest isn't a fixed property of "the image": <strong>mirroring it to another registry can quietly change the SHA</strong>, even though nothing about your app changed.</p>
         </div>
         <ul class="icon-list medium" style="margin-top:0.6em;">
-            <li><span class="ic">☁️</span><span>Docker Hub always shows the <em>current</em> digest for a tag: whatever was last pushed.</span></li>
-            <li><span class="ic">💻</span><span>Your local cache keeps whatever digest you pulled last: it doesn't refresh on its own.</span></li>
-            <li><span class="ic">🧭</span><span>Two developers (or dev vs. CI) can end up building from different SHAs for the "same" tag, just because they pulled at different times.</span></li>
+            <li><span class="ic">📦</span><span>The digest is computed over the <em>manifest</em>, not the app inside it: converting between manifest formats (e.g. Docker v2 → OCI) during a copy changes the digest.</span></li>
+            <li><span class="ic">🌍</span><span>Multi-arch tags point to a manifest <em>list</em>; a mirror that only syncs one platform gives that tag a different top-level digest than the original.</span></li>
+            <li><span class="ic">🔁</span><span><code>docker pull</code> + <code>docker push</code> can decompress and recompress layers on the way through, so the "same" image re-pushed elsewhere gets new SHAs at every level.</span></li>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
-            Always resolve and record the digest explicitly (<code>docker pull</code> + <code>docker inspect --format='{{index .RepoDigests 0}}'</code>), then commit that exact <code>@sha256:...</code> to the Dockerfile: don't rely on whichever SHA happened to be cached.
+            Mirroring <code>eclipse-temurin:25-jre</code> into your private registry? Use a digest-preserving copy tool like <code>skopeo copy</code> or <code>crane copy</code> instead of <code>docker pull</code>/<code>docker push</code>, and confirm with <code>docker manifest inspect</code> that both registries report the same <code>@sha256:...</code>.
         </div>
     </section>
 
