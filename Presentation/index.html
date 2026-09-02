@@ -121,6 +121,20 @@
         .agenda-num-a { background:linear-gradient(135deg,#268bd2,#6c71c4); }
         .agenda-num-b { background:linear-gradient(135deg,#cb4b16,#d33682); }
         .agenda-emoji { flex:0 0 auto; font-size:1em; }
+        /* Sub-dividers inside the "Concrete examples" run — a lighter echo
+           of .chapter-slide's kicker+rule treatment, marking where each of
+           the three demos starts without competing with the full chapter
+           breaks. */
+        .reveal .example-slide { position:relative; }
+        .reveal .example-slide .example-kicker {
+            display:block; font-size:0.5em; font-weight:700; letter-spacing:0.28em;
+            text-transform:uppercase; color:#268bd2; margin-bottom:0.7em;
+        }
+        .reveal .example-slide h1 { font-size:1.9em; max-width:85%; margin:0 auto; }
+        .reveal .example-slide .example-rule {
+            width:3em; height:4px; margin:0.8em auto 0;
+            background:linear-gradient(90deg,#cb4b16,#d33682); border-radius:99px;
+        }
         .box { background:rgba(38,139,210,0.08); border:1px solid rgba(38,139,210,0.25); border-radius:8px; padding:0.7em; margin:0.4em 0; }
         .box-red   { background:rgba(220,50,47,0.1);   border-color:rgba(220,50,47,0.4); }
         .box-green { background:rgba(133,153,0,0.1);  border-color:rgba(133,153,0,0.4); }
