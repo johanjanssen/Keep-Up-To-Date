@@ -420,8 +420,15 @@
     <section>
         <h2>Layer 1 Before the Artifact exists: source-Level Scanning</h2>
         <div class="medium">
-            <p>Scan dependency manifests against a vulnerability database as part of the build. Fail the build on high-severity findings.</p>
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">📄</span><span>Scan dependency manifests against a vulnerability database as part of the build</span></li>
+                <li><span class="ic">🚫</span><span>Fail the build on high-severity findings</span></li>
+            </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>Layer 1 Before the Artifact exists: source-Level Scanning</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
             <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
@@ -444,8 +451,14 @@
     <section>
         <h2>Layer 2 after the build: Image / Artifact Scanning</h2>
         <div class="medium">
-            <p>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies.</p>
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">📦</span><span>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies</span></li>
+            </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>Layer 2 after the build: Image / Artifact Scanning</h2>
         <div class="three-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <span class="java-pill">🌐 Grype (Anchore)</span>
