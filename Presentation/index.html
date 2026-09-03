@@ -665,6 +665,11 @@ async function renderPuml(img) {
             pumlEncodedCache.set(src, encoded);
         }
         img.src = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+        // The <img> has no dimensions until this load fires, so Reveal's
+        // layout (computed when the slide became current) used the box's
+        // smaller, image-less height. Re-run it now the image has its real
+        // size, or the slide stays positioned for that stale, shorter box.
+        img.addEventListener('load', () => Reveal.layout(), { once: true });
     } catch (e) {
         console.error('PlantUML render failed for', src, e);
         img.alt = `Could not render ${src}: ${e.message}`;
