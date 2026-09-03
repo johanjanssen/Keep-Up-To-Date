@@ -29,9 +29,7 @@
 
     <section>
         <h2>Ship the Runtime, Not the Toolchain</h2>
-        <div class="medium">
-            <p>Every ecosystem draws the same line: <strong>build-time tools</strong> (compilers, debuggers, package managers) vs. <strong>what production needs to run the app</strong>. Only the latter belongs in the image.</p>
-        </div>
+
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Language</th><th>Dev toolchain</th><th>Ships to prod</th></tr></thead>
             <tbody>
@@ -41,13 +39,12 @@
                 <tr><td>Python / Node.js</td><td>Same interpreter, plus dev packages</td><td>Interpreter, shorn of dev tooling (<code>-slim</code>, <code>--omit=dev</code>)</td></tr>
             </tbody>
         </table>
-        <p class="small" style="margin-top:0.5em;">Leftover dev tools in prod are a double cost: extra CVEs to patch for code that's never called, and extra tools an attacker can use once they get a shell.</p>
     </section>
 
     <section>
-        <h2>JDK vs. JRE: What Actually Ships to Production</h2>
+        <h2>JDK vs. JRE</h2>
         <div class="medium">
-            <p>The JDK is a superset: <strong>JDK = JRE + development tools</strong> (compiler, debugger, doc generator, jshell, …). Ship the JRE, not the JDK.</p>
+            <p><strong>JDK = JRE + development tools</strong></p>
         </div>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-red">
@@ -69,9 +66,6 @@
 
     <section>
         <h2>Vendor JRE vs. Custom jlink Runtime</h2>
-        <div class="medium">
-            <p>Both drop the compiler and dev tools a full JDK carries: a runtime-only image. They trade off differently.</p>
-        </div>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <h3>Vendor JRE image</h3>
@@ -101,7 +95,6 @@
 jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim runtime
       --no-header-files --no-man-pages --output custom-jre</code></pre>
         </div>
-        <p class="small" style="margin-top:0.4em;">Rule of thumb: start with a vendor JRE image; reach for jlink once size actually matters (edge, serverless, embedded).</p>
     </section>
 
     <section>
@@ -119,15 +112,6 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
-        </div>
-    </section>
-
-    <section>
-        <h2>hello-conference: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">Same app code, <span id="appImageCount">…</span> base images: live size, package, and Grype CVE data</p>
-        <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartAppPackages" height="460"></canvas></div>
-            <div class="chart-wrap"><canvas id="chartAppImages" height="460"></canvas></div>
         </div>
     </section>
 
