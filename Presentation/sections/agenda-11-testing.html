@@ -13,41 +13,10 @@
                 <li><span class="ic">🏗️</span><span>Tests are required on all levels from unit test to complete system tests</span></li>
             </ul>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            💡 Automation without tests is just automated risk. Every bot, scanner, and migration tool in this deck assumes CI will catch it if something breaks; that assumption is only as good as your test suite.
-        </div>
     </section>
 
     <section>
         <img src="pictures/Belt.png" class="r-stretch">
-    </section>
-
-    <section>
-        <h2>Automated Testing and Upgrading</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">1️⃣</span><span>Tool creates the pull request</span></li>
-                <li><span class="ic">2️⃣</span><span>Pull request triggers the build including the tests</span></li>
-                <li><span class="ic">3️⃣</span><span>(Optionally) merge the PR automatically if the build is successful</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>Automation Without Tests is Just Automated Risk</h2>
-        <div class="medium">
-            <p>Dependency updates that break <em>behaviour</em> don't cause compilation errors. Without tests, they silently corrupt your application.</p>
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🔀</span><span>Serialisation format changed in a patch version</span></li>
-                <li><span class="ic">🕐</span><span>Date/time handling differs across library versions</span></li>
-                <li><span class="ic">✂️</span><span>A transitive dependency removal removes a capability you relied on</span></li>
-                <li><span class="ic">🔢</span><span>Rounding differences</span></li>
-            </ul>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">☕ Example (Java)</span>
-            <code>jackson-databind</code> patch: field ordering changed, null-handling tightened, date format default shifted, all silently breaking JSON contracts.
-        </div>
     </section>
 
     <section>
