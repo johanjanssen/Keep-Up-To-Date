@@ -20,7 +20,7 @@
     <section>
         <h2>🐳 The Layer You Forgot</h2>
         <div class="medium">
-            <p>Every containerised application is built on a base image. That base image is a dependency: one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
+            <p>Every containerized application is built on a base image. That base image is a dependency: one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
             <ol style="margin-top:0.6em;">
                 <li>You wrote <code>FROM mybase:v2</code> six months ago</li>
                 <li>That tag now points to a <strong>different image</strong>: rebuilt with OS patches</li>
@@ -39,25 +39,6 @@
                 <li><span class="ic">🛡️</span><span><strong>LTS (Long-Term Support)</strong> releases get extended security patches: safe for production</span></li>
                 <li><span class="ic">🧪</span><span>Non-LTS releases are production-quality for short-lived or internal services</span></li>
             </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>☕ Ride the Release Train</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            New release every <strong>6 months</strong> (March / September). LTS every 2 years.
-            <div class="timeline" style="margin-top:0.5em;">
-                <div class="tl-item">Java 8<br><small>LTS 2014</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 11<br><small>LTS 2018</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 17<br><small>LTS 2021</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-lts">Java 21<br><small>LTS 2023 🧵</small></div>
-                <div class="tl-arrow">→</div>
-                <div class="tl-item tl-now">Java 25<br><small>LTS Sep 2025 ⚡</small></div>
-            </div>
         </div>
     </section>
 
@@ -101,24 +82,16 @@
             </div>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            So the only truly immutable reference is the image <strong>digest</strong> (<code>@sha256:...</code>), not the version tag.
+            The image <strong>digest</strong> (<code>@sha256:...</code>) is immutable.
         </div>
     </section>
 
     <section>
         <h2>One Image, Two Registries, Two SHAs</h2>
-        <div class="medium">
-            <p>Pinning by digest is safer, but the digest isn't a fixed property of "the image": <strong>mirroring it to another registry can quietly change the SHA</strong>, even though nothing about your app changed.</p>
-        </div>
         <ul class="icon-list medium" style="margin-top:0.6em;">
-            <li><span class="ic">📦</span><span>The digest is computed over the <em>manifest</em>, not the app inside it: converting between manifest formats (e.g. Docker v2 → OCI) during a copy changes the digest.</span></li>
-            <li><span class="ic">🌍</span><span>Multi-arch tags point to a manifest <em>list</em>; a mirror that only syncs one platform gives that tag a different top-level digest than the original.</span></li>
-            <li><span class="ic">🔁</span><span><code>docker pull</code> + <code>docker push</code> can decompress and recompress layers on the way through, so the "same" image re-pushed elsewhere gets new SHAs at every level.</span></li>
+            <li><span class="ic">📦</span><span>You pull a Docker image from Dockerhub with sha <strong>abc</strong></span></li>
+            <li><span class="ic">🌍</span><span>You push the exact Docker image to another registry and it might get sha <strong>xyz</strong></span></li>
         </ul>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            Mirroring <code>eclipse-temurin:25-jre</code> into your private registry? Use a digest-preserving copy tool like <code>skopeo copy</code> or <code>crane copy</code> instead of <code>docker pull</code>/<code>docker push</code>, and confirm with <code>docker manifest inspect</code> that both registries report the same <code>@sha256:...</code>.
-        </div>
     </section>
 
     <section>
@@ -144,16 +117,27 @@
     </section>
 
     <section>
-        <h2>🤖 Enter the Dependency Bot</h2>
-        <div class="medium">
-            <p>As a project grows, the number of dependencies that need attention <strong>grows faster than the team's capacity to review them</strong>. The fix isn't more manual effort: it's a bot that does the checking and the PR-opening for you.</p>
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🔎</span><span>A <strong>dependency bot</strong> watches package registries continuously for new releases</span></li>
-                <li><span class="ic">🔧</span><span>When one appears, it opens a pull request automatically: version bump, changelog, diff, ready to review</span></li>
-                <li><span class="ic">📋</span><span>The policy (what to group, what to auto-merge, what needs review) lives in config: not in people's heads</span></li>
-                <li><span class="ic">✅</span><span>CI verifies each update before it lands: humans only intervene for breaking changes</span></li>
-            </ul>
+        <h2>The Automation Flywheel</h2>
+        <pre><code class="language-text">Bot detects new version
+  → opens PR with changelog and diff
+    → CI: build + unit tests + integration tests + image scan
+      → all green + low-risk update
+        → auto-merged in ~30 minutes
+          → you never manually touched it ✅</code></pre>
+        <div class="box box-green medium" style="margin-top:0.8em;">
+            💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
+            Your job: make your test suite trustworthy enough to enable auto-merge.
         </div>
+    </section>
+
+    <section>
+        <h2>🔍 Renovate: Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renovate/" loading="lazy" title="Renovate demo report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/renovate/" target="_blank">↗ Open in new tab</a>
+        </p>
     </section>
 
     <section>
@@ -200,36 +184,6 @@
     "automerge": true   // immediate: security patch + green CI = merged
   }
 }</code></pre>
-    </section>
-
-    <section>
-        <h2>The Automation Flywheel</h2>
-        <pre><code class="language-text">Bot detects new version
-  → opens PR with changelog and diff
-    → CI: build + unit tests + integration tests + image scan
-      → all green + low-risk update
-        → auto-merged in ~30 minutes
-          → you never manually touched it ✅</code></pre>
-        <div class="box box-green medium" style="margin-top:0.8em;">
-            💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
-            Your job: make your test suite trustworthy enough to enable auto-merge.
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Demo</span>
-            Gitea + Jenkins + Renovate, fully wired in Docker.
-            Renovate opens real PRs; Jenkins builds them; result posted back to Gitea.
-            <pre><code class="language-bash">bash Renovate/scripts/demo.sh</code></pre>
-        </div>
-    </section>
-
-    <section>
-        <h2>🔍 Renovate: Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/renovate/" loading="lazy" title="Renovate demo report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/renovate/" target="_blank">↗ Open in new tab</a>
-        </p>
     </section>
 
     <section>

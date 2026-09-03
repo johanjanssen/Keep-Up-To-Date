@@ -60,14 +60,6 @@
     </section>
 
     <section>
-        <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java example</span><br>
-            Java 8 → 21 in one jump: complex module-system breakage, API removals, GC changes.<br>
-            Java 8 → 11 → 17 → 21 incrementally: each hop is manageable and well-documented.
-        </div>
-    </section>
-
-    <section>
         <h2>⚖️ It's Not Just Best Practice Anymore</h2>
         <img src="pictures/Law.jpg" class="r-stretch">
     </section>
@@ -81,38 +73,6 @@
                     <tr><td>GDPR (Art. 32)</td><td>Patched, secure systems for personal data</td><td>€20M or 4% turnover</td></tr>
                     <tr><td>NIS2 Directive</td><td>Risk management, 24h incident reporting</td><td>€10M / 2% turnover</td></tr>
                     <tr><td>Cyber Resilience Act</td><td>Security updates for 5+ years</td><td>€15M or 2.5% turnover</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
-        <h2>⏰ EU: When the Clock Starts</h2>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <strong>⏰ Who / what / when:</strong> from <strong>11 September 2026</strong>, if you sell a "product with digital elements" into the EU, an <strong>actively exploited vulnerability</strong> or a <strong>severe security incident</strong> starts a clock the moment you become aware of it; not routine, unexploited CVEs.
-            <table style="margin-top:0.4em;">
-                <thead><tr><th>Stage</th><th>Deadline</th><th>What you send</th></tr></thead>
-                <tbody>
-                    <tr><td>Early warning</td><td>24 hours</td><td>To ENISA / your national CSIRT: "we're aware of this"</td></tr>
-                    <tr><td>Notification</td><td>72 hours</td><td>Description, impact, any mitigation already available</td></tr>
-                    <tr><td>Final report</td><td>14 days / 1 month</td><td>Root cause and the fix (vulnerability / incident)</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
-        <h2>🇪🇺 EU: Already Being Enforced</h2>
-        <div class="medium">
-            <p>Example fines based on the older GDPR and NIS2 regulations.</p>
-        </div>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <table style="margin-top:0.4em;">
-                <thead><tr><th>Case</th><th>What happened</th></tr></thead>
-                <tbody>
-                    <tr><td>Poland, GDPR (UODO), 2023</td><td>€6,700 fine: an unsupported operating system and an outdated antivirus signature database, both risks the controller had already identified but never patched, let a ransomware attack in.</td></tr>
-                    <tr><td>Belgium, NIS2, 2025</td><td>€185,000 fine on a healthcare provider for missing the 24-hour early-warning deadline; its CEO was personally fined €15,000 and ordered into mandatory training.</td></tr>
-                    <tr><td>Italy, NIS2, 2025</td><td>€450,000 fine on a cloud provider for having no risk-management program in place at all.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -146,7 +106,6 @@
 
     <section>
         <h2>Mean Time to Patch (MTTP)</h2>
-        <p class="subtitle">Your most important security metric</p>
         <div class="medium" style="margin-top:0.8em;">
             <table>
                 <thead><tr><th>Update approach</th><th>Typical MTTP</th><th>Rating</th></tr></thead>
@@ -187,9 +146,9 @@
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java 17 → 25: zero code changes</span>
             <ul style="margin-top:0.3em;">
-                <li><strong>Compact Object Headers</strong> (JEP 519, stable since 25) shrink every object header: less heap for boxed values &amp; small records</li>
-                <li><strong>Virtual Threads</strong> (JEP 444) remove the thread-per-task memory ceiling for I/O-bound workloads: the biggest, most reliable win in the suite</li>
-                <li>Math-heavy code measured <strong>~40% faster</strong> (<code>mathHeavyComputation</code>), JIT/runtime improvements only</li>
+                <li><strong>Compact Object Headers</strong></li>
+                <li><strong>Virtual Threads</strong></li>
+                <li>Math-heavy code measured <strong>~40% faster</strong></li>
             </ul>
         </div>
     </section>
@@ -198,7 +157,10 @@
         <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
-            Verified (not assumed from the JEP): <strong>~60% less memory</strong> and <strong>4-8x faster</strong>, but only once fields are narrow enough to fit the JVM's current flattening size limit.
+            <ul style="margin-top:0.3em;">
+                <li><strong>~60% less memory</strong> and <strong>4-8x faster</strong></li>
+                <li>Depends on field size</li>
+            </ul>
         </div>
     </section>
 
@@ -307,52 +269,12 @@
     </section>
 
     <section>
-        <h2>Same JAR, Three Images, Three Outcomes</h2>
-        <p class="subtitle">The Dockerfile decides how far the attack gets: <strong>the log4j jar itself is never patched</strong></p>
-        <table class="small" style="margin-top:0.5em;">
-            <thead><tr><th>Image</th><th>User</th><th>Base</th><th>Result</th></tr></thead>
-            <tbody>
-                <tr><td><code>vuln-app:root</code></td><td>root</td><td>temurin:11-jre-jammy + gcc/curl/sudo/policykit</td><td class="tag-bad">❌ RCE = game over, already root</td></tr>
-                <tr><td><code>vuln-app:escalation</code></td><td>appuser (1000)</td><td>temurin:11-jre-jammy + gcc/policykit</td><td class="tag-warn">⚠️ RCE, then attempts PwnKit to reach root</td></tr>
-                <tr><td><code>vuln-app:safe</code></td><td>ubuntu (1000)</td><td>temurin:25-jre, no extra packages</td><td class="tag-good">✅ Remote class-loading step is blocked; attack fails silently</td></tr>
-            </tbody>
-        </table>
-    </section>
-
-    <section>
-        <h2>🧩 What Actually Decides the Outcome</h2>
-        <p class="subtitle">The vulnerable library only gets an attacker in the door — the container decides what's on the other side</p>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">📦</span><span><strong>The library is vulnerable, but that's just step one.</strong> A flaw like Log4Shell lets an attacker trigger a lookup that <em>can</em> load and run attacker-supplied code — whether it actually does depends on everything below.</span></li>
-                <li><span class="ic">⚙️</span><span><strong>The runtime's own defaults matter.</strong> Newer JVMs disable remote class-loading out of the box; if nothing re-enables it, the lookup fires but the malicious class is refused and the exploit dead-ends right there.</span></li>
-                <li><span class="ic">👑</span><span><strong>Running as root turns any code execution into full compromise.</strong> No privilege escalation needed — the attacker can read/write anything, install tools, harvest secrets, and pivot immediately.</span></li>
-                <li><span class="ic">🔧</span><span><strong>Running as a normal user only helps if escalation tools aren't also there.</strong> A compiler, <code>sudo</code>/<code>pkexec</code>, or fetch tools (curl/wget) let a limited-user RCE chain into a second, local privilege-escalation CVE and become root anyway.</span></li>
-                <li><span class="ic">🪶</span><span><strong>A minimal image breaks that chain.</strong> No shell, no compiler, no package manager, no escalation binaries — even a successful code-execution step has nothing left to escalate or pivot with.</span></li>
-            </ul>
-        </div>
-        <p class="small" style="margin-top:0.6em;">Same pattern generalizes beyond log4j: patch the dependency when you can, but least privilege, minimal images, and safe runtime defaults are what actually cap the damage when a dependency you haven't patched yet gets exploited.</p>
-    </section>
-
-    <section>
-        <h2>☕ Java Example: One JVM Flag Decides the Outcome</h2>
-        <p class="subtitle">The log4j jar itself is never patched</p>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">☕ Java example</span>
-            <code>log4j-core 2.14.1</code>, still vulnerable, still doing the JNDI lookup. What differs is one JVM flag:
-            <pre><code class="language-bash"># The issue
--Dcom.sun.jndi.ldap.object.trustURLCodebase=true</code></pre>
-            Oracle disabled remote JNDI class-loading by default years before Log4Shell existed (JDK 6u211 / 7u201 / 8u191 / 11.0.1+).
-        </div>
-    </section>
-
-    <section>
         <h2>Defense in depth</h2>
         <p class="subtitle">Secure the Docker container</p>
         <ul class="icon-list">
-            <li><span class="ic">??</span><span>No <code>curl</code>/<code>wget</code> to fetch a payload</span></li>
-            <li><span class="ic">??</span><span>No <code>gcc</code> to compile applications</span></li>
-            <li><span class="ic">??</span><span>No <code>pkexec</code> to escalate through</span></li>
+            <li><span class="ic">??</span><span>No (old) Docker image</span></li>
+            <li><span class="ic">??</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
+            <li><span class="ic">??</span><span>No (old) application dependencies</span></li>
             <li><span class="ic">??</span><span>No root access</span></li>
         </ul>
     </section>
