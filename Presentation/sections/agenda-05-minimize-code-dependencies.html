@@ -8,7 +8,6 @@
     <section>
         <h2>📦 The Dependency Graph Problem</h2>
         <div class="medium">
-            <p>Every package you install brings its own dependencies. Those bring theirs. The graph grows fast, and most of it is invisible to you.</p>
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🧑‍💻</span><span>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</span></li>
                 <li><span class="ic">🕸️</span><span>Each node is a potential CVE, a potential breaking change, a potential licence issue</span></li>
@@ -55,9 +54,6 @@
 
     <section>
         <h2>Tools to Create an SBOM</h2>
-        <div class="medium">
-            <p>Generate the SBOM as part of your build or CI pipeline, not as a one-off, manual export.</p>
-        </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <ul class="icon-list">
                 <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin</strong> (Java)<br><code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
@@ -94,6 +90,14 @@
             <small>Gradle equivalent: the <code>com.autonomousapps.dependency-analysis</code> plugin.</small>
         </div>
     </section>
+
+    <section>
+        <h2>Dependency removal</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/dependency/" loading="lazy" title="Dependency removal"></iframe>
+        </div>
+    </section>
+
 
     <section>
         <h2>Enforce Constraints at Build Time</h2>
