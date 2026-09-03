@@ -323,6 +323,21 @@
     </section>
 
     <section>
+        <h2>🧩 What Actually Decides the Outcome</h2>
+        <p class="subtitle">The vulnerable library only gets an attacker in the door — the container decides what's on the other side</p>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">📦</span><span><strong>The library is vulnerable, but that's just step one.</strong> A flaw like Log4Shell lets an attacker trigger a lookup that <em>can</em> load and run attacker-supplied code — whether it actually does depends on everything below.</span></li>
+                <li><span class="ic">⚙️</span><span><strong>The runtime's own defaults matter.</strong> Newer JVMs disable remote class-loading out of the box; if nothing re-enables it, the lookup fires but the malicious class is refused and the exploit dead-ends right there.</span></li>
+                <li><span class="ic">👑</span><span><strong>Running as root turns any code execution into full compromise.</strong> No privilege escalation needed — the attacker can read/write anything, install tools, harvest secrets, and pivot immediately.</span></li>
+                <li><span class="ic">🔧</span><span><strong>Running as a normal user only helps if escalation tools aren't also there.</strong> A compiler, <code>sudo</code>/<code>pkexec</code>, or fetch tools (curl/wget) let a limited-user RCE chain into a second, local privilege-escalation CVE and become root anyway.</span></li>
+                <li><span class="ic">🪶</span><span><strong>A minimal image breaks that chain.</strong> No shell, no compiler, no package manager, no escalation binaries — even a successful code-execution step has nothing left to escalate or pivot with.</span></li>
+            </ul>
+        </div>
+        <p class="small" style="margin-top:0.6em;">Same pattern generalizes beyond log4j: patch the dependency when you can, but least privilege, minimal images, and safe runtime defaults are what actually cap the damage when a dependency you haven't patched yet gets exploited.</p>
+    </section>
+
+    <section>
         <h2>☕ Java Example: One JVM Flag Decides the Outcome</h2>
         <p class="subtitle">The log4j jar itself is never patched</p>
         <div class="box box-blue medium" style="margin-top:0.6em;">
