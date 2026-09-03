@@ -9,11 +9,9 @@ skinparam rectangle {
 }
 
 rectangle "Docker Image / Virtual machine" #ECE8F7 {
-    rectangle "OS packages" #FDEBD9 {
-        rectangle "Runtime" #DFF5F2 {
-            rectangle "Application" #DCEEFB {
-                rectangle "Application dependencies" #E6F4D9 {
-                }
+    rectangle "OS packages / Runtime" #FDEBD9 {
+        rectangle "Application" #DCEEFB {
+            rectangle "Application dependencies" #E6F4D9 {
             }
         }
     }
