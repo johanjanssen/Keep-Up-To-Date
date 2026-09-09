@@ -197,24 +197,19 @@
                 <!-- Optional PwnKit escalation, local to the victim -->
                 <rect x="280" y="330" width="260" height="70" rx="8" fill="rgba(211,54,130,0.08)" stroke="#d33682" stroke-width="1.25" stroke-dasharray="4 3"/>
                 <text x="410" y="352" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#586e75">⑤ Optional: PwnKit</text>
-                <text x="410" y="368" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">if not already root + pkexec/gcc present:</text>
-                <text x="410" y="381" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">CVE-2021-4034, run entirely on the victim</text>
+                <text x="410" y="368" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">Optional pkexec used to get root access</text>
 
                 <!-- 1: Attacker -> Victim -->
                 <line x1="203" y1="205" x2="275" y2="205" stroke="#dc322f" stroke-width="1.5" marker-end="url(#logArrowRed)"/>
-                <text x="238" y="192" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#dc322f">① curl + JNDI payload</text>
 
                 <!-- 2: Victim -> LDAP -->
                 <line x1="543" y1="178" x2="640" y2="127" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
-                <text x="600" y="163" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">② JNDI lookup</text>
 
                 <!-- 3: LDAP -> Victim (reference back) -->
                 <line x1="640" y1="152" x2="543" y2="228" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
-                <text x="613" y="222" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">③ reference → :9999</text>
 
                 <!-- 4: Victim -> HTTP -->
                 <line x1="543" y1="272" x2="640" y2="300" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
-                <text x="600" y="260" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">④ download class, execute</text>
 
                 <!-- 5: escalation loop -->
                 <line x1="410" y1="290" x2="410" y2="325" stroke="#d33682" stroke-width="1.25" stroke-dasharray="3 3" marker-end="url(#logArrowPink)"/>
@@ -229,10 +224,10 @@
         <h2>Defense in depth</h2>
         <p class="subtitle">Secure the Docker container</p>
         <ul class="icon-list">
-            <li><span class="ic">??</span><span>No (old) Docker image</span></li>
-            <li><span class="ic">??</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
-            <li><span class="ic">??</span><span>No (old) application dependencies</span></li>
-            <li><span class="ic">??</span><span>No root access</span></li>
+            <li><span class="ic">🐳</span><span>No (old) Docker image</span></li>
+            <li><span class="ic">📦</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
+            <li><span class="ic">📚</span><span>No (old) application dependencies</span></li>
+            <li><span class="ic">🔒</span><span>No root access</span></li>
         </ul>
     </section>
 
@@ -275,7 +270,7 @@
     </section>
 
     <section>
-        <h2>🔍 Four Tools, Two Layers</h2>
+        <h2>🔍 Different tools</h2>
         <p class="subtitle">Where each of today's scanners actually looks</p>
         <div class="two-col medium" style="margin-top:0.8em;">
             <div class="box box-blue">
@@ -298,16 +293,6 @@
 
     <section>
         <h2>Layer 1 Before the Artifact exists: source-Level Scanning</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">📄</span><span>Scan dependency manifests against a vulnerability database as part of the build</span></li>
-                <li><span class="ic">🚫</span><span>Fail the build on high-severity findings</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>Layer 1 Before the Artifact exists: source-Level Scanning</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
             <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
@@ -325,15 +310,6 @@
         <p class="small">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
         </p>
-    </section>
-
-    <section>
-        <h2>Layer 2 after the build: Image / Artifact Scanning</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">📦</span><span>Scan the built artifact (container image, fat JAR, etc.) for vulnerabilities in the OS layer and bundled dependencies</span></li>
-            </ul>
-        </div>
     </section>
 
     <section>
@@ -366,12 +342,12 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <img src="pictures/SearchS.jpg" class="r-stretch">
+        <img src="pictures/Search.jpg" class="r-stretch">
     </section>
 
     <section>
         <h2>🔍 Compare-Scans: Full Report</h2>
-        <div class="iframe-wrap">
+        <div class="iframe-wrap wide">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
         </div>
         <p class="small" style="margin-top:0.4em;">
@@ -394,17 +370,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>😱 It Wasn't a One-Off: Spring4Shell</h2>
-        <p class="subtitle">2022: same pattern, a different framework</p>
-        <div class="box box-red medium">
-            <ul>
-                <li>CVE-2022-22965: a critical RCE in the Spring framework itself, not a bundled library this time</li>
-                <li>Teams on old Spring versions couldn't patch directly; they had to upgrade the framework first</li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
         <img src="pictures/Mirror.jpg" class="r-stretch">
     </section>
 
@@ -421,7 +386,7 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
-        <h2>It's Not Only Management's Fault That You Run Old Software</h2>
+        <h2>It's easy to blame management</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>

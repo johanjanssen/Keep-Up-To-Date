@@ -10,7 +10,7 @@
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🙅</span><span>You can't manually test all upgrades to your dependencies</span></li>
-                <li><span class="ic">🏗️</span><span>Tests are required on all levels from unit test to complete system tests</span></li>
+                <li><span class="ic">🏗️</span><span>Tests are required on all levels from unit tests to complete system tests</span></li>
             </ul>
         </div>
     </section>
@@ -20,28 +20,7 @@
     </section>
 
     <section>
-        <h2>The Minimal Safety Net</h2>
-        <div class="medium">
-            <p>You don't need 90% line coverage. You need coverage of your <strong>integration boundaries</strong>: the surfaces that actually break when a dependency changes.</p>
-        </div>
-        <div class="medium" style="margin-top:0.6em;">
-            <table>
-                <thead><tr><th>Test type</th><th>What it catches</th></tr></thead>
-                <tbody>
-                    <tr><td>Unit tests</td><td>Business logic regressions</td></tr>
-                    <tr><td>Integration tests (real DB/broker)</td><td>Query behaviour, serialisation, protocol changes</td></tr>
-                    <tr><td>Contract tests</td><td>API-consumer compatibility</td></tr>
-                    <tr><td>Image smoke test</td><td>Runtime issues invisible at compile time</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box box-blue small" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Concrete targets</span>: every HTTP endpoint, every DB query, every external API call. These are exactly the paths that break when a dep changes behaviour.
-        </div>
-    </section>
-
-    <section>
-        <h2>🐳 How the Testcontainers Test Is Wired</h2>
+        <h2>🐳 Testcontainers</h2>
         <p class="subtitle">A real Postgres container, wired into Spring automatically: no manual config, no mocks</p>
         <div class="medium" style="max-width:900px;margin:0.4em auto 0;">
             <svg viewBox="0 0 950 300" style="width:100%;height:auto;" role="img"
