@@ -41,29 +41,6 @@
     </section>
 
     <section>
-        <h2>SBOM: Know What You Ship</h2>
-        <div class="medium">
-            <p>A <strong>Software Bill of Materials</strong> is a machine-readable inventory of every component in your artifact, like a nutrition label for software.</p>
-            <ul class="icon-list" style="margin-top:0.5em;">
-                <li><span class="ic">🇺🇸</span><span>Required by US federal procurement (Executive Order 2021)</span></li>
-                <li><span class="ic">🇪🇺</span><span>EU Cyber Resilience Act: mandatory for regulated products</span></li>
-                <li><span class="ic">🔎</span><span>Enables automated CVE matching across your entire fleet</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>Tools to Create an SBOM</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <ul class="icon-list">
-                <li><span class="ic">☕</span><span><strong>CycloneDX Maven Plugin</strong> (Java)<br><code>./mvnw org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom</code></span></li>
-                <li><span class="ic">🌐</span><span><strong>Trivy</strong> (generic, from an image)<br><code>trivy image --format cyclonedx --output sbom.json</code></span></li>
-                <li><span class="ic">🌐</span><span><strong>Syft</strong> (generic, from a filesystem or image)<br><code>syft . -o cyclonedx-json</code></span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
         <h2>Find and Remove Unused Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>

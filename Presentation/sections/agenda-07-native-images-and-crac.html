@@ -5,21 +5,22 @@
         <h1>Native Images vs. CRaC</h1>
         <div class="chapter-rule"></div>
     </section>
+
     <section>
-        <h2>Four Ways to Package a JVM App</h2>
-        <p class="subtitle">Same app, four different runtime shapes</p>
-        <div class="medium">
-            <table>
-                <thead><tr><th>Approach</th><th>What it is</th></tr></thead>
+        <h2>⚖️ Four Ways to Package a JVM App</h2>
+        <p class="subtitle">A normal JVM, and three ways to speed up its cold start</p>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
                 <tbody>
-                    <tr><td>Normal JRE image</td><td>A full, unmodified JVM: the default Docker base image</td></tr>
-                    <tr><td>jlink runtime</td><td>Still a real JVM, but custom-built with only the modules your app needs</td></tr>
-                    <tr><td>CRaC checkpoint</td><td>Still a real JVM: restored from a snapshot of an already-warmed-up process</td></tr>
-                    <tr><td>GraalVM native-image</td><td>No JVM at all: ahead-of-time compiled to a native binary</td></tr>
+                <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
+                <tr><td>Azul CRaC checkpoint/restore</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.5em;">The first three still run on a JVM; native-image is the odd one out: that's the dashed path in the next diagram.</p>
     </section>
 
     <section>
@@ -85,24 +86,6 @@
             Every image in <code>images.conf</code> follows the solid path. The dashed one is
             <code>native-scratch</code> / <code>native-netty-scratch</code>: no separate JVM layer, so the app lands directly on <code>scratch</code>.
         </p>
-    </section>
-
-    <section>
-        <h2>⚖️ jlink vs GraalVM native-image vs CRaC</h2>
-        <p class="subtitle">A normal JVM, and three ways to speed up its cold start</p>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            <table style="margin-top:0.2em;">
-                <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
-                <tbody>
-                    <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                    <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                    <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
-                    <tr><td>Azul CRaC checkpoint/restore</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
-                </tbody>
-            </table>
-            <p class="small" style="margin-top:0.4em;">CRaC's tradeoff isn't compatibility; it's operational: the checkpoint captures process state (open sockets, files) at a point in time, so you design your startup code around what's safe to snapshot.</p>
-        </div>
     </section>
 
     <section>
