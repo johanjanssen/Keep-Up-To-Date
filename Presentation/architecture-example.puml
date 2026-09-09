@@ -8,9 +8,9 @@ skinparam rectangle {
     FontStyle bold
 }
 
-rectangle "Docker Image / Virtual machine\n<size:11><i>eclipse-temurin:25-jre</i></size>" as vm #ECE8F7 {
-    rectangle "OS packages / Runtime\n<size:11><i>Debian, openssl, bash, JVM (Eclipse Temurin)</i></size>" as os #FDEBD9 {
-        rectangle "Application\n<size:11><i>Build artifact: app.jar</i></size>" as app #DCEEFB {
+rectangle "Docker Image / Virtual machine\n<size:11><i>debian</i></size>" as vm #ECE8F7 {
+    rectangle "OS packages including runtime\n<size:11><i>openssl, JVM (Eclipse Temurin)</i></size>" as os #FDEBD9 {
+        rectangle "Application" as app #DCEEFB {
             rectangle "Application dependencies\n<size:11><i>Spring Boot, Log4j</i></size>" as deps #E6F4D9 {
             }
         }

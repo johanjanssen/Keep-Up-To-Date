@@ -31,18 +31,6 @@
     </section>
 
     <section>
-        <h2>Ride the Release Train</h2>
-        <div class="medium">
-            <p>Modern runtimes and languages ship on a <strong>predictable cadence</strong>: not when they feel ready, but on a fixed schedule.</p>
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">📅</span><span>Regular releases → smaller, manageable changes each time</span></li>
-                <li><span class="ic">🛡️</span><span><strong>LTS (Long-Term Support)</strong> releases get extended security patches: safe for production</span></li>
-                <li><span class="ic">🧪</span><span>Non-LTS releases are production-quality for short-lived or internal services</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
         <h2>Update FROM in Dockerfiles</h2>
         <ul class="icon-list medium">
             <li><span class="ic">📅</span><span>Treat the base image tag like any other dependency: bump it deliberately, on a schedule</span></li>
@@ -83,36 +71,6 @@
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             The image <strong>digest</strong> (<code>@sha256:...</code>) is immutable.
-        </div>
-    </section>
-
-    <section>
-        <h2>One Image, Two Registries, Two SHAs</h2>
-        <ul class="icon-list medium" style="margin-top:0.6em;">
-            <li><span class="ic">📦</span><span>You pull a Docker image from Dockerhub with sha <strong>abc</strong></span></li>
-            <li><span class="ic">🌍</span><span>You push the exact Docker image to another registry and it might get sha <strong>xyz</strong></span></li>
-        </ul>
-    </section>
-
-    <section>
-        <h2>Pin Versions, Not Floating Tags</h2>
-        <div class="two-col medium">
-            <div class="box box-red">
-                <strong class="tag-bad">❌ Floating: dangerous</strong>
-                <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre
-# Rebuilt weekly. CI uses a stale
-# cached layer from months ago.</code></pre>
-            </div>
-            <div class="box box-green">
-                <strong class="tag-good">✅ Pinned: reproducible</strong>
-                <pre><code class="language-dockerfile">FROM eclipse-temurin:25-jre\
-@sha256:7ea65de6...</code></pre>
-                <small>Use automation to update the pin via PR.</small>
-            </div>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java tooling</span>
-            Commit <code>.sdkmanrc</code> (<code>java=25.0.1-tem</code>) and <code>mvnw</code> / <code>gradlew</code> wrappers: everyone and CI run the exact same versions.
         </div>
     </section>
 
