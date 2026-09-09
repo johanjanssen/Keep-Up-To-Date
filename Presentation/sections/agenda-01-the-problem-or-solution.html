@@ -12,13 +12,6 @@
     </section>
 
     <section>
-        <h2>Dependencies</h2>
-        <div class="puml-wrap">
-            <img data-puml-src="architecture.puml" alt="Nested rectangles: a Docker image or virtual machine contains operating system packages, which contain the runtime, which contains the application, which contains its application dependencies.">
-        </div>
-    </section>
-
-    <section>
         <h2>Dependencies Example</h2>
         <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span>
@@ -36,14 +29,6 @@
                 <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
                 <li><span class="ic">🎲</span><span>Potential Common Vulnerabilities and Exposures (CVEs)</span></li>
             </ul>
-        </div>
-    </section>
-
-    <section>
-        <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java example</span><br>
-            A typical Spring Boot app: <strong>50–80 direct</strong>, <strong>200–400 transitive</strong> dependencies.<br>
-            <code>./mvnw dependency:tree | wc -l</code>. Prepare to be surprised.
         </div>
     </section>
 
@@ -189,16 +174,6 @@
             <li><span class="ic">📚</span><span>No (old) application dependencies</span></li>
             <li><span class="ic">🔒</span><span>No root access</span></li>
         </ul>
-    </section>
-
-    <section>
-        <h2>🔍 Full Attack Transcript</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" loading="lazy" title="Log4Shell to PwnKit exploit chain transcript"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/vulnerable/" target="_blank">↗ Open in new tab</a>
-        </p>
     </section>
 
     <section class="example-slide">
