@@ -314,19 +314,17 @@
 
     <section>
         <h2>Layer 2 after the build: Image / Artifact Scanning</h2>
-        <div class="three-col medium" style="margin-top:0.5em;">
-            <div class="box box-blue">
-                <span class="java-pill">🌐 Grype (Anchore)</span>
-                <ul><li>Generic: any container image</li><li>Fast, offline-capable</li><li>SARIF → GitHub Security tab</li></ul>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">🌐 Trivy (Aqua)</span>
-                <ul><li>Generic: any container image</li><li>Secrets &amp; misconfig scanning</li><li>Widest DB coverage</li></ul>
-            </div>
-            <div class="box box-blue">
-                <span class="java-pill">🌐 OSV-Scanner (Google)</span>
-                <ul><li>Generic: images, lockfiles &amp; SBOMs, 20+ ecosystems</li><li>Same OSV.dev database it uses at Layer 1</li></ul>
-            </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Trivy (Aqua)</span>
+            <pre><code class="language-bash">trivy image eclipse-temurin:25-jre
+trivy image --format sarif --output trivy-results.sarif eclipse-temurin:25-jre
+trivy image --severity HIGH,CRITICAL --exit-code 1 eclipse-temurin:25-jre</code></pre>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Grype (Anchore)</span>
+            <pre><code class="language-bash">grype eclipse-temurin:25-jre
+grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
+grype eclipse-temurin:25-jre --fail-on high</code></pre>
         </div>
     </section>
 
