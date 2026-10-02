@@ -17,20 +17,6 @@
     </section>
 
     <section>
-        <h2>Concrete AI Mistakes</h2>
-        <div class="medium">
-            <table>
-                <thead><tr><th>AI suggests</th><th>Problem</th></tr></thead>
-                <tbody>
-                    <tr><td><code>FROM openjdk:8-jre</code></td><td>Official image deprecated since 2021: no more updates</td></tr>
-                    <tr><td><code>import javax.persistence.Entity</code></td><td>Spring Boot 3 / Jakarta EE 9 renamed the whole namespace</td></tr>
-                    <tr><td><code>log4j:log4j:1.2.17</code></td><td>Log4j 1.x: EOL since 2015, unpatched CVEs</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
         <h2>🚧 Detours</h2>
         <table class="medium" style="margin-top:0.6em;">
             <thead><tr><th>Hits this friction</th><th>Its easy way out</th></tr></thead>
@@ -50,18 +36,5 @@
             <li><span class="ic">🤖</span><span>AI might sometimes be able to help, but you might have to ask explicitly</span></li>
             <li><span class="ic">🛠️</span><span>Other tools are already available to help (automate) the process</span></li>
         </ul>
-    </section>
-
-    <section>
-        <h2>🤖 AI Can Also Be the Fix</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🔀</span><span>Reviewing and merging <strong>Renovate</strong> PRs: reading changelogs, running the test suite, flagging breaking changes</span></li>
-                <li><span class="ic">🧬</span><span>Driving <strong>OpenRewrite</strong>-style migrations: the mechanical rewrite is automated, a human reviews the diff</span></li>
-                <li><span class="ic">🩺</span><span>Triaging scanner findings: is this CVE actually reachable from our code, or dead weight?</span></li>
-                <li><span class="ic">❓</span><span>Listing changes between versions</span></li>
-                <li><span class="ic">😉</span><span>Fixing Git merge conflicts</span></li>
-            </ul>
-        </div>
     </section>
 </section>
