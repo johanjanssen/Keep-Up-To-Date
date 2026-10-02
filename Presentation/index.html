@@ -101,8 +101,12 @@
         }
         /* .wide breaks the wrap past the slide's own edge (like .chart-row does)
            to use the letterboxed space reveal.js leaves on wider screens, for
-           reports with many columns that need every pixel they can get. */
-        .iframe-wrap.wide { width:97%; max-width:1500px; }
+           reports with many columns that need every pixel they can get. The
+           max-width caps how far it reaches on very wide/high-res screens;
+           .reveal-viewport clips overflow-x, so on screens with little or no
+           letterboxing it's simply cut off at the viewport edge rather than
+           causing a scrollbar. */
+        .iframe-wrap.wide { width:99%; max-width:1900px; }
         /* Live PlantUML embeds: the <img> src is built at load time from the
            *current* contents of the referenced .puml file (see the
            renderPuml script below), so editing the diagram source and
@@ -713,7 +717,7 @@ Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 // runs so they don't miss the 'ready' event once loading finishes.
 const slideFiles = [
     'sections/intro.html',                          // title, follow-along, agenda
-    'sections/agenda-01-the-problem-or-solution.html',
+    'sections/agenda-01-the-problem.html',
     'sections/agenda-02-ai.html',
     'sections/agenda-03-update-or-remove.html',
     'sections/agenda-04-minimize-os-dependencies.html',
