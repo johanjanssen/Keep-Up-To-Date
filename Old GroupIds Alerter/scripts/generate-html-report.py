@@ -17,6 +17,7 @@ import html
 import os
 import re
 import sys
+import textwrap
 from datetime import datetime, timezone
 
 # Matches both message shapes oga-maven-plugin's check goal logs:
@@ -27,7 +28,9 @@ FINDING_RE = re.compile(
     r"'?(?P<new>[^'()\s][^'()]*?)'?\s*(?:\(context:\s*(?P<context>.*?)\))?\s*$"
 )
 
-DEP_BLOCK_RE = re.compile(r"<dependency>.*?</dependency>", re.DOTALL)
+# Starts at the beginning of the <dependency> line so the block keeps its own
+# indentation, letting textwrap.dedent() give every line the same baseline.
+DEP_BLOCK_RE = re.compile(r"^[ \t]*<dependency>.*?</dependency>", re.DOTALL | re.MULTILINE)
 GROUP_RE = re.compile(r"<groupId>\s*([^<]+?)\s*</groupId>")
 ARTIFACT_RE = re.compile(r"<artifactId>\s*([^<]+?)\s*</artifactId>")
 VERSION_RE = re.compile(r"<version>\s*([^<]+?)\s*</version>")
@@ -56,6 +59,7 @@ def index_pom_dependencies(pom_text):
     """Map 'groupId:artifactId' -> raw <dependency>...</dependency> block text."""
     index = {}
     for block in DEP_BLOCK_RE.findall(pom_text):
+        block = textwrap.dedent(block)
         gm, am = GROUP_RE.search(block), ARTIFACT_RE.search(block)
         if not gm or not am:
             continue
