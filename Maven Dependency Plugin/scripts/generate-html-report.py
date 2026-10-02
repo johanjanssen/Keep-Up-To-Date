@@ -26,9 +26,12 @@ import html
 import os
 import re
 import sys
+import textwrap
 from datetime import datetime, timezone
 
-DEP_BLOCK_RE = re.compile(r"<dependency>.*?</dependency>", re.DOTALL)
+# Includes the leading indentation of the <dependency> line, so textwrap.dedent()
+# can strip the pom's nesting evenly from every line of the block.
+DEP_BLOCK_RE = re.compile(r"^[ \t]*<dependency>.*?</dependency>", re.DOTALL | re.MULTILINE)
 GROUP_RE = re.compile(r"<groupId>\s*([^<]+?)\s*</groupId>")
 ARTIFACT_RE = re.compile(r"<artifactId>\s*([^<]+?)\s*</artifactId>")
 
@@ -101,7 +104,7 @@ def index_pom_dependencies(pom_text):
         gm, am = GROUP_RE.search(block), ARTIFACT_RE.search(block)
         if not gm or not am:
             continue
-        index[f"{gm.group(1)}:{am.group(1)}"] = block
+        index[f"{gm.group(1)}:{am.group(1)}"] = textwrap.dedent(block)
     return index
 
 
