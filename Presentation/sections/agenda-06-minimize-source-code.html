@@ -163,12 +163,11 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
             <tbody>
                 <tr><td>JaCoCo</td><td>Java / JVM</td><td>Bytecode coverage, incl. a live production-agent mode</td></tr>
                 <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial fleet-wide production usage tracking</td></tr>
-                <tr><td>coverage.py</td><td>Python</td><td>Line / branch coverage</td></tr>
-                <tr><td>Istanbul / nyc / c8</td><td>Node.js / TypeScript</td><td>Coverage instrumentation</td></tr>
-                <tr><td><code>go test -cover</code></td><td>Go</td><td>Built into the toolchain</td></tr>
-                <tr><td><code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
-                <tr><td>coverlet</td><td>.NET</td><td>Cross-platform coverage collector</td></tr>
-                <tr><td>cargo tarpaulin / llvm-cov</td><td>Rust</td><td>Line coverage for Rust binaries</td></tr>
+                <tr><td>coverage.py</td><td>Python</td><td>Wrap any process (<code>coverage run app.py</code>), not just tests</td></tr>
+                <tr><td>c8 / nyc</td><td>Node.js / TypeScript</td><td>Wrap any Node process; c8 uses V8's native coverage</td></tr>
+                <tr><td><code>go build -cover</code> + <code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
+                <tr><td><code>dotnet-coverage</code></td><td>.NET</td><td>Wrap or attach to any running process (server mode)</td></tr>
+                <tr><td><code>-C instrument-coverage</code> + llvm-cov</td><td>Rust</td><td>Instrumented binary writes profile data on exit</td></tr>
                 <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call-graph visibility as a proxy for "is this hit"</td></tr>
                 <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flag-wrapped code paths report their own usage over time</td></tr>
             </tbody>
