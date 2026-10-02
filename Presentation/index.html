@@ -442,9 +442,45 @@ function nameAxis() {
     return axis({ font: { size: 12 }, autoSkip: false, maxRotation: 55, minRotation: 55 });
 }
 
+// Chart.js only reserves left-hand room for the FIRST rotated x label, but a
+// longer label one or two bars in (e.g. "eclipse-temurin:25-jdk-alpine" right
+// after "eclipse-temurin:25-jdk") can reach further left and get clipped at
+// the canvas edge. After layout, measure every rotated label's leftmost point
+// and, if any would fall off the canvas, grow layout.padding.left and
+// re-layout. Padding narrows the bars, which pulls labels further in back
+// left, so this repeats (a few passes at most) until nothing overflows.
+const rotatedLabelPaddingPlugin = {
+    id: 'rotatedLabelPadding',
+    afterLayout(chart) {
+        const x = chart.scales.x;
+        if (!x || (chart._labelPadPasses || 0) >= 4) return;
+        const rot = (x.labelRotation || 0) * Math.PI / 180;
+        if (!rot) return;
+        const font = Chart.helpers.toFont(x.options.ticks.font);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = font.string;
+        let overflow = 0;
+        x.ticks.forEach((t, i) => {
+            const w = ctx.measureText(String(t.label)).width;
+            const left = x.getPixelForTick(i) - w * Math.cos(rot) - (font.lineHeight / 2) * Math.sin(rot);
+            overflow = Math.max(overflow, -left);
+        });
+        ctx.restore();
+        if (overflow > 0) {
+            chart._labelPadPasses = (chart._labelPadPasses || 0) + 1;
+            const pad = chart.options.layout.padding;
+            const cur = typeof pad === 'number' ? pad : (pad && pad.left) || 0;
+            chart.options.layout.padding = { ...(typeof pad === 'object' ? pad : {}), left: cur + Math.ceil(overflow) + 4 };
+            chart.update('none');
+        }
+    }
+};
+
 function buildGroupChartConfig(rows, titleText) {
     return {
         type: 'bar',
+        plugins: [rotatedLabelPaddingPlugin],
         data: {
             labels: rows.map(r => r.name),
             datasets: [
@@ -486,6 +522,7 @@ function buildGroupChartConfig(rows, titleText) {
 function buildPackagesChartConfig(rows, titleText) {
     return {
         type: 'bar',
+        plugins: [rotatedLabelPaddingPlugin],
         data: {
             labels: rows.map(r => r.name),
             datasets: [
