@@ -245,7 +245,11 @@ PAGE_STYLE = """
     margin: 0; background: var(--bg); color: var(--text);
     font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-  main { max-width: 1400px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  /* Capped well past the table's own min-width (below) so wide windows
+     — and the wide iframe embed on the "Full Report" slide of the talk
+     deck — actually get to show more columns instead of just centering
+     the same 1400px of content in extra blank margin. */
+  main { max-width: 1800px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
   h1 { font-size: 1.7rem; margin: 0 0 0.3rem; letter-spacing: -0.01em; text-wrap: balance; }
   .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 0.95rem; }
   .legend { color: var(--muted); font-size: 0.85rem; margin: 0.75rem 0 2rem; }
