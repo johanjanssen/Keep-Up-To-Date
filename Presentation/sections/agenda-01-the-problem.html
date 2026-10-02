@@ -166,12 +166,27 @@
     </section>
 
     <section>
+        <h2>🔥 Log4Shell</h2>
+        <div class="stat-row medium">
+            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
+            <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
+            <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
+            <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.5em;">
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li>Billions of dollars in remediation</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
         <h2>Defense in Depth</h2>
         <ul class="icon-list">
+            <li><span class="ic">🔒</span><span>No root access</span></li>
             <li><span class="ic">🐳</span><span>No (old) Docker image</span></li>
             <li><span class="ic">📦</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
             <li><span class="ic">📚</span><span>No (old) application dependencies</span></li>
-            <li><span class="ic">🔒</span><span>No root access</span></li>
         </ul>
     </section>
 
@@ -264,21 +279,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
         </p>
-    </section>
-
-    <section>
-        <h2>🔥 Log4Shell</h2>
-        <div class="stat-row medium">
-            <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
-            <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
-            <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
-            <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
-        </div>
-        <div class="box box-red medium" style="margin-top:0.5em;">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li>Billions of dollars in remediation</li>
-            </ul>
-        </div>
     </section>
 
     <section>
