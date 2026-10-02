@@ -395,7 +395,8 @@ const GROUP_CHART_SPECS = [
       nameFontSize: 18 },
     { key: 'java', countEl: 'javaImageCount',
       cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs CVE count (Grype), live data',
-      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data' },
+      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data',
+      nameFontSize: 18 },
     { key: 'app', countEl: 'appImageCount',
       cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images: size (MB) vs CVE count (Grype), live data',
       pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images: size (MB) vs package count, live data' },
@@ -439,7 +440,7 @@ function packageBarColor(packages) {
 // labels are long (e.g. "registry.access.redhat.com/ubi9/openjdk-25-runtime"),
 // so ticks are rotated at a fixed angle and never auto-skipped — every
 // image gets a label instead of Chart.js thinning them out to fit.
-// Groups with shorter names (the base OS images) pass a bigger font size.
+// The base OS and Java runtime groups pass a bigger font size.
 function nameAxis(fontSize = 12) {
     return axis({ font: { size: fontSize }, autoSkip: false, maxRotation: 55, minRotation: 55 });
 }
