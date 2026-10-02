@@ -6,9 +6,7 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h2>What Counts as "OS" Here</h2>
         <div class="medium">
-            <p>This chapter is about everything underneath your application code:</p>
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🐳</span><span>Docker <strong>base image versions</strong>: the tag your <code>FROM</code> line points to</span></li>
                 <li><span class="ic">💻</span><span><strong>Virtual machine images</strong>: the OS version your servers actually boot</span></li>
@@ -18,23 +16,9 @@
     </section>
 
     <section>
-        <h2>🐳 The Layer You Forgot</h2>
-        <div class="medium">
-            <p>Every containerized application is built on a base image. That base image is a dependency: one that changes constantly, carries OS-level CVEs, and is easy to forget about.</p>
-            <ol style="margin-top:0.6em;">
-                <li>You wrote <code>FROM mybase:v2</code> six months ago</li>
-                <li>That tag now points to a <strong>different image</strong>: rebuilt with OS patches</li>
-                <li>Your CI uses the <strong>cached layer from six months ago</strong></li>
-                <li>You are running vulnerable OS packages, <span class="tag-bad">and you don't know it</span></li>
-            </ol>
-        </div>
-    </section>
-
-    <section>
         <h2>Update FROM in Dockerfiles</h2>
         <ul class="icon-list medium">
             <li><span class="ic">📅</span><span>Treat the base image tag like any other dependency: bump it deliberately, on a schedule</span></li>
-            <li><span class="ic">🚫</span><span>Not by accident, when the tag silently moves underneath you</span></li>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
@@ -45,15 +29,12 @@
     </section>
 
     <section>
-        <h2>Why Pin at All?</h2>
-        <div class="medium">
-            <p><strong>Floating version tags silently change under you.</strong> Pinning trades that surprise for:</p>
-        </div>
+        <h2>Pin the version</h2>
         <ul class="icon-list medium" style="margin-top:0.6em;">
-            <li><span class="ic">🔁</span><span><strong>Reproducible builds</strong>: the same tag produces the same bytes today and six months from now</span></li>
-            <li><span class="ic">⏪</span><span><strong>Rollback</strong>: revert to an exact known-good version when a release breaks something</span></li>
-            <li><span class="ic">🐞</span><span><strong>Debugging</strong>: you know precisely what's running, so "works on my machine" isn't a mystery</span></li>
-            <li><span class="ic">📋</span><span><strong>Auditability</strong>: prove exactly what shipped, for security reviews and compliance</span></li>
+            <li><span class="ic">🔁</span><span><strong>Reproducible builds</strong></span></li>
+            <li><span class="ic">⏪</span><span><strong>Rollback</strong></span></li>
+            <li><span class="ic">🐞</span><span><strong>Debugging</strong></span></li>
+            <li><span class="ic">📋</span><span><strong>Auditability</strong></span></li>
         </ul>
     </section>
 
@@ -82,10 +63,6 @@
       → all green + low-risk update
         → auto-merged in ~30 minutes
           → you never manually touched it ✅</code></pre>
-        <div class="box box-green medium" style="margin-top:0.8em;">
-            💡 <strong>Patch updates for well-tested libraries should be noise-free.</strong><br>
-            Your job: make your test suite trustworthy enough to enable auto-merge.
-        </div>
     </section>
 
     <section>
@@ -119,7 +96,6 @@
     <section>
         <h2>Policy as Code</h2>
         <p class="subtitle">🔧 Renovate config: <code>renovate.json</code>, checked into the repo</p>
-        <div class="medium"><p>Define <em>how</em> updates are handled in a config file committed to the repo: not in a wiki, not in a person's memory.</p></div>
         <pre><code class="language-json">// renovate.json
 {
   "extends": ["config:base"],

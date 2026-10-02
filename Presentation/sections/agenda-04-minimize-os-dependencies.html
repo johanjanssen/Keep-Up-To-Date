@@ -12,7 +12,7 @@
     <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
         <div class="medium">
-            <p>The fewer OS packages in your image, the smaller the attack surface. Most application runtimes don't need a shell, a package manager, or system utilities.</p>
+            <p>Most application runtimes don't need a shell, a package manager, or system utilities.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java image hierarchy</span>
@@ -22,7 +22,6 @@
                     <tr><td colspan="4" class="small">Loading live scan data…</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.3em;color:#268bd2;">Live scan + <code>docker images</code> data from the hello-conference builds. (GraalVM native-image &amp; CRaC: covered in Chapter 07.)</p>
         </div>
         <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
     </section>
@@ -76,7 +75,6 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">Generic OS base images: <span id="baseImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
@@ -85,7 +83,6 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
-        <p class="subtitle">JDK / JRE / GraalVM base images: <span id="javaImageCount">…</span> images, live size, package, and Grype CVE data</p>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
@@ -104,9 +101,6 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
 
     <section>
         <h2>Shrinking the Runtime Layer Without Going Native</h2>
-        <div class="medium">
-            <p>Before reaching for a full AOT rewrite, every ecosystem has a cheaper lever: trim the runtime or the base image instead of replacing it.</p>
-        </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <table class="small" style="margin-top:0.2em;">
                 <thead><tr><th>Language</th><th>Small-image lever (no AOT)</th></tr></thead>
@@ -118,7 +112,6 @@ jlink --add-modules $(cat modules.txt) --strip-debug \     # 2. build the slim r
                     <tr><td>Go / Rust</td><td>Already a single static binary by default: <code>scratch</code> "just works" without any extra step</td></tr>
                 </tbody>
             </table>
-            <p class="small" style="margin-top:0.4em;">This gets most of the size win for a fraction of the build complexity. Full AOT compilation (GraalVM native-image, .NET Native AOT) &amp; CRaC drop the runtime layer entirely: covered in Chapter 07.</p>
         </div>
     </section>
 
