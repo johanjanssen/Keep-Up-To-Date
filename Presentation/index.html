@@ -391,10 +391,12 @@ let liveChartFailed = false;
 const GROUP_CHART_SPECS = [
     { key: 'generic', countEl: 'baseImageCount',
       cveChartId: 'chartBaseImages', cveTitle: 'Base OS images: size (MB) vs CVE count (Grype), live data',
-      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images: size (MB) vs package count, live data' },
+      pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images: size (MB) vs package count, live data',
+      nameFontSize: 18 },
     { key: 'java', countEl: 'javaImageCount',
       cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs CVE count (Grype), live data',
-      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data' },
+      pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data',
+      nameFontSize: 18 },
     { key: 'app', countEl: 'appImageCount',
       cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images: size (MB) vs CVE count (Grype), live data',
       pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images: size (MB) vs package count, live data' },
@@ -438,11 +440,12 @@ function packageBarColor(packages) {
 // labels are long (e.g. "registry.access.redhat.com/ubi9/openjdk-25-runtime"),
 // so ticks are rotated at a fixed angle and never auto-skipped — every
 // image gets a label instead of Chart.js thinning them out to fit.
-function nameAxis() {
-    return axis({ font: { size: 12 }, autoSkip: false, maxRotation: 55, minRotation: 55 });
+// The base OS and Java runtime groups pass a bigger font size.
+function nameAxis(fontSize = 12) {
+    return axis({ font: { size: fontSize }, autoSkip: false, maxRotation: 55, minRotation: 55 });
 }
 
-function buildGroupChartConfig(rows, titleText) {
+function buildGroupChartConfig(rows, titleText, nameFontSize) {
     return {
         type: 'bar',
         data: {
@@ -475,7 +478,7 @@ function buildGroupChartConfig(rows, titleText) {
                 title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
             },
             scales: {
-                x:     { ...nameAxis(), grid: { display: false } },
+                x:     { ...nameAxis(nameFontSize), grid: { display: false } },
                 ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',  color: C.fg, font: { size: 13 } } },
                 yCves: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'CVEs', color: C.fg, font: { size: 13 } }, grid: { display: false } }
             }
@@ -483,7 +486,7 @@ function buildGroupChartConfig(rows, titleText) {
     };
 }
 
-function buildPackagesChartConfig(rows, titleText) {
+function buildPackagesChartConfig(rows, titleText, nameFontSize) {
     return {
         type: 'bar',
         data: {
@@ -516,7 +519,7 @@ function buildPackagesChartConfig(rows, titleText) {
                 title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
             },
             scales: {
-                x:     { ...nameAxis(), grid: { display: false } },
+                x:     { ...nameAxis(nameFontSize), grid: { display: false } },
                 ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',       color: C.fg, font: { size: 13 } } },
                 yPkgs: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'Packages', color: C.fg, font: { size: 13 } }, grid: { display: false } }
             }
@@ -555,8 +558,8 @@ function renderGroupCharts() {
         const countEl = document.getElementById(spec.countEl);
         if (countEl && rows && rows.length) countEl.textContent = rows.length;
 
-        renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle));
-        renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle));
+        renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle, spec.nameFontSize));
+        renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle, spec.nameFontSize));
     });
     renderMinimalImagesTable();
 }
