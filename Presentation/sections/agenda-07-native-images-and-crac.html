@@ -7,6 +7,33 @@
     </section>
 
     <section>
+        <h2>🧬 What Is a Native Image?</h2>
+        <p class="subtitle">Do the compiling at build time, not every time the app starts</p>
+        <div class="two-col medium" style="margin-top:0.6em;">
+            <div class="box box-blue">
+                <h3>Runtime-based</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">📦</span><span>Ship intermediate code <strong>plus a runtime</strong> (VM / interpreter)</span></li>
+                    <li><span class="ic">⏳</span><span>Runtime loads, interprets and optimizes the code <strong>on every start</strong></span></li>
+                    <li><span class="ic">🔄</span><span>Fully dynamic: load or generate code at runtime</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Native image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">⚙️</span><span>Ahead-of-time compile app + libraries into <strong>one machine-code executable</strong></span></li>
+                    <li><span class="ic">✂️</span><span>Only code reachable from the entry point is kept: the rest is dropped</span></li>
+                    <li><span class="ic">🚀</span><span>Starts instantly, small memory footprint, no separate runtime to ship or patch</span></li>
+                </ul>
+            </div>
+        </div>
+        <p class="small" style="margin-top:0.6em;">
+            The price: slower builds, a binary per OS/CPU, and a <strong>closed world</strong>:
+            anything dynamic (reflection, runtime code loading) must be declared up front.
+        </p>
+    </section>
+
+    <section>
         <h2>⚖️ Four Ways to Package a JVM App</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
