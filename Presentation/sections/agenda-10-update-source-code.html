@@ -56,14 +56,22 @@
                     <tr><td>String concatenation</td><td>Text blocks</td></tr>
                 </tbody>
             </table>
-            <pre><code class="language-bash"># the raw Maven invocation: plugin + recipes as -D properties, nothing baked into pom.xml
-./mvnw org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
-  -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:6.37.0,... \
-  -Drewrite.activeRecipes=org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,...
-
-# wrapped by the demo script (swap :run for :dryRun to preview only):
-DRY_RUN=true bash OpenRewrite/scripts/run-openrewrite.sh  # preview
-bash OpenRewrite/scripts/run-openrewrite.sh               # apply</code></pre>
+            <pre><code class="language-bash"># run from OpenRewrite/: plugin + recipes as -D properties, nothing baked into pom.xml
+# (swap :run for :dryRun to preview the changes without modifying any files)
+../mvnw -U org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
+  "-Drewrite.recipeArtifactCoordinates=\
+org.openrewrite.recipe:rewrite-static-analysis:2.41.0,\
+org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\
+org.openrewrite.recipe:rewrite-migrate-java:3.42.0,\
+org.openrewrite.recipe:rewrite-spring:6.37.0,\
+org.openrewrite.recipe:rewrite-java-security:3.38.1" \
+  "-Drewrite.activeRecipes=\
+org.openrewrite.java.format.AutoFormat,\
+org.openrewrite.staticanalysis.EqualsAvoidsNull,\
+org.openrewrite.java.testing.junit5.JUnit4to5Migration,\
+org.openrewrite.java.migrate.UpgradeToJava25,\
+org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,\
+org.openrewrite.java.security.FixSqlInjectionConcat"</code></pre>
         </div>
     </section>
 
