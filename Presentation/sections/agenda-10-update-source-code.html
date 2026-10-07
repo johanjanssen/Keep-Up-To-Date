@@ -57,11 +57,12 @@
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Before</th><th>After</th></tr></thead>
                 <tbody>
-                    <tr><td>Spring Boot 2.7 / JUnit 4 / Java 17</td><td>Spring Boot 4.1 / JUnit 5 / Java 25</td></tr>
+                    <tr><td>Spring Boot 2.7 / JUnit 4 / Java 17</td><td>Spring Boot 4.0 / JUnit 5 / Java 25</td></tr>
                     <tr><td><code>javax.*</code></td><td><code>jakarta.*</code></td></tr>
                     <tr><td>String concatenation</td><td>Text blocks</td></tr>
                 </tbody>
             </table>
+            <p class="small" style="margin:0.6em 0 0;">Latest Spring Boot recipe: <code>UpgradeSpringBoot_4_0</code> (rewrite-spring 6.37.1).<br>Spring Boot 4.1 so far only has <code>SpringBootProperties_4_1</code>.</p>
         </div>
     </section>
 
@@ -76,7 +77,7 @@
 org.openrewrite.recipe:rewrite-static-analysis:2.41.0,\
 org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\
 org.openrewrite.recipe:rewrite-migrate-java:3.42.0,\
-org.openrewrite.recipe:rewrite-spring:6.37.0,\
+org.openrewrite.recipe:rewrite-spring:6.37.1,\
 org.openrewrite.recipe:rewrite-java-security:3.38.1" \
   "-Drewrite.activeRecipes=\
 org.openrewrite.java.format.AutoFormat,\
@@ -96,6 +97,16 @@ org.openrewrite.java.security.FixSqlInjectionConcat"</code></pre>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/" target="_blank">↗ Open in new tab</a>
         </p>
+    </section>
+
+    <section>
+        <h2>🤖 AI Agent + Recipes</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">📐</span><span><strong>Recipes:</strong> deterministic, repeatable, reviewable</span></li>
+            <li><span class="ic">🧠</span><span><strong>AI agent:</strong> fixes the leftovers no recipe covers</span></li>
+            <li><span class="ic">🔁</span><span>Let the agent run the recipe first, then fix what's left</span></li>
+            <li><span class="ic">🧪</span><span>Your tests decide when it's done</span></li>
+        </ul>
     </section>
 
     <section>
