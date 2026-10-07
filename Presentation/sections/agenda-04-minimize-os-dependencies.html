@@ -5,6 +5,7 @@
         <h1>Minimize OS Dependencies</h1>
         <div class="chapter-rule"></div>
     </section>
+
     <section>
         <h2>Why a Small Docker Image?</h2>
         <ul class="icon-list medium">
@@ -13,6 +14,15 @@
             <li><span class="ic">🚀</span><span>Faster deploys</span></li>
         </ul>
     </section>
+
+    <section>
+        <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
+        </div>
+    </section>
+
     <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
         <div class="medium">
@@ -31,6 +41,14 @@
     </section>
 
     <section>
+        <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
+        </div>
+    </section>
+
+    <section>
         <h2>Ship the Runtime, Not the Toolchain</h2>
 
         <table class="small" style="margin-top:0.5em;">
@@ -45,7 +63,17 @@
     </section>
 
     <section>
+        <h2>Trim the Runtime</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">📦</span><span>Standard runtimes ship every module, used or not</span></li>
+            <li><span class="ic">✂️</span><span>Strip what your app never touches</span></li>
+            <li><span class="ic">🌍</span><span>Java <code>jlink</code> · .NET trimming · Node.js <code>--omit=dev</code></span></li>
+        </ul>
+    </section>
+
+    <section>
         <h2>Vendor JRE vs. Custom jlink Runtime</h2>
+        <span class="java-pill">☕ Java example</span>
         <div class="two-col medium" style="margin-top:0.5em;">
             <div class="box box-blue">
                 <h3>Vendor JRE image</h3>
@@ -83,22 +111,6 @@ jlink --add-modules "$(cat modules.txt)" \
     </section>
 
     <section>
-        <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
-        <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
-            <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
-        </div>
-    </section>
-
-    <section>
-        <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
-        <div class="chart-row">
-            <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
-            <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
-        </div>
-    </section>
-
-    <section>
         <h2>🔍 Build Docker Images: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
@@ -107,6 +119,4 @@ jlink --add-modules "$(cat modules.txt)" \
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">↗ Open in new tab</a>
         </p>
     </section>
-
-
 </section>
