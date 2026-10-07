@@ -6,11 +6,12 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
+        <h2>What to Update</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🐳</span><span>Docker <strong>base image versions</strong>: the tag your <code>FROM</code> line points to</span></li>
-                <li><span class="ic">💻</span><span><strong>Virtual machine images</strong>: the OS version your servers actually boot</span></li>
-                <li><span class="ic">⚙️</span><span>The <strong>software installed on top</strong>: language runtimes, and OS packages like <code>openssl</code></span></li>
+                <li><span class="ic">🐳</span><span><strong>Docker base images</strong>: your <code>FROM</code> line</span></li>
+                <li><span class="ic">💻</span><span><strong>Virtual machine images</strong>: the OS your servers boot</span></li>
+                <li><span class="ic">⚙️</span><span><strong>Installed software</strong>: runtimes and packages like <code>openssl</code></span></li>
             </ul>
         </div>
     </section>
@@ -18,24 +19,25 @@
     <section>
         <h2>Update FROM in Dockerfiles</h2>
         <ul class="icon-list medium">
-            <li><span class="ic">📅</span><span>Treat the base image tag like any other dependency: bump it deliberately, on a schedule</span></li>
+            <li><span class="ic">📅</span><span>Treat the base image like any dependency: bump it on a schedule</span></li>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <pre><code class="language-dockerfile">- FROM eclipse-temurin:21-jre
 + FROM eclipse-temurin:25-jre</code></pre>
-            One-line diff → latest JVM, security patches, and OS packages all at once.
+            One line: new JVM, security patches and OS packages.
         </div>
     </section>
 
     <section>
-        <h2>Pin the version</h2>
+        <h2>Pin the Version</h2>
         <ul class="icon-list medium" style="margin-top:0.6em;">
             <li><span class="ic">🔁</span><span><strong>Reproducible builds</strong></span></li>
             <li><span class="ic">⏪</span><span><strong>Rollback</strong></span></li>
             <li><span class="ic">🐞</span><span><strong>Debugging</strong></span></li>
             <li><span class="ic">📋</span><span><strong>Auditability</strong></span></li>
         </ul>
+        <p class="small" style="margin-top:0.6em;">Pinned doesn't mean frozen: let a bot bump the pin.</p>
     </section>
 
     <section>
@@ -43,15 +45,15 @@
         <div class="two-col medium">
             <div class="box box-green">
                 <strong class="tag-good">✅ Maven: release = immutable</strong>
-                <p style="margin:0.3em 0 0;">Once published to Maven Central, an artifact can never change.</p>
+                <p style="margin:0.3em 0 0;">A published artifact never changes</p>
             </div>
             <div class="box box-red">
                 <strong class="tag-bad">❌ Docker: a tag can move</strong>
-                <p style="margin:0.3em 0 0;">A maintainer can rebuild and re-push the same tag: same name, different bytes.</p>
+                <p style="margin:0.3em 0 0;">Same name, different bytes</p>
             </div>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            The image <strong>digest</strong> (<code>@sha256:...</code>) is immutable.
+            The <strong>digest</strong> is immutable: <code>FROM eclipse-temurin:25-jre@sha256:…</code>
         </div>
     </section>
 
@@ -77,16 +79,14 @@
 
     <section>
         <h2>Renovate vs Dependabot</h2>
-        <table class="medium">
+        <p class="small">Both handle Maven, Gradle, Docker and CI workflows. The differences:</p>
+        <table class="small">
             <thead><tr><th>Feature</th><th>Dependabot</th><th>Renovate</th></tr></thead>
             <tbody>
-            <tr><td>Maven / Gradle</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
-            <tr><td>Docker base images</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
-            <tr><td>CI workflow versions</td><td class="tag-good">✅</td><td class="tag-good">✅</td></tr>
             <tr><td>Maven Wrapper version</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
             <tr><td>Grouping updates</td><td>Limited</td><td class="tag-good">Full control</td></tr>
+            <tr><td>Platforms</td><td>GitHub only</td><td class="tag-good">GitHub, GitLab, Bitbucket, Azure DevOps, …</td></tr>
             <tr><td>Self-hosted</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
-            <tr><td>Config in repo</td><td class="tag-bad">❌</td><td class="tag-good">✅ <code>renovate.json</code></td></tr>
             <tr><td>Stability days / merge confidence</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
             <tr><td>Vulnerability / security alerts</td><td class="tag-good">✅ native</td><td class="tag-good">✅ via <code>vulnerabilityAlerts</code></td></tr>
             </tbody>
@@ -95,10 +95,10 @@
 
     <section>
         <h2>Policy as Code</h2>
-        <p class="subtitle">🔧 Renovate config: <code>renovate.json</code>, checked into the repo</p>
-        <pre><code class="language-json">// renovate.json
+        <p class="subtitle">🔧 Renovate config, checked into the repo</p>
+        <pre><code class="language-json">// renovate.json5 (plain renovate.json doesn't allow comments)
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "packageRules": [
     {
       "description": "Group all Docker base-image bumps: one PR, one review",
@@ -107,7 +107,7 @@
       "schedule": ["every weekend"]
     },
     {
-      "description": "Auto-merge patch-level OS package bumps once CI is green",
+      "description": "Auto-merge patch-level base image bumps once CI is green",
       "matchManagers": ["dockerfile"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
