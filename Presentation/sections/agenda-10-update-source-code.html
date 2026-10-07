@@ -9,8 +9,8 @@
         <h2>Beyond the Version Bump</h2>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">💥</span><span>Some upgrades also <strong>break your source code</strong>: renamed packages, removed APIs, changed method signatures</span></li>
-                <li><span class="ic">🤖</span><span>A dependency bot can open the PR, but it can't rewrite your code: that needs a dedicated migration tool</span></li>
+                <li><span class="ic">💥</span><span>Some upgrades <strong>break your code</strong>: renamed packages, removed APIs</span></li>
+                <li><span class="ic">🤖</span><span>A bot bumps the version, but can't rewrite your code</span></li>
             </ul>
         </div>
     </section>
@@ -20,9 +20,9 @@
         <p class="subtitle">A refactoring engine, not a text-based find/replace</p>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🌳</span><span>Parses your code into a full AST with types resolved, so recipes understand semantics, not just text patterns</span></li>
-                <li><span class="ic">📦</span><span>Recipes compose such as upgrade to Spring Boot 4</span></li>
-                <li><span class="ic">🔍</span><span>Every recipe can run in dry-run mode first, so you review a diff before anything is applied</span></li>
+                <li><span class="ic">🌳</span><span>Understands your code: a type-aware syntax tree, not text</span></li>
+                <li><span class="ic">📦</span><span>Recipes compose: "Upgrade to Spring Boot 4" runs dozens of smaller ones</span></li>
+                <li><span class="ic">🔍</span><span>Dry-run first: review the diff before applying</span></li>
             </ul>
         </div>
     </section>
@@ -43,11 +43,10 @@
         <p class="subtitle">Within the JVM, and beyond it</p>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">☕</span><span><strong>Error Prone + Refaster</strong> (Google): compile-time bug-pattern checks, plus template-based Java-to-Java rewrites</span></li>
-                <li><span class="ic">🏢</span><span><strong>Moderne</strong>: the commercial platform built on OpenRewrite itself, for running recipes org-wide across thousands of repos at once</span></li>
-                <li><span class="ic">🖱️</span><span><strong>IDE-assisted migrations</strong> (e.g. IntelliJ IDEA's structural search/replace and migration inspections): powerful, but manually triggered per project, not CI-automatable</span></li>
+                <li><span class="ic">☕</span><span><strong>Error Prone + Refaster</strong>: bug checks and template-based rewrites</span></li>
+                <li><span class="ic">🏢</span><span><strong>Moderne</strong>: OpenRewrite across thousands of repos</span></li>
+                <li><span class="ic">🖱️</span><span><strong>IDE migrations</strong>: powerful, but manual and per project</span></li>
             </ul>
-            <p class="small" style="margin-top:0.6em;">Every other ecosystem has its own equivalent: see the alternatives table at the end of this chapter.</p>
         </div>
     </section>
 
@@ -58,11 +57,19 @@
             <table style="margin-top:0.4em;">
                 <thead><tr><th>Before</th><th>After</th></tr></thead>
                 <tbody>
-                    <tr><td>Spring Boot 2.7 / JUnit 4 / Java 17</td><td>Spring Boot 4.1 / JUnit 5 / Java 25</td></tr>
+                    <tr><td>Spring Boot 2.7 / JUnit 4 / Java 17</td><td>Spring Boot 4.0 / JUnit 5 / Java 25</td></tr>
                     <tr><td><code>javax.*</code></td><td><code>jakarta.*</code></td></tr>
                     <tr><td>String concatenation</td><td>Text blocks</td></tr>
                 </tbody>
             </table>
+            <p class="small" style="margin:0.6em 0 0;">Latest Spring Boot recipe: <code>UpgradeSpringBoot_4_0</code> (rewrite-spring 6.37.1).<br>Spring Boot 4.1 so far only has <code>SpringBootProperties_4_1</code>.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Running OpenRewrite: The Command</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ OpenRewrite (Java)</span>
             <pre><code class="language-bash"># run from OpenRewrite/: plugin + recipes as -D properties, nothing baked into pom.xml
 # (swap :run for :dryRun to preview the changes without modifying any files)
 ../mvnw -U org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
@@ -70,7 +77,7 @@
 org.openrewrite.recipe:rewrite-static-analysis:2.41.0,\
 org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\
 org.openrewrite.recipe:rewrite-migrate-java:3.42.0,\
-org.openrewrite.recipe:rewrite-spring:6.37.0,\
+org.openrewrite.recipe:rewrite-spring:6.37.1,\
 org.openrewrite.recipe:rewrite-java-security:3.38.1" \
   "-Drewrite.activeRecipes=\
 org.openrewrite.java.format.AutoFormat,\
@@ -90,6 +97,16 @@ org.openrewrite.java.security.FixSqlInjectionConcat"</code></pre>
         <p class="small" style="margin-top:0.4em;">
             <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OpenRewrite/" target="_blank">↗ Open in new tab</a>
         </p>
+    </section>
+
+    <section>
+        <h2>🤖 AI Agent + Recipes</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">📐</span><span><strong>Recipes:</strong> deterministic, repeatable, reviewable</span></li>
+            <li><span class="ic">🧠</span><span><strong>AI agent:</strong> fixes the leftovers no recipe covers</span></li>
+            <li><span class="ic">🔁</span><span>Let the agent run the recipe first, then fix what's left</span></li>
+            <li><span class="ic">🧪</span><span>Your tests decide when it's done</span></li>
+        </ul>
     </section>
 
     <section>

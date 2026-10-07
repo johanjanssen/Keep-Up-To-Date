@@ -9,8 +9,9 @@
         <h2>Testing Is More Important Than Ever</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🙅</span><span>You can't manually test all upgrades to your dependencies</span></li>
-                <li><span class="ic">🏗️</span><span>Tests are required on all levels from unit tests to complete system tests</span></li>
+                <li><span class="ic">🙅</span><span>You can't manually test every upgrade</span></li>
+                <li><span class="ic">🏗️</span><span>Test every level: unit, integration, system</span></li>
+                <li><span class="ic">🤖</span><span>Good tests turn auto-merge from scary into boring</span></li>
             </ul>
         </div>
     </section>
@@ -117,10 +118,19 @@ class UserRepositoryIntegrationTest {
     </section>
 
     <section>
+        <h2>🔍 Security Scans Are Tests Too</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">🛑</span><span>Fail the build on HIGH or CRITICAL CVEs</span></li>
+            <li><span class="ic">📦</span><span>Scan the source <em>and</em> the built image</span></li>
+            <li><span class="ic">🔁</span><span>Re-scan regularly: new CVEs appear in unchanged code</span></li>
+        </ul>
+    </section>
+
+    <section>
         <h2>Layer 1: Source-Level Scanning</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
-            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
+            <p class="small" style="margin:0.2em 0 0;">Also supports Gradle, .NET, Node.js, Python and more</p>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.owasp&lt;/groupId&gt;
     &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
@@ -155,9 +165,10 @@ grype eclipse-temurin:25-jre --fail-on high</code></pre>
 
     <section>
         <h2>OSV-Scanner Operates on Both Layers</h2>
-        <div class="medium">
-            <p>One CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
-        </div>
+        <ul class="icon-list medium">
+            <li><span class="ic">📄</span><span>Lockfiles, SBOMs <em>and</em> images</span></li>
+            <li><span class="ic">🌐</span><span>20+ ecosystems, one open OSV database</span></li>
+        </ul>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🌐 osv-scanner</span>
             <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
@@ -168,17 +179,14 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
 
     <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
-        <p class="subtitle">Testing tooling that makes update/removal safe: across ecosystems</p>
+        <p class="subtitle">Tooling that makes updating and removing safe</p>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
                 <tr><td>Testcontainers</td><td>Java, Go, Python, Node.js, .NET, Rust (community)</td><td>Real dependencies (DB/broker) in disposable containers</td></tr>
-                <tr><td>JUnit 5 / TestNG</td><td>Java</td><td>Standard test runners</td></tr>
-                <tr><td>pytest</td><td>Python</td><td>Standard test runner + fixtures</td></tr>
-                <tr><td>Jest / Vitest</td><td>Node.js / TypeScript</td><td>Standard test runners</td></tr>
-                <tr><td><code>go test</code></td><td>Go</td><td>Built into the toolchain</td></tr>
-                <tr><td>xUnit / NUnit</td><td>.NET</td><td>Standard test runners</td></tr>
-                <tr><td><code>cargo test</code></td><td>Rust</td><td>Built into the toolchain</td></tr>
+                <tr><td>JUnit, pytest, Jest, <code>go test</code>, xUnit, <code>cargo test</code></td><td>Java, Python, Node.js, Go, .NET, Rust</td><td>Standard test runners</td></tr>
+                <tr><td>OWASP Dependency Check, OSV-Scanner</td><td>Any (source / lockfiles)</td><td>Fail the build on known CVEs in dependencies</td></tr>
+                <tr><td>Trivy, Grype</td><td>Any (container images)</td><td>Fail the pipeline on known CVEs in the image</td></tr>
                 <tr><td>Pact / Spring Cloud Contract</td><td>Any (contract testing)</td><td>Verifies API-consumer compatibility across services</td></tr>
             </tbody>
         </table>

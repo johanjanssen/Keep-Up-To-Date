@@ -6,13 +6,17 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h2>Small Docker Image</h2>
-        <p class="subtitle">Smaller image → smaller attack surface, faster pulls, faster deploys</p>
+        <h2>Why a Small Docker Image?</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">🛡️</span><span>Smaller attack surface</span></li>
+            <li><span class="ic">⬇️</span><span>Faster pulls</span></li>
+            <li><span class="ic">🚀</span><span>Faster deploys</span></li>
+        </ul>
     </section>
     <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
         <div class="medium">
-            <p>Most application runtimes don't need a shell, a package manager, or system utilities.</p>
+            <p>Your app rarely needs a shell, package manager or system tools.</p>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java image hierarchy</span>
@@ -23,7 +27,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="small" style="margin-top:0.5em;">⚠ Your choice of base image is a <strong>security decision</strong>, not just a size decision.</p>
+        <p class="small" style="margin-top:0.5em;">⚠ Choosing a base image is a <strong>security decision</strong>.</p>
     </section>
 
     <section>
@@ -32,10 +36,10 @@
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Language</th><th>Dev toolchain</th><th>Ships to prod</th></tr></thead>
             <tbody>
-                <tr><td>Java</td><td>JDK (compiler, debugger, jshell)</td><td>JRE only</td></tr>
-                <tr><td>.NET</td><td>SDK</td><td>Runtime only</td></tr>
-                <tr><td>Go / Rust</td><td>Compiler toolchain</td><td>Static binary — no toolchain at all</td></tr>
-                <tr><td>Python / Node.js</td><td>Same interpreter, plus dev packages</td><td>Interpreter, shorn of dev tooling (<code>-slim</code>, <code>--omit=dev</code>)</td></tr>
+                <tr><td>Java</td><td>JDK</td><td>JRE, custom <code>jlink</code> JRE or distroless</td></tr>
+                <tr><td>.NET</td><td>SDK</td><td>Runtime, or trimmed self-contained app</td></tr>
+                <tr><td>Go / Rust</td><td>Compiler toolchain</td><td>Static binary on <code>scratch</code></td></tr>
+                <tr><td>Python / Node.js</td><td>Interpreter + dev packages</td><td><code>-slim</code> / <code>-alpine</code> + multi-stage build</td></tr>
             </tbody>
         </table>
     </section>
@@ -46,17 +50,17 @@
             <div class="box box-blue">
                 <h3>Vendor JRE image</h3>
                 <ul class="icon-list">
-                    <li><span class="ic">📦</span><span>Every standard module included: bigger image</span></li>
-                    <li><span class="ic">⚡</span><span>Vendor tuning (e.g. a pre-built CDS archive) can lower startup CPU/memory per launch</span></li>
-                    <li><span class="ic">✅</span><span>Zero build effort: just pull the tag</span></li>
+                    <li><span class="ic">📦</span><span>All standard modules: bigger image</span></li>
+                    <li><span class="ic">⚡</span><span>Vendor tuning, e.g. a pre-built CDS archive</span></li>
+                    <li><span class="ic">✅</span><span>Zero build effort</span></li>
                 </ul>
             </div>
             <div class="box box-green">
                 <h3>Custom jlink runtime</h3>
                 <ul class="icon-list">
-                    <li><span class="ic">✂️</span><span>Only the modules your app uses: smaller image</span></li>
-                    <li><span class="ic">⚠️</span><span>No vendor pre-optimization; you own the build step</span></li>
-                    <li><span class="ic">🕵️</span><span>Miss a reflectively-used module → runtime failure</span></li>
+                    <li><span class="ic">✂️</span><span>Only the modules you use: smaller image</span></li>
+                    <li><span class="ic">⚠️</span><span>You own the build step</span></li>
+                    <li><span class="ic">🕵️</span><span>Missed a reflection-only module? Runtime failure</span></li>
                 </ul>
             </div>
         </div>
@@ -104,20 +108,5 @@ jlink --add-modules "$(cat modules.txt)" \
         </p>
     </section>
 
-    <section>
-        <h2>Shrinking the Runtime Layer Without Going Native</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <table class="small" style="margin-top:0.2em;">
-                <thead><tr><th>Language</th><th>Small-image lever (no AOT)</th></tr></thead>
-                <tbody>
-                    <tr><td>Java</td><td>Custom <code>jlink</code> JRE (Temurin/Zulu) or <code>gcr.io/distroless/java</code>: only the modules your app needs</td></tr>
-                    <tr><td>.NET</td><td>Self-contained trimmed deployment on an Alpine/distroless <code>dotnet/runtime-deps</code> image</td></tr>
-                    <tr><td>Python</td><td><code>python:slim</code> / <code>python:alpine</code>, multi-stage build to drop compilers after <code>pip install</code></td></tr>
-                    <tr><td>Node.js</td><td><code>node:alpine</code> / <code>node:slim</code>, multi-stage build to drop <code>devDependencies</code> &amp; build tools</td></tr>
-                    <tr><td>Go / Rust</td><td>Already a single static binary by default: <code>scratch</code> "just works" without any extra step</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
 
 </section>
