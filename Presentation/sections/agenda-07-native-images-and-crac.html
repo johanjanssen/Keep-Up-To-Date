@@ -14,27 +14,26 @@
                 <h3>Runtime-based</h3>
                 <ul class="icon-list">
                     <li><span class="ic">📦</span><span>Ship intermediate code <strong>plus a runtime</strong> (VM / interpreter)</span></li>
-                    <li><span class="ic">⏳</span><span>Runtime loads, interprets and optimizes the code <strong>on every start</strong></span></li>
-                    <li><span class="ic">🔄</span><span>Fully dynamic: load or generate code at runtime</span></li>
+                    <li><span class="ic">⏳</span><span>Loads and optimizes code <strong>on every start</strong></span></li>
+                    <li><span class="ic">🔄</span><span>Fully dynamic at runtime</span></li>
                 </ul>
             </div>
             <div class="box box-green">
                 <h3>Native image</h3>
                 <ul class="icon-list">
-                    <li><span class="ic">⚙️</span><span>Ahead-of-time compile app + libraries into <strong>one machine-code executable</strong></span></li>
-                    <li><span class="ic">✂️</span><span>Only code reachable from the entry point is kept: the rest is dropped</span></li>
-                    <li><span class="ic">🚀</span><span>Starts instantly, small memory footprint, no separate runtime to ship or patch</span></li>
+                    <li><span class="ic">⚙️</span><span>Compile app + libraries ahead of time into <strong>one executable</strong></span></li>
+                    <li><span class="ic">✂️</span><span>Unreachable code is dropped</span></li>
+                    <li><span class="ic">🚀</span><span>Instant start, small footprint, no runtime to patch</span></li>
                 </ul>
             </div>
         </div>
         <p class="small" style="margin-top:0.6em;">
-            The price: slower builds, a binary per OS/CPU, and a <strong>closed world</strong>:
-            anything dynamic (reflection, runtime code loading) must be declared up front.
+            The price: slower builds · a binary per OS/CPU · reflection must be declared up front
         </p>
     </section>
 
     <section>
-        <h2>⚖️ Four Ways to Package a JVM App</h2>
+        <h2>⚖️ Five Ways to Run a JVM App</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <table style="margin-top:0.2em;">
@@ -42,8 +41,9 @@
                 <tbody>
                 <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
                 <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td>JDK AOT cache (Project Leyden, Java 24+)</td><td class="tag-good">Faster: classes pre-loaded and linked</td><td class="tag-warn">Extra training run</td><td class="tag-good">Full: standard JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
                 <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
-                <tr><td>Azul CRaC checkpoint/restore</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
+                <tr><td>CRaC checkpoint/restore (Azul Zulu, BellSoft Liberica)</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
                 </tbody>
             </table>
         </div>
@@ -51,7 +51,7 @@
 
     <section>
         <h2>🧱 Anatomy of a Container Image</h2>
-        <p class="subtitle">Every layer this talk touches: in one picture</p>
+        <p class="subtitle">Native images skip the runtime layer</p>
         <div class="medium" style="max-width:760px;margin:0.4em auto 0;">
             <svg viewBox="0 0 720 380" style="width:100%;height:auto;" role="img"
                  aria-label="An application bundles its dependencies and runs on a runtime, which runs on an operating system that has its own packages installed. A dashed pink path shows GraalVM native-image builds skipping the runtime layer entirely, running the compiled binary directly on the OS.">
@@ -108,27 +108,24 @@
                 <text x="674" y="207" font-family="monospace" font-size="10.5" fill="#d33682" text-anchor="end">into the compiled binary</text>
             </svg>
         </div>
-        <p class="small" style="margin-top:0.4em;color:#657b83;">
-            Every image in <code>images.conf</code> follows the solid path. The dashed one is
-            <code>native-scratch</code> / <code>native-netty-scratch</code>: no separate JVM layer, so the app lands directly on <code>scratch</code>.
-        </p>
     </section>
 
     <section>
-        <h2>🛠️ Fast-startup / low-footprint runtime strategies across ecosystems</h2>
+        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <p class="subtitle">Fast startup and small footprint across ecosystems</p>
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Tool / Lever</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td><code>jlink</code> custom JRE, GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary, or trims the JRE to drop the JVM entirely</td></tr>
-                <tr><td>Azul CRaC</td><td>Java / JVM</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
+                <tr><td>GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary: no JVM at runtime</td></tr>
+                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td><td>Caches loaded and linked classes from a training run</td></tr>
+                <tr><td>CRaC</td><td>Java / JVM (Azul Zulu, BellSoft Liberica)</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
                 <tr><td>CRIU</td><td>Any (OS-level process checkpoint)</td><td>The Linux checkpoint/restore mechanism CRaC itself builds on</td></tr>
                 <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>.NET's direct equivalent of GraalVM native-image, plus pre-JIT for faster cold start</td></tr>
                 <tr><td>Static binaries</td><td>Go, Rust</td><td>Compiled to a single static binary by default (<code>scratch</code>/musl "just works"): no runtime image or JIT warm-up needed</td></tr>
                 <tr><td>Slim/alpine/distroless base images</td><td>Python, Node.js</td><td>Interpreted: always need a runtime layer, so the lever is a smaller base image, not dropping it</td></tr>
-                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialised heap to skip re-parsing/re-executing startup code</td></tr>
+                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialized heap to skip re-parsing/re-executing startup code</td></tr>
             </tbody>
         </table>
-        <p class="small" style="margin-top:0.4em;">Java and .NET need an explicit AOT step to reach what Go and Rust get by default; interpreted languages can't get there at all, only smaller.</p>
     </section>
 
 </section>

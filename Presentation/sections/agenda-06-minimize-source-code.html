@@ -8,28 +8,18 @@
     <section>
         <h2>How to Find Dead Code?</h2>
         <ul class="icon-list medium">
-            <li><span class="ic">💡</span><span>IDE can help with simple cases</span></li>
-            <li><span class="ic">🤔</span><span>What if, for example, a REST endpoint is no longer used?
-                <ul style="margin-top:0.3em;">
-                    <li>The REST endpoint can be removed</li>
-                    <li>The code called by the REST endpoint can be removed</li>
-                    <li>Maybe libraries can be removed</li>
-                </ul>
-            </span></li>
-            <li><span class="ic">❓</span><span>But how do we know in a large application?</span></li>
+            <li><span class="ic">💡</span><span>Your IDE finds the simple cases</span></li>
+            <li><span class="ic">🤔</span><span>An unused REST endpoint? Remove it, the code behind it and maybe some libraries</span></li>
+            <li><span class="ic">❓</span><span>But how do you know it's unused in a large application?</span></li>
         </ul>
     </section>
 
     <section>
         <h2>Advanced Ways to Find Dead Code</h2>
         <ul class="icon-list medium">
-            <li><span class="ic">💼</span><span>Commercial tools like Azul Code Inventory can measure code usage in production with real load</span></li>
-            <li><span class="ic">☕</span><span>Using a Jacoco agent attached to your application
-                <ul style="margin-top:0.3em;">
-                    <li>Recording on production has more performance overhead</li>
-                    <li>Can be used with acceptance tests on a test environment</li>
-                </ul>
-            </span></li>
+            <li><span class="ic">💼</span><span>Commercial: Azul Code Inventory measures usage in production</span></li>
+            <li><span class="ic">☕</span><span>Free: a JaCoCo agent attached to your application</span></li>
+            <li><span class="ic">⚠️</span><span>JaCoCo adds overhead: best with acceptance tests on a test environment</span></li>
         </ul>
     </section>
 
@@ -94,9 +84,7 @@
     <section>
         <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo TCP agent (Java)</span>
-            The agent opens a TCP server on the JVM. Connect a CLI client to it at any time to pull the
-            in-memory counters: the app never stops.
+            <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
 bash "scripts/Retrieve Coverage From Port/build.sh"
 
@@ -117,15 +105,14 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
      --html target/coverage-report</code></pre>
         </div>
         <p class="small" style="margin-top:0.4em;">
-            <code>--reset</code> clears the counters after each dump: repeat steps 3–5 to take fresh snapshots without restarting.
+            <code>--reset</code>: repeat steps 3–5 for fresh snapshots, no restart
         </p>
     </section>
 
     <section>
         <h2>☕ Retrieve Coverage: via File (JVM Exit)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo file agent (Java)</span>
-            Simplest mode: the agent registers a shutdown hook and writes the exec file the moment the JVM exits.
+            <span class="java-pill">☕ JaCoCo file agent (Java): written when the JVM exits</span>
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
 bash "scripts/Retrieve Coverage From File/build.sh"
 

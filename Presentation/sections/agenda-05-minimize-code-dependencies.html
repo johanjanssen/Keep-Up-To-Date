@@ -9,9 +9,9 @@
         <h2>📦 The Dependency Graph Problem</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">🧑‍💻</span><span>You own the <em>direct</em> dependencies; you are responsible for the <em>transitive</em> ones</span></li>
-                <li><span class="ic">🕸️</span><span>Each node is a potential CVE, a potential breaking change, a potential licence issue</span></li>
-                <li><span class="ic">🚫</span><span>Without tooling, the graph is effectively unmanageable</span></li>
+                <li><span class="ic">🧑‍💻</span><span>You choose the <em>direct</em> dependencies, but you're responsible for the <em>transitive</em> ones too</span></li>
+                <li><span class="ic">🕸️</span><span>Every node: a possible CVE, breaking change or license issue</span></li>
+                <li><span class="ic">🚫</span><span>Unmanageable without tooling</span></li>
             </ul>
         </div>
     </section>
@@ -20,27 +20,27 @@
         <h2>Use a Bill of Materials (BOM)</h2>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">📋</span><span>A BOM declares a <strong>curated, tested set</strong> of dependency versions</span></li>
-                <li><span class="ic">⬆️</span><span>Upgrade the BOM, get a tested, compatible stack upgrade &mdash; not dozens of independent version decisions</span></li>
-                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together, so you don't have to</span></li>
+                <li><span class="ic">📋</span><span>A <strong>curated, tested set</strong> of dependency versions</span></li>
+                <li><span class="ic">⬆️</span><span>One version bump instead of dozens of decisions</span></li>
+                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together</span></li>
             </ul>
         </div>
     </section>
 
     <section>
-        <h2>Use a Bill of Materials (BOM)</h2>
+        <h2>BOM Example: Spring Boot</h2>
         <div class="box box-blue medium">
             <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
             <pre><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
-    &lt;version&gt;4.1.0&lt;/version&gt;  &lt;!-- one bump = 300+ libs updated --&gt;
+    &lt;version&gt;4.1.0&lt;/version&gt;
 &lt;/parent&gt;</code></pre>
             Also upgrades: Jackson · Tomcat · Netty · Hibernate · Micrometer · Logback …<br>
         </div>
     </section>
 
     <section>
-        <h2>Find and Remove Unused Dependencies</h2>
+        <h2>Find Unused Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw dependency:analyze
@@ -50,13 +50,18 @@
 # [WARNING] Used undeclared dependencies found:
 # [WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
         </div>
-        <div class="box box-blue medium" style="margin-top:0.4em;">
-            <span class="java-pill">☕ Fail the build on it (Java)</span>
+    </section>
+
+    <section>
+        <h2>Fail the Build on Unused Dependencies</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
             <pre><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
     &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
     &lt;version&gt;3.11.0&lt;/version&gt;
     &lt;configuration&gt;
+        &lt;failOnWarning&gt;true&lt;/failOnWarning&gt;
         &lt;ignoredUnusedDeclaredDependencies&gt;
             &lt;!-- e.g. a JDBC driver only loaded via reflection --&gt;
             &lt;ignoredUnusedDeclaredDependency&gt;org.postgresql:postgresql&lt;/ignoredUnusedDeclaredDependency&gt;
@@ -68,15 +73,18 @@
     </section>
 
     <section>
-        <h2>Dependency Removal</h2>
+        <h2>🔍 Dependency Removal: Full Report</h2>
         <div class="iframe-wrap">
             <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/dependency/" loading="lazy" title="Dependency removal"></iframe>
         </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/dependency/" target="_blank">↗ Open in new tab</a>
+        </p>
     </section>
 
 
     <section>
-        <h2>Fail the build for specific dependencies</h2>
+        <h2>Ban Specific Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
             <pre><code class="language-xml">&lt;rules&gt;
