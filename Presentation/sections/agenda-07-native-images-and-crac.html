@@ -2,7 +2,7 @@
     <section class="chapter-slide">
         <div class="chapter-num">07</div>
         <span class="chapter-kicker">Chapter 07</span>
-        <h1>Native Images vs. CRaC</h1>
+        <h1>Native Images vs. Checkpoint/Restore</h1>
         <div class="chapter-rule"></div>
     </section>
 
@@ -30,23 +30,6 @@
         <p class="small" style="margin-top:0.6em;">
             The price: slower builds · a binary per OS/CPU · reflection must be declared up front
         </p>
-    </section>
-
-    <section>
-        <h2>⚖️ Five Ways to Run a JVM App</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java example</span>
-            <table style="margin-top:0.2em;">
-                <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
-                <tbody>
-                <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                <tr><td>JDK AOT cache (Project Leyden, Java 24+)</td><td class="tag-good">Faster: classes pre-loaded and linked</td><td class="tag-warn">Extra training run</td><td class="tag-good">Full: standard JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
-                <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
-                <tr><td>CRaC checkpoint/restore (Azul Zulu, BellSoft Liberica)</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
-                </tbody>
-            </table>
-        </div>
     </section>
 
     <section>
@@ -111,6 +94,34 @@
     </section>
 
     <section>
+        <h2>⏸️ What Is Checkpoint/Restore?</h2>
+        <p class="subtitle">Start once, snapshot, restore many times</p>
+        <ul class="icon-list medium">
+            <li><span class="ic">🔥</span><span>Start and warm up the app once</span></li>
+            <li><span class="ic">📸</span><span>Snapshot the running process to disk</span></li>
+            <li><span class="ic">⚡</span><span>Restore in milliseconds, already warmed up</span></li>
+            <li><span class="ic">⚠️</span><span>Watch out: secrets and open connections end up in the snapshot</span></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>⚖️ Five Ways to Run a JVM App</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ Java example</span>
+            <table style="margin-top:0.2em;">
+                <thead><tr><th>Approach</th><th>Startup</th><th>Build time</th><th>Compatibility</th><th>Peak throughput</th></tr></thead>
+                <tbody>
+                <tr><td>Vendor JRE (baseline)</td><td>Normal JVM (~1–2s)</td><td class="tag-good">None: just pull the image</td><td class="tag-good">Full: the unmodified real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td>JDK AOT cache (Project Leyden, Java 24+)</td><td class="tag-good">Faster: classes pre-loaded and linked</td><td class="tag-warn">Extra training run</td><td class="tag-good">Full: standard JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
+                <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
+                <tr><td>CRaC checkpoint/restore (Azul Zulu, BellSoft Liberica)</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
         <p class="subtitle">Fast startup and small footprint across ecosystems</p>
         <table class="small" style="margin-top:0.5em;">
@@ -127,5 +138,4 @@
             </tbody>
         </table>
     </section>
-
 </section>
