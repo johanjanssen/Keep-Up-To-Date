@@ -22,6 +22,8 @@
 
     <section>
         <h2>🐳 Testcontainers</h2>
+        <p class="subtitle">Test against a real database in a throwaway container</p>
+        <span class="java-pill">☕ Java example</span>
         <div class="medium" style="max-width:900px;margin:0.4em auto 0;">
             <svg viewBox="0 0 950 300" style="width:100%;height:auto;" role="img"
                  aria-label="The test class starts a real Postgres container in Docker via the Container annotation. ServiceConnection detects the running container and auto-wires its JDBC URL into the Spring context, no manual DynamicPropertySource needed. Spring injects the real UserRepository bean into the test. The test then calls the repository, which runs real SQL over JDBC straight against the container: no mocks, no in-memory fakes.">

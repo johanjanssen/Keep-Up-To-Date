@@ -40,6 +40,16 @@
     </section>
 
     <section>
+        <h2>Keep the Dependency List Honest</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">🗑️</span><span><strong>Declared but unused:</strong> remove it</span></li>
+            <li><span class="ic">👻</span><span><strong>Used but undeclared:</strong> declare it, don't rely on luck</span></li>
+            <li><span class="ic">🚫</span><span><strong>Known-bad libraries:</strong> ban them</span></li>
+            <li><span class="ic">🛑</span><span>Let the build fail, so it stays that way</span></li>
+        </ul>
+    </section>
+
+    <section>
         <h2>Find Unused Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
@@ -85,6 +95,7 @@
 
     <section>
         <h2>Ban Specific Dependencies</h2>
+        <p class="subtitle">Block known-bad libraries before they enter the build</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
             <pre><code class="language-xml">&lt;rules&gt;

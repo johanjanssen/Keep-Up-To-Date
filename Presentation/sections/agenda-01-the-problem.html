@@ -84,6 +84,7 @@
 
     <section>
         <h2>🔥 Log4Shell: The Fix Was Never the Problem</h2>
+        <p class="subtitle">Log4j: the most popular Java logging library. Every ecosystem has its own Log4j.</p>
         <div class="stat-row medium">
             <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
             <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
@@ -107,6 +108,15 @@
 
     <section>
         <img src="pictures/Sculpture.jpg" class="r-stretch">
+    </section>
+
+    <section>
+        <h2>Layers of Dependencies</h2>
+        <div class="box box-blue medium" style="margin-top:0.8em;">
+            <div class="puml-wrap">
+                <img data-puml-src="architecture.puml" alt="Nested layers: a Docker image or virtual machine contains OS packages including the runtime, which run the application, which bundles its dependencies.">
+            </div>
+        </div>
     </section>
 
     <section>
@@ -152,7 +162,18 @@
     </section>
 
     <section>
+        <h2>Newer Runtime, Free Speed</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">⚙️</span><span>Every runtime release brings compiler, GC and library improvements</span></li>
+            <li><span class="ic">🐍</span><span>Python 3.11: on average 25% faster than 3.10</span></li>
+            <li><span class="ic">🟣</span><span>.NET, Node.js, Go: faster with every release</span></li>
+            <li><span class="ic">💤</span><span>You only get it if you upgrade</span></li>
+        </ul>
+    </section>
+
+    <section>
         <h2>Same Code, Newer JVM</h2>
+        <span class="java-pill">☕ Java example</span>
         <div class="stat-row good medium">
             <div class="stat-tile"><span class="num">48%</span><span class="lbl">faster summing a primitive array</span></div>
             <div class="stat-tile"><span class="num">27%</span><span class="lbl">faster allocating and processing strings</span></div>
@@ -246,7 +267,7 @@
         <p class="medium">Hands up if you know, without looking it up:</p>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
-                <li><span class="ic">❓</span><span>Which Java, framework and base image version runs in production</span></li>
+                <li><span class="ic">❓</span><span>Which runtime, framework and base image version runs in production</span></li>
                 <li><span class="ic">❓</span><span>How many known vulnerabilities your application has right now</span></li>
                 <li><span class="ic">❓</span><span>When you last removed an unused library or OS package</span></li>
                 <li><span class="ic">❓</span><span>When you last upgraded</span></li>

@@ -44,8 +44,8 @@
         <h2>Docker Tags Aren't Truly Immutable</h2>
         <div class="two-col medium">
             <div class="box box-green">
-                <strong class="tag-good">✅ Maven: release = immutable</strong>
-                <p style="margin:0.3em 0 0;">A published artifact never changes</p>
+                <strong class="tag-good">✅ Package registries: release = immutable</strong>
+                <p style="margin:0.3em 0 0;">Maven Central, PyPI, npm: a published version never changes</p>
             </div>
             <div class="box box-red">
                 <strong class="tag-bad">❌ Docker: a tag can move</strong>
@@ -79,11 +79,11 @@
 
     <section>
         <h2>Renovate vs Dependabot</h2>
-        <p class="small">Both handle Maven, Gradle, Docker and CI workflows. The differences:</p>
+        <p class="small">Both handle most package managers, Docker and CI workflows. The differences:</p>
         <table class="small">
             <thead><tr><th>Feature</th><th>Dependabot</th><th>Renovate</th></tr></thead>
             <tbody>
-            <tr><td>Maven Wrapper version</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
+            <tr><td>Maven Wrapper version (Java)</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
             <tr><td>Grouping updates</td><td>Limited</td><td class="tag-good">Full control</td></tr>
             <tr><td>Platforms</td><td>GitHub only</td><td class="tag-good">GitHub, GitLab, Bitbucket, Azure DevOps, …</td></tr>
             <tr><td>Self-hosted</td><td class="tag-bad">❌</td><td class="tag-good">✅</td></tr>
