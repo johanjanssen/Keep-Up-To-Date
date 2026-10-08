@@ -127,14 +127,14 @@
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Tool / Lever</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td>GraalVM native-image</td><td>Java (+ JS, Python, Ruby)</td><td>Native binary, no JVM at runtime</td></tr>
-                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td><td>Caches loaded and linked classes</td></tr>
-                <tr><td>CRaC</td><td>Java (Azul, Liberica)</td><td>Restores a warmed-up JVM</td></tr>
-                <tr><td>CRIU</td><td>Any (Linux)</td><td>OS-level checkpoint/restore under CRaC</td></tr>
-                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>.NET's native-image plus pre-JIT</td></tr>
-                <tr><td>Static binaries</td><td>Go, Rust</td><td>Single binary by default, no runtime</td></tr>
-                <tr><td>Slim/alpine/distroless images</td><td>Python, Node.js</td><td>Runtime stays, base image shrinks</td></tr>
-                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Skips re-running startup code</td></tr>
+                <tr><td>GraalVM native-image</td><td>Java (+ JS, Python, Ruby)</td><td>Native binary, no JVM</td></tr>
+                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td><td>Pre-linked class cache</td></tr>
+                <tr><td>CRaC</td><td>Java (Azul, Liberica)</td><td>Restores warm JVM</td></tr>
+                <tr><td>CRIU</td><td>Any (Linux)</td><td>OS checkpoint/restore</td></tr>
+                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>Native binary, pre-JIT</td></tr>
+                <tr><td>Static binaries</td><td>Go, Rust</td><td>Single binary, no runtime</td></tr>
+                <tr><td>Slim/alpine/distroless images</td><td>Python, Node.js</td><td>Smaller base image</td></tr>
+                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Skips startup code</td></tr>
             </tbody>
         </table>
     </section>
