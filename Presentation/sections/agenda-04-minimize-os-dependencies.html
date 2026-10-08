@@ -24,28 +24,31 @@
     </section>
 
     <section>
-        <h2>Reduce Attack Surface with Minimal Images</h2>
-        <div class="medium">
-            <p>Your app rarely needs a shell, package manager or system tools.</p>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ Java image hierarchy</span>
-            <table style="margin-top:0.4em;">
-                <thead><tr><th>Strategy</th><th>Base</th><th>CVEs (Grype)</th><th>Size</th></tr></thead>
-                <tbody id="minimalImagesTableBody">
-                    <tr><td colspan="4" class="small">Loading live scan data…</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <p class="small" style="margin-top:0.5em;">⚠ Choosing a base image is a <strong>security decision</strong>.</p>
-    </section>
-
-    <section>
         <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
         </div>
+    </section>
+
+    <section>
+        <h2>🔍 Build Docker Images: Full Report</h2>
+        <div class="iframe-wrap">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Reduce Attack Surface with Minimal Images</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">??️</span><span>Limit amount of packages: no shell, package manager</span></li>
+            <li><span class="ic">??</span><span>Limit access: no SSH, root access</span></li>
+            <li><span class="ic">??</span><span>Start with a really small image and add what you need</span></li>
+        </ul>
+        <p class="small" style="margin-top:0.5em;">⚠ Choosing a base image is a <strong>security decision</strong>.</p>
     </section>
 
     <section>
@@ -110,15 +113,5 @@ jlink --add-modules "$(cat modules.txt)" \
       --strip-debug --no-header-files --no-man-pages \
       --output custom-jre</code></pre>
         </div>
-    </section>
-
-    <section>
-        <h2>🔍 Build Docker Images: Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">↗ Open in new tab</a>
-        </p>
     </section>
 </section>
