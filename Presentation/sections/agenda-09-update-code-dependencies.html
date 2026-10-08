@@ -8,7 +8,17 @@
     <section>
         <h2>Discover Stale Dependencies</h2>
         <p class="subtitle">Compare your versions with the latest releases, without changing anything</p>
-        <p class="small" style="margin:0.2em 0 0;"><code>npm outdated</code> · <code>pip list --outdated</code> · <code>dotnet list package --outdated</code></p>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">📦</span><span><code>npm outdated</code> (Node.js)</span></li>
+                <li><span class="ic">🐍</span><span><code>pip list --outdated</code> (Python)</span></li>
+                <li><span class="ic">🟣</span><span><code>dotnet list package --outdated</code> (.NET)</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>☕ Discover Stale Dependencies: Maven</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Versions Plugin (Java)</span>
             <pre><code class="language-bash">./mvnw versions:display-dependency-updates
