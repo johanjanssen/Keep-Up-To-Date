@@ -127,14 +127,14 @@
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Tool / Lever</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td>GraalVM native-image</td><td>Java (also polyglot: JS, Python, Ruby)</td><td>AOT-compiles to a native binary: no JVM at runtime</td></tr>
-                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td><td>Caches loaded and linked classes from a training run</td></tr>
-                <tr><td>CRaC</td><td>Java / JVM (Azul Zulu, BellSoft Liberica)</td><td>Checkpoint/restore a warmed-up JVM instead of recompiling it</td></tr>
-                <tr><td>CRIU</td><td>Any (OS-level process checkpoint)</td><td>The Linux checkpoint/restore mechanism CRaC itself builds on</td></tr>
-                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>.NET's direct equivalent of GraalVM native-image, plus pre-JIT for faster cold start</td></tr>
-                <tr><td>Static binaries</td><td>Go, Rust</td><td>Compiled to a single static binary by default (<code>scratch</code>/musl "just works"): no runtime image or JIT warm-up needed</td></tr>
-                <tr><td>Slim/alpine/distroless base images</td><td>Python, Node.js</td><td>Interpreted: always need a runtime layer, so the lever is a smaller base image, not dropping it</td></tr>
-                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Snapshots the initialized heap to skip re-parsing/re-executing startup code</td></tr>
+                <tr><td>GraalVM native-image</td><td>Java (polyglot)</td><td>AOT native binary, no JVM at runtime</td></tr>
+                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td><td>Caches loaded classes from a training run</td></tr>
+                <tr><td>CRaC</td><td>Java (Azul Zulu, Liberica)</td><td>Checkpoint/restore a warmed-up JVM</td></tr>
+                <tr><td>CRIU</td><td>Any (Linux)</td><td>OS-level checkpoint/restore under CRaC</td></tr>
+                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td><td>.NET's native-image, plus pre-JIT</td></tr>
+                <tr><td>Static binaries</td><td>Go, Rust</td><td>Single binary by default, no runtime needed</td></tr>
+                <tr><td>Slim/alpine/distroless base images</td><td>Python, Node.js</td><td>Runtime still needed: shrink the base image</td></tr>
+                <tr><td>V8 startup snapshots</td><td>Node.js</td><td>Snapshot the initialized heap at startup</td></tr>
             </tbody>
         </table>
     </section>
