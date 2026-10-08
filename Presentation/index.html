@@ -99,14 +99,20 @@
             width:100%; height:440px; border:1px solid rgba(38,139,210,0.35);
             border-radius:8px; background:#fff;
         }
-        /* .wide breaks the wrap past the slide's own edge (like .chart-row does)
-           to use the letterboxed space reveal.js leaves on wider screens, for
-           reports with many columns that need every pixel they can get. The
-           max-width caps how far it reaches on very wide/high-res screens;
-           .reveal-viewport clips overflow-x, so on screens with little or no
-           letterboxing it's simply cut off at the viewport edge rather than
-           causing a scrollbar. */
-        .iframe-wrap.wide { width:99%; max-width:1900px; }
+        /* .wide breaks the wrap past the slide's own edge to use the letterboxed
+           space reveal.js leaves on wider screens, for reports with long lines
+           or many columns that need every pixel they can get. reveal.js sets
+           --viewport-width and --slide-scale on .reveal-viewport, so their
+           quotient is the screen width in (unscaled) slide px; minus a small
+           gutter that's how wide the wrap gets, centred via negative margins.
+           Never narrower than the slide (100%), capped at 1900px for very wide
+           screens; without those variables it falls back to the slide width. */
+        .iframe-wrap.wide {
+            --wide-w: clamp(100%, calc(var(--viewport-width, 0px) / var(--slide-scale, 1) - 40px), 1900px);
+            width:var(--wide-w);
+            margin-left:calc((100% - var(--wide-w)) / 2);
+            margin-right:calc((100% - var(--wide-w)) / 2);
+        }
         /* Live PlantUML embeds: the <img> src is built at load time from the
            *current* contents of the referenced .puml file (see the
            renderPuml script below), so editing the diagram source and
