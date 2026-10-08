@@ -96,14 +96,12 @@
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
-bash "scripts/Retrieve Coverage From Port/build.sh"
 
 # 2: Terminal 1: start the app WITH the agent (keep it running)
 java "-javaagent:agent.jar=output=tcpserver,port=6300,includes=com.example.*" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
-# 3: Terminal 2: exercise the endpoints
-bash "scripts/Retrieve Coverage From Port/exercise-endpoints.sh"
+# 3: Terminal 2: call the REST endpoints
 
 # 4: Terminal 2: dump live coverage from the running JVM
 java -jar jacoco-cli.jar dump --address localhost --port 6300 \
@@ -124,14 +122,12 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo file agent (Java): written when the JVM exits</span>
             <pre><code class="language-bash"># 1: Build the JAR (once per code change)
-bash "scripts/Retrieve Coverage From File/build.sh"
 
 # 2: Terminal 1: start the app WITH the agent
 java "-javaagent:agent.jar=destfile=target/jacoco.exec,output=file,append=false,includes=com.example.*" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
-# 3: Terminal 2: exercise the endpoints
-bash "scripts/Retrieve Coverage From File/exercise-endpoints.sh"
+# 3: Terminal 2: call the REST endpoints
 
 # 4: Terminal 1: Ctrl+C to stop the app
 #     JaCoCo flushes coverage to target/jacoco.exec on JVM exit
