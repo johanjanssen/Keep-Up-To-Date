@@ -78,8 +78,8 @@
         <h2>Running OpenRewrite: The Command</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OpenRewrite (Java)</span>
-            <pre class="code-lg"><code class="language-bash"># run from OpenRewrite/: plugin + recipes as -D properties, nothing baked into pom.xml
-# (swap :run for :dryRun to preview the changes without modifying any files)
+            <pre class="code-lg"><code class="language-bash"># run from OpenRewrite/: nothing baked into pom.xml
+# (swap :run for :dryRun to preview without changing files)
 ../mvnw -U org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
   "-Drewrite.recipeArtifactCoordinates=\
 org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\

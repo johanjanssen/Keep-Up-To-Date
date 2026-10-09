@@ -196,8 +196,10 @@ class UserRepositoryIntegrationTest {
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Trivy (Aqua)</span>
             <pre class="code-lg"><code class="language-bash">trivy image eclipse-temurin:25-jre
-trivy image --format sarif --output trivy-results.sarif eclipse-temurin:25-jre
-trivy image --severity HIGH,CRITICAL --exit-code 1 eclipse-temurin:25-jre</code></pre>
+trivy image --format sarif --output trivy-results.sarif \
+      eclipse-temurin:25-jre
+trivy image --severity HIGH,CRITICAL --exit-code 1 \
+      eclipse-temurin:25-jre</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Grype (Anchore)</span>

@@ -56,9 +56,9 @@
             <pre class="code-lg"><code class="language-bash">./mvnw dependency:analyze
 
 # [WARNING] Unused declared dependencies found:
-# [WARNING]    org.postgresql:postgresql:jar:42.7.3:compile
+# [WARNING] org.postgresql:postgresql:jar:42.7.3:compile
 # [WARNING] Used undeclared dependencies found:
-# [WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
+# [WARNING] com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile</code></pre>
         </div>
     </section>
 
@@ -74,7 +74,9 @@
         &lt;failOnWarning&gt;true&lt;/failOnWarning&gt;
         &lt;ignoredUnusedDeclaredDependencies&gt;
             &lt;!-- e.g. a JDBC driver only loaded via reflection --&gt;
-            &lt;ignoredUnusedDeclaredDependency&gt;org.postgresql:postgresql&lt;/ignoredUnusedDeclaredDependency&gt;
+            &lt;ignoredUnusedDeclaredDependency&gt;
+                org.postgresql:postgresql
+            &lt;/ignoredUnusedDeclaredDependency&gt;
         &lt;/ignoredUnusedDeclaredDependencies&gt;
     &lt;/configuration&gt;
 &lt;/plugin&gt;</code></pre>

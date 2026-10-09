@@ -105,11 +105,11 @@
             <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
 
 # 2: Terminal 1: start the app WITH the agent (keep it running)
-java "-javaagent:agent.jar=output=tcpserver,port=6300,includes=com.example.*" \
+AGENT="output=tcpserver,port=6300,includes=com.example.*"
+java "-javaagent:agent.jar=$AGENT" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
 # 3: Terminal 2: call the REST endpoints
-
 # 4: Terminal 2: dump live coverage from the running JVM
 java -jar jacoco-cli.jar dump --address localhost --port 6300 \
      --destfile target/jacoco-live.exec --reset
@@ -131,11 +131,11 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
             <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
 
 # 2: Terminal 1: start the app WITH the agent
-java "-javaagent:agent.jar=destfile=target/jacoco.exec,output=file,append=false,includes=com.example.*" \
+AGENT="destfile=target/jacoco.exec,output=file,append=false"
+java "-javaagent:agent.jar=$AGENT,includes=com.example.*" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
 
 # 3: Terminal 2: call the REST endpoints
-
 # 4: Terminal 1: Ctrl+C to stop the app
 #     JaCoCo flushes coverage to target/jacoco.exec on JVM exit
 
