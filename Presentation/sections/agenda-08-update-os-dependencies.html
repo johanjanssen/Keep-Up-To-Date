@@ -59,12 +59,56 @@
 
     <section>
         <h2>The Automation Flywheel</h2>
-        <pre><code class="language-text">Bot detects new version
-  → opens PR with changelog and diff
-    → CI: build + unit tests + integration tests + image scan
-      → all green + low-risk update
-        → auto-merged in ~30 minutes
-          → you never manually touched it ✅</code></pre>
+        <div class="flywheel">
+            <svg viewBox="0 0 880 470" aria-hidden="true">
+                <defs>
+                    <linearGradient id="fw-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#268bd2"/>
+                        <stop offset="0.5" stop-color="#6c71c4"/>
+                        <stop offset="1" stop-color="#859900"/>
+                    </linearGradient>
+                </defs>
+                <ellipse cx="440" cy="235" rx="300" ry="180" fill="rgba(108,113,196,0.05)" stroke="url(#fw-grad)" stroke-width="10" stroke-opacity="0.25"/>
+                <ellipse class="fw-flow" cx="440" cy="235" rx="300" ry="180" fill="none" stroke="url(#fw-grad)" stroke-width="4" stroke-linecap="round"/>
+                <g fill="#6c71c4">
+                    <path transform="translate(590,79) rotate(19)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                    <path transform="translate(740,235) rotate(90)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                    <path transform="translate(590,391) rotate(161)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                    <path transform="translate(290,391) rotate(199)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                    <path transform="translate(140,235) rotate(270)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                    <path transform="translate(290,79) rotate(-19)" d="M-9,-9 L9,0 L-9,9 Z"/>
+                </g>
+            </svg>
+            <div class="fw-hub">
+                <span class="fw-hub-ic">🔁</span>
+                <strong>Hands-off updates</strong>
+                <span class="fw-hub-sub">every release, on repeat</span>
+            </div>
+            <div class="fw-node" style="left:440px; top:55px; --c:#268bd2;">
+                <span class="fw-num">1</span>
+                <span class="fw-txt"><strong>🤖 Bot detects</strong>a new version</span>
+            </div>
+            <div class="fw-node" style="left:700px; top:145px; --c:#2aa198;">
+                <span class="fw-num">2</span>
+                <span class="fw-txt"><strong>📬 Opens a PR</strong>changelog + diff</span>
+            </div>
+            <div class="fw-node" style="left:700px; top:325px; --c:#6c71c4;">
+                <span class="fw-num">3</span>
+                <span class="fw-txt"><strong>🧪 CI runs</strong>build, unit + integration tests, image scan</span>
+            </div>
+            <div class="fw-node" style="left:440px; top:415px; --c:#d33682;">
+                <span class="fw-num">4</span>
+                <span class="fw-txt"><strong>🟢 All green</strong>and a low-risk update</span>
+            </div>
+            <div class="fw-node" style="left:180px; top:325px; --c:#cb4b16;">
+                <span class="fw-num">5</span>
+                <span class="fw-txt"><strong>🔀 Auto-merged</strong>in ~30 minutes</span>
+            </div>
+            <div class="fw-node" style="left:180px; top:145px; --c:#859900;">
+                <span class="fw-num">6</span>
+                <span class="fw-txt"><strong>✅ Done</strong>you never touched it</span>
+            </div>
+        </div>
     </section>
 
     <section>
