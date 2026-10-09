@@ -227,11 +227,11 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td>Testcontainers</td><td>Java, Go, Python, Node.js, .NET, Rust (community)</td><td>Real dependencies (DB/broker) in disposable containers</td></tr>
-                <tr><td>JUnit, pytest, Jest, <code>go test</code>, xUnit, <code>cargo test</code></td><td>Java, Python, Node.js, Go, .NET, Rust</td><td>Standard test runners</td></tr>
-                <tr><td>OWASP Dependency Check, OSV-Scanner</td><td>Any (source / lockfiles)</td><td>Fail the build on known CVEs in dependencies</td></tr>
-                <tr><td>Trivy, Grype</td><td>Any (container images)</td><td>Fail the pipeline on known CVEs in the image</td></tr>
-                <tr><td>Pact / Spring Cloud Contract</td><td>Any (contract testing)</td><td>Verifies API-consumer compatibility across services</td></tr>
+                <tr><td>Testcontainers</td><td>Java, Go, Python, Node.js, .NET, Rust (community)</td><td>Real deps in throwaway containers</td></tr>
+                <tr><td>JUnit, pytest, Jest, <code>go test</code>, xUnit, <code>cargo test</code></td><td>Java, Python, Node.js, Go, .NET, Rust</td><td>Test runners</td></tr>
+                <tr><td>OWASP Dependency Check, OSV-Scanner</td><td>Any (source / lockfiles)</td><td>Fail build on CVEs</td></tr>
+                <tr><td>Trivy, Grype</td><td>Any (container images)</td><td>Fail pipeline on image CVEs</td></tr>
+                <tr><td>Pact / Spring Cloud Contract</td><td>Any (contract testing)</td><td>API compatibility checks</td></tr>
             </tbody>
         </table>
     </section>
