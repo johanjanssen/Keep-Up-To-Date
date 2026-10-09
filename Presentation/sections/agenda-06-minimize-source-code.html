@@ -161,15 +161,15 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
         <table class="small">
             <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
             <tbody>
-                <tr><td>JaCoCo</td><td>Java / JVM</td><td>Bytecode coverage, incl. a live production-agent mode</td></tr>
-                <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial fleet-wide production usage tracking</td></tr>
-                <tr><td>coverage.py</td><td>Python</td><td>Wrap any process (<code>coverage run app.py</code>), not just tests</td></tr>
-                <tr><td>c8 / nyc</td><td>Node.js / TypeScript</td><td>Wrap any Node process; c8 uses V8's native coverage</td></tr>
-                <tr><td><code>go build -cover</code> + <code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Native support for collecting coverage from production binaries</td></tr>
-                <tr><td><code>dotnet-coverage</code></td><td>.NET</td><td>Wrap or attach to any running process (server mode)</td></tr>
-                <tr><td><code>-C instrument-coverage</code> + llvm-cov</td><td>Rust</td><td>Instrumented binary writes profile data on exit</td></tr>
-                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call-graph visibility as a proxy for "is this hit"</td></tr>
-                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flag-wrapped code paths report their own usage over time</td></tr>
+                <tr><td>JaCoCo</td><td>Java / JVM</td><td>Bytecode coverage, prod agent</td></tr>
+                <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial prod usage tracking</td></tr>
+                <tr><td>coverage.py</td><td>Python</td><td>Wraps any process</td></tr>
+                <tr><td>c8 / nyc</td><td>Node.js / TypeScript</td><td>Wraps any Node process</td></tr>
+                <tr><td><code>go build -cover</code> + <code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Coverage from prod binaries</td></tr>
+                <tr><td><code>dotnet-coverage</code></td><td>.NET</td><td>Attaches to running process</td></tr>
+                <tr><td><code>-C instrument-coverage</code> + llvm-cov</td><td>Rust</td><td>Writes profile on exit</td></tr>
+                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call graphs</td></tr>
+                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flagged paths report usage</td></tr>
             </tbody>
         </table>
     </section>
