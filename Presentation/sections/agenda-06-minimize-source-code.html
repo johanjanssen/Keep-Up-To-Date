@@ -102,7 +102,7 @@
         <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
-            <pre><code class="language-bash"># 1: Build the JAR (once per code change)
+            <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
 
 # 2: Terminal 1: start the app WITH the agent (keep it running)
 java "-javaagent:agent.jar=output=tcpserver,port=6300,includes=com.example.*" \
@@ -128,7 +128,7 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
         <h2>☕ Retrieve Coverage: via File (JVM Exit)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo file agent (Java): written when the JVM exits</span>
-            <pre><code class="language-bash"># 1: Build the JAR (once per code change)
+            <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
 
 # 2: Terminal 1: start the app WITH the agent
 java "-javaagent:agent.jar=destfile=target/jacoco.exec,output=file,append=false,includes=com.example.*" \

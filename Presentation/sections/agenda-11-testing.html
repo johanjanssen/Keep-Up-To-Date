@@ -175,14 +175,14 @@ class UserRepositoryIntegrationTest {
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
             <p class="small" style="margin:0.2em 0 0;">Also supports Gradle, .NET, Node.js, Python and more</p>
-            <pre><code class="language-xml">&lt;plugin&gt;
+            <pre class="code-lg"><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.owasp&lt;/groupId&gt;
     &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
     &lt;configuration&gt;
         &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
     &lt;/configuration&gt;
 &lt;/plugin&gt;</code></pre>
-            <pre><code class="language-bash">./mvnw dependency-check:check
+            <pre class="code-lg"><code class="language-bash">./mvnw dependency-check:check
 # log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
 # jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
         </div>
@@ -195,13 +195,13 @@ class UserRepositoryIntegrationTest {
         <h2>Layer 2: Image / Artifact Scanning</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Trivy (Aqua)</span>
-            <pre><code class="language-bash">trivy image eclipse-temurin:25-jre
+            <pre class="code-lg"><code class="language-bash">trivy image eclipse-temurin:25-jre
 trivy image --format sarif --output trivy-results.sarif eclipse-temurin:25-jre
 trivy image --severity HIGH,CRITICAL --exit-code 1 eclipse-temurin:25-jre</code></pre>
         </div>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Grype (Anchore)</span>
-            <pre><code class="language-bash">grype eclipse-temurin:25-jre
+            <pre class="code-lg"><code class="language-bash">grype eclipse-temurin:25-jre
 grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
 grype eclipse-temurin:25-jre --fail-on high</code></pre>
         </div>
@@ -215,7 +215,7 @@ grype eclipse-temurin:25-jre --fail-on high</code></pre>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">🌐 osv-scanner</span>
-            <pre><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
+            <pre class="code-lg"><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
 osv-scanner scan image eclipse-temurin:25-jre
 osv-scanner scan --sbom=target/bom.json .</code></pre>
         </div>
