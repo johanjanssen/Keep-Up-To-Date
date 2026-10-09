@@ -21,7 +21,7 @@
         <h2>☕ Discover Stale Dependencies: Maven</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Versions Plugin (Java)</span>
-            <pre><code class="language-bash">./mvnw versions:display-dependency-updates
+            <pre class="code-lg"><code class="language-bash">./mvnw versions:display-dependency-updates
 
 # [INFO] org.postgresql:postgresql ...... 42.7.3 -> 42.8.0
 # [INFO] jackson-databind .............. 2.17.1 -> 2.18.2
@@ -38,7 +38,7 @@
         <h2>Catch Deprecated &amp; Renamed Packages</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Renovate <code>replacements</code> presets (generic)</span>
-            <pre><code class="language-json">{ "extends": ["replacements:all"] }
+            <pre class="code-lg"><code class="language-json">{ "extends": ["replacements:all"] }
 // e.g. auto-PRs "org.json:json" -> its actively-maintained replacement</code></pre>
             <a href="https://docs.renovatebot.com/presets-replacements/" target="_blank" class="small">docs.renovatebot.com/presets-replacements</a>
         </div>
@@ -46,7 +46,7 @@
             <span class="java-pill">☕ Old GroupIds Alerter (OGA, Java)</span>
 
             Warns when a Maven <code>groupId</code> moved, e.g. <code>javax.*</code> → <code>jakarta.*</code>
-            <pre><code class="language-bash">./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only</code></pre>
+            <pre class="code-lg"><code class="language-bash">./mvnw biz.lermitage.oga:oga-maven-plugin:1.9.2:check -DfailOnError=false   # report only</code></pre>
         </div>
     </section>
 
