@@ -78,22 +78,17 @@
         <h2>Running OpenRewrite: The Command</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ OpenRewrite (Java)</span>
-            <pre><code class="language-bash"># run from OpenRewrite/: plugin + recipes as -D properties, nothing baked into pom.xml
+            <pre class="code-lg"><code class="language-bash"># run from OpenRewrite/: plugin + recipes as -D properties, nothing baked into pom.xml
 # (swap :run for :dryRun to preview the changes without modifying any files)
 ../mvnw -U org.openrewrite.maven:rewrite-maven-plugin:6.46.1:run \
   "-Drewrite.recipeArtifactCoordinates=\
-org.openrewrite.recipe:rewrite-static-analysis:2.41.0,\
 org.openrewrite.recipe:rewrite-testing-frameworks:3.44.0,\
 org.openrewrite.recipe:rewrite-migrate-java:3.42.0,\
-org.openrewrite.recipe:rewrite-spring:6.37.1,\
-org.openrewrite.recipe:rewrite-java-security:3.38.1" \
+org.openrewrite.recipe:rewrite-spring:6.37.1" \
   "-Drewrite.activeRecipes=\
-org.openrewrite.java.format.AutoFormat,\
-org.openrewrite.staticanalysis.EqualsAvoidsNull,\
 org.openrewrite.java.testing.junit5.JUnit4to5Migration,\
 org.openrewrite.java.migrate.UpgradeToJava25,\
-org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0,\
-org.openrewrite.java.security.FixSqlInjectionConcat"</code></pre>
+org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"</code></pre>
         </div>
     </section>
 

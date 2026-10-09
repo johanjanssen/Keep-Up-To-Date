@@ -31,7 +31,7 @@
         <h2>BOM Example: Spring Boot</h2>
         <div class="box box-blue medium">
             <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
-            <pre><code class="language-xml">&lt;parent&gt;
+            <pre class="code-lg"><code class="language-xml">&lt;parent&gt;
     &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
     &lt;version&gt;4.1.0&lt;/version&gt;
 &lt;/parent&gt;</code></pre>
@@ -53,7 +53,7 @@
         <h2>Find Unused Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
-            <pre><code class="language-bash">./mvnw dependency:analyze
+            <pre class="code-lg"><code class="language-bash">./mvnw dependency:analyze
 
 # [WARNING] Unused declared dependencies found:
 # [WARNING]    org.postgresql:postgresql:jar:42.7.3:compile
@@ -66,7 +66,7 @@
         <h2>Fail the Build on Unused Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Dependency Plugin (Java)</span>
-            <pre><code class="language-xml">&lt;plugin&gt;
+            <pre class="code-lg"><code class="language-xml">&lt;plugin&gt;
     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
     &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
     &lt;version&gt;3.11.0&lt;/version&gt;
@@ -98,7 +98,7 @@
         <p class="subtitle">Block known-bad libraries before they enter the build</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
-            <pre><code class="language-xml">&lt;rules&gt;
+            <pre class="code-lg"><code class="language-xml">&lt;rules&gt;
     &lt;requireJavaVersion&gt;&lt;version&gt;[21,)&lt;/version&gt;&lt;/requireJavaVersion&gt;
     &lt;bannedDependencies&gt;
         &lt;excludes&gt;
