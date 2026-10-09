@@ -80,7 +80,9 @@
         .badge-row { display:flex; flex-wrap:wrap; gap:0.5em; justify-content:center; margin:0.5em 0; }
         .badge-row img { height:22px; }
         .reveal pre { width:95%; font-size:0.42em; }
-        .reveal pre.code-lg { font-size:0.7em; }
+        /* Code examples sized for a projector; lines are wrapped to fit, so no scrolling */
+        .reveal pre.code-lg { font-size:0.8em; }
+        .reveal pre.code-lg code { max-height:none; }
         /* Fixed pixel height on chart containers so offsetHeight is stable */
         .chart-wrap { width:88%; max-width:740px; margin:0 auto; }
         /* Two charts shown side by side (size-vs-CVE + size-vs-packages).

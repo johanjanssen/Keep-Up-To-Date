@@ -106,7 +106,8 @@
         <p class="subtitle">Two commands: find what you use, then link only that</p>
         <div class="box box-blue medium" style="margin-top:0.6em;">
             <span class="java-pill">☕ Java example</span>
-            <pre class="code-lg"><code class="language-bash"># 1. Find the JDK modules the app needs (e.g. java.base,java.logging,java.sql)
+            <pre class="code-lg"><code class="language-bash"># 1. Find the JDK modules the app needs
+#    (e.g. java.base,java.logging,java.sql)
 jdeps --print-module-deps --ignore-missing-deps \
       --multi-release 21 app.jar > modules.txt
 
