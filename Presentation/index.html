@@ -176,6 +176,53 @@
         .tl-now   { background:rgba(211,54,130,0.15); border-color:rgba(211,54,130,0.6); }
         .tl-arrow { color:#6c71c4; font-size:0.9em; margin:0 0.25em; }
         .java-pill { display:inline-block; background:rgba(203,75,22,0.2); border:1px solid rgba(203,75,22,0.5); border-radius:4px; padding:0.1em 0.5em; font-size:0.6em; vertical-align:middle; margin-left:0.4em; color:#cb4b16; }
+        /* Automation flywheel — six step cards placed around an elliptical
+           gradient ring (SVG) with a hub in the middle, instead of an
+           indented code block. Fixed px stage: reveal.js scales the whole
+           slide, so absolute positions stay put. Cards pop in one by one
+           when the slide becomes .present; the ring's dashes keep flowing
+           clockwise to sell the "it keeps turning" idea. */
+        .flywheel { position:relative; width:880px; height:470px; margin:0.3em auto 0; }
+        .flywheel svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+        .flywheel .fw-flow { stroke-dasharray:4 14; animation:fw-spin 1.6s linear infinite; }
+        @keyframes fw-spin { to { stroke-dashoffset:-18; } }
+        .fw-hub {
+            position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+            width:250px; padding:18px 14px; border-radius:50%/42%; text-align:center;
+            background:radial-gradient(circle at 30% 25%, #fffdf6, #f3ecd8);
+            border:2px solid rgba(108,113,196,0.35);
+            box-shadow:0 10px 30px rgba(108,113,196,0.18);
+        }
+        .fw-hub .fw-hub-ic { display:block; font-size:34px; line-height:1.1; }
+        .fw-hub strong { display:block; font-size:21px; color:#6c71c4; margin-top:4px; }
+        .fw-hub span.fw-hub-sub { display:block; font-size:14px; color:#657b83; margin-top:4px; }
+        .fw-node {
+            --c:#268bd2;
+            position:absolute; width:214px; transform:translate(-50%,-50%);
+            display:flex; align-items:center; gap:10px; text-align:left;
+            padding:9px 12px; border-radius:12px; background:#fffdf6;
+            border:1px solid color-mix(in srgb, var(--c) 35%, transparent);
+            border-left:5px solid var(--c);
+            box-shadow:0 6px 18px color-mix(in srgb, var(--c) 18%, transparent);
+        }
+        .fw-node .fw-num {
+            flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            background:var(--c); color:#fdf6e3; font-size:15px; font-weight:800;
+        }
+        .fw-node .fw-txt { font-size:15px; line-height:1.25; color:#586e75; }
+        .fw-node .fw-txt strong { display:block; font-size:17px; color:#073642; }
+        .reveal .present .fw-node { animation:fw-pop 0.45s cubic-bezier(.2,.9,.3,1.3) both; }
+        .reveal .present .fw-node:nth-of-type(2) { animation-delay:0.15s; }
+        .reveal .present .fw-node:nth-of-type(3) { animation-delay:0.3s; }
+        .reveal .present .fw-node:nth-of-type(4) { animation-delay:0.45s; }
+        .reveal .present .fw-node:nth-of-type(5) { animation-delay:0.6s; }
+        .reveal .present .fw-node:nth-of-type(6) { animation-delay:0.75s; }
+        .reveal .present .fw-node:nth-of-type(7) { animation-delay:0.9s; }
+        @keyframes fw-pop { from { opacity:0; transform:translate(-50%,-50%) scale(0.7); } }
+        @media (prefers-reduced-motion: reduce) {
+            .flywheel .fw-flow, .reveal .present .fw-node { animation:none; }
+        }
         code { font-size:0.9em !important; }
         /* Icon-list — dresses up a plain bullet list: a leading icon chip,
            alternating row tint and rounded corners, instead of a bare <ul>.
