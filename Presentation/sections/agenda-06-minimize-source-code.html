@@ -78,8 +78,9 @@
 
                 <!-- Agent -> Coverage data -->
                 <rect x="575" y="120" width="150" height="70" rx="8" fill="rgba(133,153,0,0.1)" stroke="#859900" stroke-width="1.5"/>
-                <text x="650" y="150" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="14" fill="#586e75">Coverage Data</text>
-                <text x="650" y="168" text-anchor="middle" font-family="monospace" font-size="10" fill="#657b83">.exec file (TCP or on exit)</text>
+                <text x="650" y="146" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="14" fill="#586e75">Coverage Data</text>
+                <text x="650" y="164" text-anchor="middle" font-family="monospace" font-size="10" fill="#657b83">.exec file</text>
+                <text x="650" y="177" text-anchor="middle" font-family="monospace" font-size="10" fill="#657b83">(TCP or on exit)</text>
 
                 <line x1="497" y1="185" x2="570" y2="155" stroke="#586e75" stroke-width="1.25" marker-end="url(#jcArrow)"/>
                 <text x="537" y="150" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">dump</text>
@@ -107,9 +108,18 @@
 # 2: Terminal 1: start the app WITH the agent (keep it running)
 AGENT="output=tcpserver,port=6300,includes=com.example.*"
 java "-javaagent:agent.jar=$AGENT" \
-     -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
+     -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar</code></pre>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <code>--reset</code>: repeat steps 3–5 for fresh snapshots, no restart
+        </p>
+    </section>
 
-# 3: Terminal 2: call the REST endpoints
+    <section>
+        <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
+            <pre class="code-lg"><code class="language-bash"># 3: Terminal 2: call the REST endpoints
 # 4: Terminal 2: dump live coverage from the running JVM
 java -jar jacoco-cli.jar dump --address localhost --port 6300 \
      --destfile target/jacoco-live.exec --reset
@@ -122,28 +132,6 @@ java -jar jacoco-cli.jar report target/jacoco-live.exec \
         <p class="small" style="margin-top:0.4em;">
             <code>--reset</code>: repeat steps 3–5 for fresh snapshots, no restart
         </p>
-    </section>
-
-    <section>
-        <h2>☕ Retrieve Coverage: via File (JVM Exit)</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ JaCoCo file agent (Java): written when the JVM exits</span>
-            <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
-
-# 2: Terminal 1: start the app WITH the agent
-AGENT="destfile=target/jacoco.exec,output=file,append=false"
-java "-javaagent:agent.jar=$AGENT,includes=com.example.*" \
-     -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar
-
-# 3: Terminal 2: call the REST endpoints
-# 4: Terminal 1: Ctrl+C to stop the app
-#     JaCoCo flushes coverage to target/jacoco.exec on JVM exit
-
-# 5: Terminal 2: generate the HTML report
-java -jar jacoco-cli.jar report target/jacoco.exec \
-     --classfiles target/classes --sourcefiles src/main/java \
-     --html target/coverage-report</code></pre>
-        </div>
     </section>
 
     <section>

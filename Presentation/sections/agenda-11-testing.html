@@ -22,7 +22,7 @@
 
     <section>
         <h2>🐳 What Is Testcontainers?</h2>
-        <p class="subtitle">Test against a real database in a throwaway container</p>
+        <p class="subtitle">Test against a real service in a throwaway container</p>
         <ul class="icon-list medium">
             <li><span class="ic">📦</span><span>Library that starts real services in Docker from your test code</span></li>
             <li><span class="ic">🗄️</span><span>Databases, message brokers, browsers: anything with a container image</span></li>
@@ -131,99 +131,6 @@ class UserRepositoryIntegrationTest {
     </section>
 
     <section>
-        <h2>🔍 Security Scans Are Tests Too</h2>
-        <ul class="icon-list medium">
-            <li><span class="ic">🛑</span><span>Fail the build on HIGH or CRITICAL CVEs</span></li>
-            <li><span class="ic">📦</span><span>Scan the source <em>and</em> the built image</span></li>
-            <li><span class="ic">🔁</span><span>Re-scan regularly: new CVEs appear in unchanged code</span></li>
-        </ul>
-    </section>
-
-    <section>
-        <h2>🔍 Different Tools</h2>
-        <div class="two-col medium" style="margin-top:0.8em;">
-            <div class="box box-blue">
-                <h3>Layer 1: Source / Build</h3>
-                <ul class="icon-list">
-                    <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: manifest only, NVD database</span></li>
-                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: lockfiles &amp; SBOMs, OSV.dev database</span></li>
-                </ul>
-            </div>
-            <div class="box box-green">
-                <h3>Layer 2: Runtime / Image</h3>
-                <ul class="icon-list">
-                    <li><span class="ic">🌐</span><span><strong>Grype</strong>: built image, Anchore's own feed</span></li>
-                    <li><span class="ic">🌐</span><span><strong>Trivy</strong>: built image, widest DB + secrets/misconfig</span></li>
-                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: built image too, same OSV.dev database</span></li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>🔍 Compare-Scans: Full Report</h2>
-        <div class="iframe-wrap wide">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Layer 1: Source-Level Scanning</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
-            <p class="small" style="margin:0.2em 0 0;">Also supports Gradle, .NET, Node.js, Python and more</p>
-            <pre class="code-lg"><code class="language-xml">&lt;plugin&gt;
-    &lt;groupId&gt;org.owasp&lt;/groupId&gt;
-    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
-    &lt;configuration&gt;
-        &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
-    &lt;/configuration&gt;
-&lt;/plugin&gt;</code></pre>
-            <pre class="code-lg"><code class="language-bash">./mvnw dependency-check:check
-# log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
-# jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
-        </div>
-        <p class="small">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Layer 2: Image / Artifact Scanning</h2>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🌐 Trivy (Aqua)</span>
-            <pre class="code-lg"><code class="language-bash">trivy image eclipse-temurin:25-jre
-trivy image --format sarif --output trivy-results.sarif \
-      eclipse-temurin:25-jre
-trivy image --severity HIGH,CRITICAL --exit-code 1 \
-      eclipse-temurin:25-jre</code></pre>
-        </div>
-        <div class="box box-blue medium" style="margin-top:0.5em;">
-            <span class="java-pill">🌐 Grype (Anchore)</span>
-            <pre class="code-lg"><code class="language-bash">grype eclipse-temurin:25-jre
-grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
-grype eclipse-temurin:25-jre --fail-on high</code></pre>
-        </div>
-    </section>
-
-    <section>
-        <h2>OSV-Scanner Operates on Both Layers</h2>
-        <ul class="icon-list medium">
-            <li><span class="ic">📄</span><span>Lockfiles, SBOMs <em>and</em> images</span></li>
-            <li><span class="ic">🌐</span><span>20+ ecosystems, one open OSV database</span></li>
-        </ul>
-        <div class="box box-blue medium" style="margin-top:0.6em;">
-            <span class="java-pill">🌐 osv-scanner</span>
-            <pre class="code-lg"><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
-osv-scanner scan image eclipse-temurin:25-jre
-osv-scanner scan --sbom=target/bom.json .</code></pre>
-        </div>
-    </section>
-
-    <section>
         <h2>🛠️ Tools &amp; Language Alternatives</h2>
         <p class="subtitle">Tooling that makes updating and removing safe</p>
         <table class="small">
@@ -231,8 +138,6 @@ osv-scanner scan --sbom=target/bom.json .</code></pre>
             <tbody>
                 <tr><td>Testcontainers</td><td>Java, Go, Python, Node.js, .NET, Rust (community)</td><td>Real deps in throwaway containers</td></tr>
                 <tr><td>JUnit, pytest, Jest, <code>go test</code>, xUnit, <code>cargo test</code></td><td>Java, Python, Node.js, Go, .NET, Rust</td><td>Test runners</td></tr>
-                <tr><td>OWASP Dependency Check, OSV-Scanner</td><td>Any (source / lockfiles)</td><td>Fail build on CVEs</td></tr>
-                <tr><td>Trivy, Grype</td><td>Any (container images)</td><td>Fail pipeline on image CVEs</td></tr>
                 <tr><td>Pact / Spring Cloud Contract</td><td>Any (contract testing)</td><td>API compatibility checks</td></tr>
             </tbody>
         </table>
