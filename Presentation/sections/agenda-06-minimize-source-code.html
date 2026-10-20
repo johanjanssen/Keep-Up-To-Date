@@ -157,19 +157,19 @@ java -jar jacoco-cli.jar report target/jacoco.exec \
     </section>
 
     <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <h2>🛠️ Code Usage Measurement Tools per Language</h2>
         <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th></tr></thead>
             <tbody>
-                <tr><td>JaCoCo</td><td>Java / JVM</td><td>Bytecode coverage, prod agent</td></tr>
-                <tr><td>Azul Code Inventory</td><td>Java / JVM</td><td>Commercial prod usage tracking</td></tr>
-                <tr><td>coverage.py</td><td>Python</td><td>Wraps any process</td></tr>
-                <tr><td>c8 / nyc</td><td>Node.js / TypeScript</td><td>Wraps any Node process</td></tr>
-                <tr><td><code>go build -cover</code> + <code>go tool covdata</code> (Go 1.20+)</td><td>Go</td><td>Coverage from prod binaries</td></tr>
-                <tr><td><code>dotnet-coverage</code></td><td>.NET</td><td>Attaches to running process</td></tr>
-                <tr><td><code>-C instrument-coverage</code> + llvm-cov</td><td>Rust</td><td>Writes profile on exit</td></tr>
-                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td><td>Runtime call graphs</td></tr>
-                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td><td>Flagged paths report usage</td></tr>
+                <tr><td>JaCoCo</td><td>Java / JVM</td></tr>
+                <tr><td>Azul Code Inventory</td><td>Java / JVM</td></tr>
+                <tr><td>coverage.py</td><td>Python</td></tr>
+                <tr><td>c8 / nyc</td><td>Node.js / TypeScript</td></tr>
+                <tr><td><code>go build -cover</code> + <code>go tool covdata</code> (Go 1.20+)</td><td>Go</td></tr>
+                <tr><td><code>dotnet-coverage</code></td><td>.NET</td></tr>
+                <tr><td><code>-C instrument-coverage</code> + llvm-cov</td><td>Rust</td></tr>
+                <tr><td>APM code-level profiling (Datadog, Sentry)</td><td>Any (via agent)</td></tr>
+                <tr><td>Feature-flag "last called" telemetry</td><td>Any</td></tr>
             </tbody>
         </table>
     </section>
