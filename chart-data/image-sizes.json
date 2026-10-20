@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-27T16:03:01Z",
+  "generated": "2026-10-20T21:59:59Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
-      "size_mb": 100.0,
+      "size_mb": 101.0,
       "packages": 87
     },
     {
@@ -13,32 +13,32 @@
     },
     {
       "name": "debian:13-slim",
-      "size_mb": 78.6,
+      "size_mb": 78.8,
       "packages": 78
     },
     {
       "name": "gcr.io/distroless/base-debian13",
-      "size_mb": 24.3,
+      "size_mb": 24.4,
       "packages": 10
     },
     {
       "name": "gcr.io/distroless/static-debian13",
-      "size_mb": 2.2,
+      "size_mb": 2.4,
       "packages": 6
     },
     {
       "name": "almalinux:10",
-      "size_mb": 187.0,
+      "size_mb": 188.0,
       "packages": 136
     },
     {
       "name": "almalinux/10-base",
-      "size_mb": 193.0,
+      "size_mb": 194.0,
       "packages": 147
     },
     {
       "name": "almalinux:10-minimal",
-      "size_mb": 74.1,
+      "size_mb": 74.2,
       "packages": 84
     },
     {
@@ -70,7 +70,7 @@
   "java": [
     {
       "name": "eclipse-temurin:25-jdk",
-      "size_mb": 414.0,
+      "size_mb": 415.0,
       "packages": 115
     },
     {
@@ -80,7 +80,7 @@
     },
     {
       "name": "eclipse-temurin:25-jre",
-      "size_mb": 336.0,
+      "size_mb": 337.0,
       "packages": 106
     },
     {
@@ -90,22 +90,17 @@
     },
     {
       "name": "azul/zulu-openjdk:25-jre",
-      "size_mb": 377.0,
+      "size_mb": 365.0,
       "packages": 132
     },
     {
       "name": "azul/zulu-openjdk:25-jre-headless",
-      "size_mb": 371.0,
+      "size_mb": 359.0,
       "packages": 116
     },
     {
-      "name": "azul/zulu-openjdk:25-jre-crac",
-      "size_mb": 323.0,
-      "packages": 103
-    },
-    {
       "name": "azul/zulu-openjdk-alpine:25-jre",
-      "size_mb": 273.0,
+      "size_mb": 272.0,
       "packages": 33
     },
     {
@@ -135,23 +130,23 @@
     },
     {
       "name": "ibm-semeru-runtimes:open-25-jre",
-      "size_mb": 344.0,
+      "size_mb": 345.0,
       "packages": 123
     },
     {
       "name": "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest",
-      "size_mb": 431.0,
+      "size_mb": 430.0,
       "packages": 131
     },
     {
       "name": "cgr.dev/chainguard/jdk:latest",
-      "size_mb": 392.0,
-      "packages": 41
+      "size_mb": 388.0,
+      "packages": 43
     },
     {
       "name": "cgr.dev/chainguard/jre:latest",
-      "size_mb": 326.0,
-      "packages": 37
+      "size_mb": 323.0,
+      "packages": 39
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-musl",
@@ -167,7 +162,7 @@
   "app": [
     {
       "name": "hello-conference:jre-temurin",
-      "size_mb": 360.0,
+      "size_mb": 361.0,
       "packages": 106
     },
     {
@@ -177,7 +172,7 @@
     },
     {
       "name": "hello-conference:jlink-full-distroless-base-debian",
-      "size_mb": 156.0,
+      "size_mb": 157.0,
       "packages": 10
     },
     {
@@ -187,17 +182,12 @@
     },
     {
       "name": "hello-conference:jlink-netty-distroless-base-debian",
-      "size_mb": 131.0,
+      "size_mb": 132.0,
       "packages": 10
     },
     {
       "name": "hello-conference:jlink-cds-distroless-base-debian",
       "size_mb": 160.0,
-      "packages": 10
-    },
-    {
-      "name": "hello-conference:crac-azul-distroless-base-debian",
-      "size_mb": 252.0,
       "packages": 10
     },
     {
@@ -207,7 +197,7 @@
     },
     {
       "name": "hello-conference:native-minimal-distroless-static-debian",
-      "size_mb": 58.9,
+      "size_mb": 59.0,
       "packages": 6
     },
     {
