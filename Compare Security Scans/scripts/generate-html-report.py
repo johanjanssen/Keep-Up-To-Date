@@ -79,6 +79,9 @@ def summary_rows_html(items):
         rows.append(f"""
         <tr>
           <td class="image-name">{html.escape(img)}</td>
+          {unique_cell(unique_grype, 'grype')}
+          {unique_cell(unique_trivy, 'trivy')}
+          {unique_cell(unique_osv, 'osv')}
           <td class="num total grype">{g['_total']}</td>
           {sev_cell(g['CRITICAL'], 'crit')}
           {sev_cell(g['HIGH'], 'high')}
@@ -88,9 +91,6 @@ def summary_rows_html(items):
           <td class="num total osv">{o['_total']}</td>
           {sev_cell(o['CRITICAL'], 'crit')}
           {sev_cell(o['HIGH'], 'high')}
-          {unique_cell(unique_grype, 'grype')}
-          {unique_cell(unique_trivy, 'trivy')}
-          {unique_cell(unique_osv, 'osv')}
         </tr>""")
     return "\n".join(rows)
 
@@ -107,17 +107,17 @@ def severity_table_html(subtitle, rows_html):
         <thead>
           <tr class="group">
             <th class="image-col"></th>
+            <th colspan="3" class="unique-hdr">Unique</th>
             <th colspan="3" class="grype-hdr">Grype</th>
             <th colspan="3" class="trivy-hdr">Trivy</th>
             <th colspan="3" class="osv-hdr">OSV-Scanner</th>
-            <th colspan="3" class="unique-hdr">Unique</th>
           </tr>
           <tr>
             <th class="image-col">Image</th>
-            <th>Total</th><th>Crit</th><th>High</th>
-            <th>Total</th><th>Crit</th><th>High</th>
-            <th>Total</th><th>Crit</th><th>High</th>
             <th>Grype</th><th>Trivy</th><th>OSV</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
+            <th>Total</th><th>Crit</th><th>High</th>
           </tr>
         </thead>
         <tbody>
