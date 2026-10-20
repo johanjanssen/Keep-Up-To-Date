@@ -6,7 +6,8 @@
         <div class="chapter-rule"></div>
     </section>
     <section>
-        <h2>Compare your versions with the latest releases, without changing anything</h2>
+        <h2>Which Dependencies Are Outdated?</h2>
+        <p class="subtitle">Compare with the latest releases, without changing anything</p>
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">📦</span><span><code>npm outdated</code> (Node.js)</span></li>
@@ -31,6 +32,30 @@
             Also useful: ./mvnw versions:display-plugin-updates (build plugins) and
             ./mvnw versions:display-property-updates (${my.version} properties).
         </aside>
+    </section>
+
+    <section>
+        <h2>Use a Bill of Materials (BOM)</h2>
+        <div class="medium">
+            <ul class="icon-list">
+                <li><span class="ic">📋</span><span>A <strong>curated, tested set</strong> of dependency versions</span></li>
+                <li><span class="ic">⬆️</span><span>One version bump instead of dozens of decisions</span></li>
+                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>BOM Example: Spring Boot</h2>
+        <div class="box box-blue medium">
+            <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
+            <pre class="code-lg"><code class="language-xml">&lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;4.1.0&lt;/version&gt;
+&lt;/parent&gt;</code></pre>
+            Also upgrades: Jackson · Tomcat · Netty · Hibernate · Micrometer · Logback …
+        </div>
     </section>
 
     <section>
@@ -66,8 +91,7 @@
             <ul class="icon-list" style="margin-top:0.6em;">
                 <li><span class="ic">🚨</span><span><strong>Dependabot security alerts</strong>: free, based on the GitHub Advisory Database</span></li>
                 <li><span class="ic">🔧</span><span>Opens the fix PR for you: <em>"Bump jackson-databind 2.13.0 → 2.13.4.2"</em></span></li>
-                <li><span class="ic">🤝</span><span>Renovate reacts to the same alerts via <code>vulnerabilityAlerts</code></span></li>
-            </ul>
+                </ul>
         </div>
     </section>
 
@@ -81,7 +105,6 @@
                 <tr><td><code>npm deprecate</code> warnings</td><td>Node.js</td></tr>
                 <tr><td><code>dotnet list package --deprecated</code></td><td>.NET</td></tr>
                 <tr><td>PyPI yanked-release / deprecation metadata</td><td>Python</td></tr>
-                <tr><td>Renovate / Dependabot</td><td>Any (30+ ecosystems)</td></tr>
             </tbody>
         </table>
     </section>

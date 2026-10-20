@@ -17,29 +17,6 @@
     </section>
 
     <section>
-        <h2>Use a Bill of Materials (BOM)</h2>
-        <div class="medium">
-            <ul class="icon-list">
-                <li><span class="ic">📋</span><span>A <strong>curated, tested set</strong> of dependency versions</span></li>
-                <li><span class="ic">⬆️</span><span>One version bump instead of dozens of decisions</span></li>
-                <li><span class="ic">✅</span><span>The maintainer verifies the versions work together</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>BOM Example: Spring Boot</h2>
-        <div class="box box-blue medium">
-            <span class="java-pill">☕ Java example</span>: Spring Boot parent POM
-            <pre class="code-lg"><code class="language-xml">&lt;parent&gt;
-    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
-    &lt;version&gt;4.1.0&lt;/version&gt;
-&lt;/parent&gt;</code></pre>
-            Also upgrades: Jackson · Tomcat · Netty · Hibernate · Micrometer · Logback …<br>
-        </div>
-    </section>
-
-    <section>
         <h2>Keep the Dependency List Honest</h2>
         <ul class="icon-list medium">
             <li><span class="ic">🗑️</span><span><strong>Declared but unused:</strong> remove it</span></li>
@@ -94,14 +71,12 @@
         </p>
     </section>
 
-
     <section>
         <h2>Ban Specific Dependencies</h2>
         <p class="subtitle">Block known-bad libraries before they enter the build</p>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Maven Enforcer Plugin (Java)</span>
             <pre class="code-lg"><code class="language-xml">&lt;rules&gt;
-    &lt;requireJavaVersion&gt;&lt;version&gt;[21,)&lt;/version&gt;&lt;/requireJavaVersion&gt;
     &lt;bannedDependencies&gt;
         &lt;excludes&gt;
             &lt;exclude&gt;log4j:log4j&lt;/exclude&gt;         &lt;!-- Log4j 1.x --&gt;
@@ -114,16 +89,15 @@
     </section>
 
     <section>
-        <h2>🛠️ Finding unused, stale &amp; undeclared dependencies</h2>
+        <h2>🛠️ Unused Dependency Detection Tools per Language</h2>
         <table class="small">
             <thead><tr><th>Tool</th><th>Language</th></tr></thead>
             <tbody>
                 <tr><td>Maven Dependency Plugin (<code>dependency:analyze</code>)</td><td>Java (Maven)</td></tr>
                 <tr><td><code>com.autonomousapps.dependency-analysis</code></td><td>Java / Kotlin (Gradle)</td></tr>
                 <tr><td>deptry</td><td>Python</td></tr>
-                <tr><td>depcheck</td><td>Node.js / TypeScript</td></tr>
+                <tr><td>knip / depcheck</td><td>Node.js / TypeScript</td></tr>
                 <tr><td><code>go mod tidy</code></td><td>Go</td></tr>
-                <tr><td>dotnet-outdated</td><td>.NET</td></tr>
                 <tr><td>cargo-udeps</td><td>Rust</td></tr>
             </tbody>
         </table>
