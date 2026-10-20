@@ -7,7 +7,7 @@
     Hello Conference — Demo Application
     ────────────────────────────────────
     A simple Spring Boot 4.x application used by the Build Docker Images
-    project to create various optimized container images (jlink, native, CRaC).
+    project to create various optimized container images (jlink, native).
 
     Also intentionally includes VULNERABLE dependencies to demonstrate
     security scanning tools (Trivy, Grype, OWASP Dependency Check).

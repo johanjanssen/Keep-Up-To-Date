@@ -8,7 +8,6 @@
 # line is written, so there's nothing to gain from digest-pinning there.
 #
 #   eclipse-temurin :25-jre/jdk     Temurin 25 (JRE / JDK)
-#   azul/zulu-openjdk:25-jdk-crac   Azul Zulu 25 JDK with CRaC patches (crac-azul-distroless-base-debian build)
 #   distroless/base-debian13        Debian 13 Trixie
 #   distroless/static-debian13      Debian 13 Trixie  (static / native-minimal)
 #   debian:13-slim                  Debian 13 Trixie  (native w/ dynamic linking)

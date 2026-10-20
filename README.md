@@ -27,7 +27,7 @@ The presentation and demos can be viewed via [GitHub Pages](https://johanjanssen
 |---|---|---|
 | [Vulnerable Application/](#vulnerable-application) | Spring Boot app with **intentionally vulnerable** dependencies — the scan target | `./mvnw -f "Vulnerable Application/pom.xml" package` |
 | [Vulnerable Application Old Java/](#vulnerable-application-old-java--callback-server) & [Callback Server/](#vulnerable-application-old-java--callback-server) | Java 17 / Spring Boot 2.7 target for a live, end-to-end Log4Shell RCE + PwnKit escalation demo, caught by a local "attacker" server | `cd "Callback Server" && ../mvnw spring-boot:run` |
-| [Build Docker Images/](#build-docker-images) | 11 Docker image strategies (JRE, jlink, CRaC, GraalVM native) with size & startup benchmarks | `bash "Build Docker Images/build-all-images.sh"` |
+| [Build Docker Images/](#build-docker-images) | 10 Docker image strategies (JRE, jlink, GraalVM native) with size & startup benchmarks | `bash "Build Docker Images/build-all-images.sh"` |
 | [Performance Improvement/](#performance-improvement) | JMH benchmarks proving Java 17→25→28 EA (Valhalla) gives free speed & memory wins | `bash "Performance Improvement/scripts/run-benchmarks.sh"` |
 | [Grype/](#grype) | Image vulnerability scanning with Grype (Anchore) | `bash Grype/scripts/compare-images.sh` |
 | [Trivy/](#trivy) | Image vulnerability scanning with Trivy (Aqua Security) | `bash Trivy/scripts/compare-images.sh` |
@@ -141,7 +141,6 @@ bash "Build Docker Images/measure-performance.sh"    # startup time + memory
 | `jlink-distroless-base-debian` | jlink (minimal modules) | `distroless/base-debian13` |
 | `jlink-netty-distroless-base-debian` | jlink (Netty-optimised) | `distroless/base-debian13` |
 | `jlink-cds-distroless-base-debian` | jlink + CDS archive | `distroless/base-debian13` |
-| `crac-azul-distroless-base-debian` | CRaC checkpoint/restore | `distroless/base-debian13` |
 | `native-debian-slim` | GraalVM native image | `debian:13-slim` |
 | `native-minimal-distroless-static-debian` | GraalVM native (minimal) | `distroless/static-debian13` |
 | `native-scratch` | GraalVM native | `scratch` |

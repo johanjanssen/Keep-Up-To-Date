@@ -47,14 +47,7 @@ for IMG in "${APP_IMAGES[@]}"; do
     TAGS+=("${IMG#hello-conference:}")
 done
 
-PORTS=(8081 8082 8083 8088 8090 8091 8092 8084 8085 8086 8087)
-
-# Extra docker run flags required by specific images.
-# crac-azul-distroless-base-debian restores a CRIU checkpoint.  CAP_CHECKPOINT_RESTORE
-# requires Linux kernel 5.9+ and a matching runc; --privileged is the portable fallback.
-declare -A EXTRA_RUN_ARGS=(
-    ["crac-azul-distroless-base-debian"]="--privileged"
-)
+PORTS=(8081 8082 8083 8088 8090 8091 8084 8085 8086 8087)
 
 declare -A WALL_MS
 declare -A WARMUP_STATUS
@@ -74,7 +67,7 @@ for i in "${!TAGS[@]}"; do
     TAG="${TAGS[$i]}"; PORT="${PORTS[$i]}"
     printf "  %-52s" "${PREFIX}:${TAG}"
 
-    docker run -d ${EXTRA_RUN_ARGS[$TAG]:-} \
+    docker run -d \
         --name "measure-${TAG}" -p "${PORT}:8080" "${PREFIX}:${TAG}" >/dev/null
     T0=$(date +%s%3N)   # milliseconds since epoch
 
