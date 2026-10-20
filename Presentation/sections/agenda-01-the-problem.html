@@ -61,7 +61,7 @@
 
                 <!-- Optional PwnKit escalation, local to the victim -->
                 <rect x="280" y="330" width="260" height="70" rx="8" fill="rgba(211,54,130,0.08)" stroke="#d33682" stroke-width="1.25" stroke-dasharray="4 3"/>
-                <text x="410" y="352" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#586e75">⑤ Optional: PwnKit</text>
+                <text x="410" y="352" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#586e75">Optional: PwnKit</text>
                 <text x="410" y="368" text-anchor="middle" font-family="monospace" font-size="9" fill="#657b83">Optional pkexec used to get root access</text>
 
                 <!-- 1: Attacker -> Victim -->
@@ -134,7 +134,7 @@
         <div class="medium">
             <ul class="icon-list" style="margin-top:0.8em;">
                 <li><span class="ic">🧩</span><span>Hundreds of <strong>direct</strong> and <strong>transitive</strong> dependencies, plus the OS, runtime and base image</span></li>
-                <li><span class="ic">🎲</span><span>Every one of them can ship the next CVE</span></li>
+                <li><span class="ic">🎲</span><span>Every one of them can ship the next security vulnerability</span></li>
                 <li><span class="ic">⏳</span><span>Code you didn't write still ages, even when you don't touch it</span></li>
             </ul>
         </div>
@@ -144,7 +144,7 @@
         <h2>The Compounding Cost of Delay</h2>
         <div class="medium">
             <ul class="icon-list">
-                <li><span class="ic">🔐</span><span><strong>Security:</strong> when a CVE forces your hand, you jump five versions under pressure instead of one</span></li>
+                <li><span class="ic">🔐</span><span><strong>Security:</strong> when a vulnerability forces your hand, you jump five versions under pressure instead of one</span></li>
                 <li><span class="ic">⚡</span><span><strong>Performance:</strong> every release you skip is free speed you don't get</span></li>
                 <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> ten small hops are cheaper than one big leap</span></li>
             </ul>
@@ -189,13 +189,20 @@
 
     <section>
         <h2>⚖️ EU Cyber Resilience Act</h2>
-        <p class="medium">Applies to anyone selling software into the EU, including Australian companies</p>
-        <div class="stat-row medium">
-            <div class="stat-tile"><span class="num">Dec 2027</span><span class="lbl">no known exploitable vulnerabilities when you ship</span></div>
-            <div class="stat-tile"><span class="num">&euro;15M</span><span class="lbl">or 2.5% of global turnover, whichever is higher</span></div>
+        <p class="medium">EU law that makes you responsible for the security of the software you sell in the EU, including as an Australian company</p>
+        <div class="medium">
+            <ul class="icon-list" style="margin-top:0.6em;">
+                <li><span class="ic">📣</span><span><strong>Since Sep 2026:</strong> report actively exploited vulnerabilities within 24 hours</span></li>
+                <li><span class="ic">🛡️</span><span><strong>From Dec 2027:</strong> ship without known exploitable vulnerabilities and provide security updates for the support period (usually at least 5 years)</span></li>
+                <li><span class="ic">💶</span><span><strong>Breaking these rules:</strong> fines up to &euro;15M or 2.5% of global turnover, whichever is higher, and your product can be pulled from the EU market</span></li>
+            </ul>
         </div>
-        <div class="box box-red medium" style="margin-top:0.5em;">
-            <p style="margin:0.2em 0;">🇦🇺 Closer to home: Australian Clinical Labs fined A$5.8M, mostly for inadequate security</p>
+    </section>
+
+    <section>
+        <h2>🇦🇺 Closer to Home</h2>
+        <div class="box box-red medium">
+            <p style="margin:0.2em 0;">Australian Clinical Labs fined A$5.8M, mostly for inadequate security</p>
         </div>
     </section>
 

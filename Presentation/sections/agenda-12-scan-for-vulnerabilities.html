@@ -1,0 +1,112 @@
+<section>
+    <section class="chapter-slide">
+        <div class="chapter-num">12</div>
+        <span class="chapter-kicker">Chapter 12</span>
+        <h1>Scan for Vulnerabilities</h1>
+        <div class="chapter-rule"></div>
+    </section>
+    <section>
+        <h2>🔍 Security Scans Are Tests Too</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">🛑</span><span>Fail the build on HIGH or CRITICAL CVEs</span></li>
+            <li><span class="ic">📦</span><span>Scan the source <em>and</em> the built image</span></li>
+            <li><span class="ic">🔁</span><span>Re-scan regularly: new CVEs appear in unchanged code</span></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>🔍 Different Tools</h2>
+        <div class="two-col medium" style="margin-top:0.8em;">
+            <div class="box box-blue">
+                <h3>Layer 1: Source / Build</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">☕</span><span><strong>OWASP Dependency Check</strong>: manifest only, NVD database</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: lockfiles &amp; SBOMs, OSV.dev database</span></li>
+                </ul>
+            </div>
+            <div class="box box-green">
+                <h3>Layer 2: Runtime / Image</h3>
+                <ul class="icon-list">
+                    <li><span class="ic">🌐</span><span><strong>Grype</strong>: built image, Anchore's own feed</span></li>
+                    <li><span class="ic">🌐</span><span><strong>Trivy</strong>: built image, widest DB + secrets/misconfig</span></li>
+                    <li><span class="ic">🌐</span><span><strong>OSV-Scanner</strong>: built image too, same OSV.dev database</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🔍 Compare-Scans: Full Report</h2>
+        <div class="iframe-wrap wide">
+            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans" loading="lazy" title="Compare Security Scans report"></iframe>
+        </div>
+        <p class="small" style="margin-top:0.4em;">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/image-scans/" target="_blank">↗ Open in new tab</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Layer 1: Source-Level Scanning</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">☕ OWASP Dependency Check (Java)</span>
+            <p class="small" style="margin:0.2em 0 0;">Also supports Gradle, .NET, Node.js, Python and more</p>
+            <pre class="code-lg"><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.owasp&lt;/groupId&gt;
+    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;failBuildOnCVSS&gt;7&lt;/failBuildOnCVSS&gt;  &lt;!-- fail on HIGH+ --&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+            <pre class="code-lg"><code class="language-bash">./mvnw dependency-check:check
+# log4j-core-2.0.jar      → CVE-2021-44228 CRITICAL 10.0 🔴
+# jackson-databind-2.9.10 → CVE-2019-14379 CRITICAL  9.8 🔴</code></pre>
+        </div>
+        <p class="small">
+            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/OWASP" target="_blank">▶ View OWASP Dependency Check Report</a>
+        </p>
+    </section>
+
+    <section>
+        <h2>Layer 2: Image / Artifact Scanning</h2>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Trivy (Aqua)</span>
+            <pre class="code-lg"><code class="language-bash">trivy image eclipse-temurin:25-jre
+trivy image --format sarif --output trivy-results.sarif \
+      eclipse-temurin:25-jre
+trivy image --severity HIGH,CRITICAL --exit-code 1 \
+      eclipse-temurin:25-jre</code></pre>
+        </div>
+        <div class="box box-blue medium" style="margin-top:0.5em;">
+            <span class="java-pill">🌐 Grype (Anchore)</span>
+            <pre class="code-lg"><code class="language-bash">grype eclipse-temurin:25-jre
+grype eclipse-temurin:25-jre -o sarif > grype-results.sarif
+grype eclipse-temurin:25-jre --fail-on high</code></pre>
+        </div>
+    </section>
+
+    <section>
+        <h2>OSV-Scanner Operates on Both Layers</h2>
+        <ul class="icon-list medium">
+            <li><span class="ic">📄</span><span>Lockfiles, SBOMs <em>and</em> images</span></li>
+            <li><span class="ic">🌐</span><span>20+ ecosystems, one open OSV database</span></li>
+        </ul>
+        <div class="box box-blue medium" style="margin-top:0.6em;">
+            <span class="java-pill">🌐 osv-scanner</span>
+            <pre class="code-lg"><code class="language-bash">osv-scanner scan source --lockfile=pom.xml .
+osv-scanner scan image eclipse-temurin:25-jre
+osv-scanner scan --sbom=target/bom.json .</code></pre>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Vulnerability Scanning Tools per Language</h2>
+        <p class="subtitle">Tooling that finds known CVEs before attackers do</p>
+        <table class="small">
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th></tr></thead>
+            <tbody>
+                <tr><td>OWASP Dependency Check, OSV-Scanner</td><td>Any (source / lockfiles)</td></tr>
+                <tr><td>Trivy, Grype</td><td>Any (container images)</td></tr>
+            </tbody>
+        </table>
+    </section>
+</section>
