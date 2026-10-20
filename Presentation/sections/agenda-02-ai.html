@@ -8,12 +8,13 @@
 
     <section>
         <h2>AI Training Data Has a Cutoff Date</h2>
-        <ul class="icon-list medium" style="max-width:480px;margin:0.8em auto 0;">
-            <li><span class="ic">🔌</span><span>APIs</span></li>
-            <li><span class="ic">📚</span><span>Libraries</span></li>
-            <li><span class="ic">🐳</span><span>Docker images</span></li>
-            <li><span class="ic">➕</span><span>...</span></li>
-        </ul>
+        <p class="subtitle">Anything released after the cutoff is unknown to the model</p>
+        <div class="card-grid medium">
+            <div class="card" style="--c:#268bd2;"><span class="card-ic">🔌</span><strong>APIs</strong><span class="card-txt">Suggests deprecated or removed calls</span></div>
+            <div class="card" style="--c:#6c71c4;"><span class="card-ic">📚</span><strong>Libraries</strong><span class="card-txt">Suggests the versions it was trained on</span></div>
+            <div class="card" style="--c:#2aa198;"><span class="card-ic">🐳</span><strong>Docker images</strong><span class="card-txt">Suggests old tags and base images</span></div>
+            <div class="card" style="--c:#cb4b16;"><span class="card-ic">➕</span><strong>And more</strong><span class="card-txt">Tools, config formats, best practices</span></div>
+        </div>
     </section>
 
     <section>
