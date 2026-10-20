@@ -20,7 +20,15 @@
         <ul class="icon-list medium">
             <li><span class="ic">📜</span><span><strong>Recipes / codemods:</strong> code that rewrites code</span></li>
             <li><span class="ic">🌳</span><span>Works on the syntax tree, not on text</span></li>
-            <li><span class="ic">🌍</span><span>jscodeshift · .NET Upgrade Assistant · <code>go fix</code> · <code>cargo fix</code> · OpenRewrite</span></li>
+            <li><span class="ic">🌍</span><span>Tools per ecosystem:
+                <ul class="sub-list">
+                    <li>JavaScript / TypeScript: jscodeshift</li>
+                    <li>.NET: .NET Upgrade Assistant</li>
+                    <li>Go: <code>go fix</code></li>
+                    <li>Rust: <code>cargo fix</code></li>
+                    <li>Java / JVM: OpenRewrite</li>
+                </ul>
+            </span></li>
         </ul>
     </section>
 
@@ -113,16 +121,16 @@ org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0"</code></pre>
     </section>
 
     <section>
-        <h2>🛠️ Tools &amp; Language Alternatives</h2>
+        <h2>🛠️ Automated Code Migration Tools per Language</h2>
         <table class="small">
-            <thead><tr><th>Tool</th><th>Language / Ecosystem</th><th>Notes</th></tr></thead>
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th></tr></thead>
             <tbody>
-                <tr><td>OpenRewrite</td><td>Java (also XML / YAML / Kotlin recipes)</td><td>Recipe-driven</td></tr>
-                <tr><td>.NET Upgrade Assistant</td><td>.NET</td><td>Project &amp; API migration</td></tr>
-                <tr><td>LibCST codemods / Bowler</td><td>Python</td><td>AST-based rewrites</td></tr>
-                <tr><td>jscodeshift / ts-migrate</td><td>JavaScript / TypeScript</td><td>Codemods</td></tr>
-                <tr><td><code>go fix</code> / <code>gofmt -r</code></td><td>Go</td><td>Built into the toolchain</td></tr>
-                <tr><td><code>cargo fix</code> / edition migrations</td><td>Rust</td><td>Built into Cargo</td></tr>
+                <tr><td>OpenRewrite</td><td>Java (also XML / YAML / Kotlin recipes)</td></tr>
+                <tr><td>.NET Upgrade Assistant</td><td>.NET</td></tr>
+                <tr><td>LibCST codemods / Bowler</td><td>Python</td></tr>
+                <tr><td>jscodeshift / ts-migrate</td><td>JavaScript / TypeScript</td></tr>
+                <tr><td><code>go fix</code> / <code>gofmt -r</code></td><td>Go</td></tr>
+                <tr><td><code>cargo fix</code> / edition migrations</td><td>Rust</td></tr>
             </tbody>
         </table>
     </section>
