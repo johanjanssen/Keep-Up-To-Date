@@ -633,8 +633,8 @@ function renderGroupCharts() {
 // already fetch (see loadLiveChartData above) — one shared fetch, no
 // hardcoded numbers here.
 //
-// GraalVM native-image and CRaC images are deliberately left out of this
-// list: they get their own comparison in Chapter 07 ("Native Images & CRaC"),
+// GraalVM native-image images are deliberately left out of this list: they
+// get their own comparison in Chapter 07 ("Native Images"),
 // so this table only walks the non-native JRE → jlink progression.
 const MINIMAL_IMAGES_TABLE_ROWS = [
     { image: 'hello-conference:jre-temurin',                      strategy: 'Full JRE',              base: 'eclipse-temurin:25-jre' },
@@ -786,7 +786,7 @@ const slideFiles = [
     'sections/agenda-04-minimize-os-dependencies.html',
     'sections/agenda-05-minimize-code-dependencies.html',
     'sections/agenda-06-minimize-source-code.html',
-    'sections/agenda-07-native-images-and-crac.html',
+    'sections/agenda-07-native-images.html',
     'sections/agenda-08-update-os-dependencies.html',
     'sections/agenda-09-update-code-dependencies.html',
     'sections/agenda-10-update-source-code.html',

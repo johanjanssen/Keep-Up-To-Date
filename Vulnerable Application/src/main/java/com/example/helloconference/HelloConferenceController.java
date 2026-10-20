@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 /**
  * Hello Conference controller — a simple demo app used by Build Docker Images
- * to test various container optimizations (jlink, native, CRaC, CDS).
+ * to test various container optimizations (jlink, native, CDS).
  */
 @RestController
 public class HelloConferenceController {

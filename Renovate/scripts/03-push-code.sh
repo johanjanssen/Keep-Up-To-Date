@@ -89,7 +89,7 @@ else
 
 - Spring Boot 4.1 + Java 25
 - Intentional log4j-core 2.0 (CVE-2021-44228 demo target for Renovate)
-- Multi-stage Dockerfiles: jlink, CDS, CRaC, native, distroless
+- Multi-stage Dockerfiles: jlink, CDS, native, distroless
 - Jenkinsfile: CI pipeline using eclipse-temurin:25-jdk Docker agent
 - renovate.json: update grouping, stability windows, security auto-merge
 - Renovate/: Gitea + Jenkins + Renovate local demo infrastructure"

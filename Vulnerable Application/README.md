@@ -26,7 +26,7 @@ the JNDI lookup actually fires.
    detect the CVEs above.
 2. **Docker image optimization base** — [`Build Docker Images`](../Build%20Docker%20Images)
    builds this same app into a dozen different container variants (jlink, native image,
-   CRaC, CDS, …) to compare size/startup/memory.
+   CDS, …) to compare size/startup/memory.
 
 ```bash
 # Build the jar

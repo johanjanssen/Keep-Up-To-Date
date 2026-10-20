@@ -2,7 +2,7 @@
     <section class="chapter-slide">
         <div class="chapter-num">07</div>
         <span class="chapter-kicker">Chapter 07</span>
-        <h1>Native Images vs. Checkpoint/Restore</h1>
+        <h1>Native Images</h1>
         <div class="chapter-rule"></div>
     </section>
 
@@ -61,7 +61,7 @@
                 <!-- Runtime band -->
                 <rect x="40" y="159" width="290" height="62" rx="8" fill="rgba(133,153,0,0.08)" stroke="#859900" stroke-width="1.5"/>
                 <text x="62" y="187" font-family="Inter,sans-serif" font-weight="700" font-size="16" fill="#586e75">Runtime</text>
-                <text x="62" y="206" font-family="monospace" font-size="11" fill="#657b83">JVM: Temurin, Zulu, CRaC</text>
+                <text x="62" y="206" font-family="monospace" font-size="11" fill="#657b83">JVM: Temurin, Zulu, Corretto</text>
 
                 <!-- App -> Runtime -->
                 <line x1="185" y1="80" x2="185" y2="153" stroke="#586e75" stroke-width="1.25" marker-end="url(#lyArrow)"/>
@@ -93,18 +93,7 @@
     </section>
 
     <section>
-        <h2>⏸️ What Is Checkpoint/Restore?</h2>
-        <p class="subtitle">Start once, snapshot, restore many times</p>
-        <ul class="icon-list medium">
-            <li><span class="ic">🔥</span><span>Start and warm up the app once</span></li>
-            <li><span class="ic">📸</span><span>Snapshot the running process to disk</span></li>
-            <li><span class="ic">⚡</span><span>Restore in milliseconds, already warmed up</span></li>
-            <li><span class="ic">⚠️</span><span>Watch out: secrets and open connections end up in the snapshot</span></li>
-        </ul>
-    </section>
-
-    <section>
-        <h2>⚖️ Five Ways to Run a JVM App</h2>
+        <h2>⚖️ Four Ways to Run a JVM App</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <table style="margin-top:0.2em;">
@@ -114,7 +103,6 @@
                 <tr><td><code>jlink</code> JRE</td><td>Normal JVM (~1–2s)</td><td class="tag-good">Fast</td><td class="tag-good">Full: still the real JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
                 <tr><td>JDK AOT cache (Project Leyden, Java 24+)</td><td class="tag-good">Faster: classes pre-loaded and linked</td><td class="tag-warn">Extra training run</td><td class="tag-good">Full: standard JVM</td><td class="tag-good">Full JIT, best long-run throughput</td></tr>
                 <tr><td>GraalVM native-image</td><td class="tag-good">~10–50ms</td><td class="tag-bad">Slow: full AOT compile</td><td class="tag-warn">Reflection/dynamic-proxy config needed</td><td class="tag-warn">No JIT: good but not peak HotSpot</td></tr>
-                <tr><td>CRaC checkpoint/restore (Azul Zulu, BellSoft Liberica)</td><td class="tag-good">~50–100ms</td><td class="tag-warn">Extra checkpoint step in the pipeline</td><td class="tag-good">Runs regular JVM bytecode unmodified</td><td class="tag-good">Full JIT, resumes already-warmed-up</td></tr>
                 </tbody>
             </table>
         </div>
@@ -128,8 +116,6 @@
             <tbody>
                 <tr><td>GraalVM native-image</td><td>Java (+ JS, Python, Ruby)</td></tr>
                 <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td></tr>
-                <tr><td>CRaC</td><td>Java (Azul, Liberica)</td></tr>
-                <tr><td>CRIU</td><td>Any (Linux)</td></tr>
                 <tr><td>Native AOT / ReadyToRun</td><td>.NET</td></tr>
                 <tr><td>Static binaries</td><td>Go, Rust</td></tr>
                 <tr><td>Slim/alpine/distroless images</td><td>Python, Node.js</td></tr>
