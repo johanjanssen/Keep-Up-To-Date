@@ -244,6 +244,16 @@
         .stat-tile .lbl { display:block; font-size:0.48em; color:#657b83; margin-top:0.35em; line-height:1.3; }
         .stat-row.good .stat-tile { background:rgba(133,153,0,0.08); border-color:rgba(133,153,0,0.35); }
         .stat-row.good .stat-tile .num { color:#859900; }
+        /* Card grid — icon + title (+ optional line) tiles for slides that
+           list a handful of parallel points, instead of a plain bullet list.
+           --cols sets the column count, --c a card's accent color. */
+        .card-grid { display:grid; grid-template-columns:repeat(var(--cols,4),1fr); gap:0.7em; margin:0.8em auto 0; }
+        .card { --c:#268bd2; background:color-mix(in srgb, var(--c) 8%, transparent); border:1px solid color-mix(in srgb, var(--c) 30%, transparent); border-top:5px solid var(--c); border-radius:10px; padding:0.8em 0.6em; text-align:center; }
+        .card .card-ic { display:block; font-size:1.6em; line-height:1.2; }
+        .card strong { display:block; margin-top:0.3em; color:#073642; line-height:1.25; }
+        .card .card-txt { display:block; font-size:0.78em; color:#657b83; margin-top:0.35em; line-height:1.3; }
+        .card-banner { margin:0.8em auto 0; padding:0.55em 1em; border-radius:10px; background:rgba(220,50,47,0.08); border:1px solid rgba(220,50,47,0.32); font-weight:700; color:#073642; }
+        .card-banner .num { color:#dc322f; }
         /* Browser-chrome mockup for the repo slide: github.com sends
            X-Frame-Options: deny / frame-ancestors 'none', so it can't be
            embedded live like the GitHub Pages report iframes below — this
@@ -337,88 +347,11 @@ function axis(extra) {
     };
 }
 
-// ─── Chart definitions ────────────────────────────────────────────────────────
-function buildCharts() {
-
-    // Note: the "Grype vs Trivy" comparison bar (chartScanners) was removed —
-    // that slide now explains the scanner landscape conceptually, and the live
-    // numbers live on the "Compare-Scans" table/report slides instead, so this
-    // chart no longer has a canvas to render into.
-
-    // Note: the "Image Size vs CVE Count" charts (base / Java / hello-conference
-    // images) are no longer hardcoded here — see the "Live Image Size vs CVE
-    // Count charts" block below buildCharts(), which fetches real numbers from
-    // chart-data/*.json and renders chartBaseImages / chartJavaImages / chartAppImages.
-
-    // Plain horizontal bar example
-    makeChart('chartExample', {
-        type: 'bar',
-        data: {
-            labels: ['Item A','Item B','Item C','Item D','Item E'],
-            datasets: [{
-                label: 'Value',
-                data: [42,78,23,56,91],
-                backgroundColor: [C.cyan,C.green,C.purple,C.pink,C.orange],
-                borderRadius: 4
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            plugins: { legend: { display: false } },
-            scales: {
-                x: axis(),
-                y: { ...axis(), grid: { display: false } }
-            }
-        }
-    });
-
-    // Stacked bar with legend
-    makeChart('chartLegend', {
-        type: 'bar',
-        data: {
-            labels: ['Image A','Image B','Image C','Image D'],
-            datasets: [
-                { label: 'Critical', data: [2,0,0,3], backgroundColor: C.red,    borderRadius: 2 },
-                { label: 'High',     data: [5,3,0,7], backgroundColor: C.orange, borderRadius: 2 },
-                { label: 'Medium',   data: [22,7,0,18],backgroundColor: C.yellow,borderRadius: 2 },
-                { label: 'Low',      data: [8,5,0,4], backgroundColor: C.green,  borderRadius: 2 }
-            ]
-        },
-        options: {
-            plugins: {
-                legend: { display: true, position: 'bottom', labels: { color: C.fg, font: { size: 13 } } }
-            },
-            scales: {
-                x: { stacked: true, ...axis() },
-                y: { stacked: true, ...axis(), title: { display: true, text: 'CVE count', color: C.fg } }
-            }
-        }
-    });
-}
-
-// ─── Lazy init: render only when the slide is visible and sized ───────────────
-// offsetWidth/Height return 0 for hidden slides — rendering then causes blurry
-// charts because the backing store is built at the wrong size.
-const rendered = new Set();
-function tryRender(slide) {
-    if (!slide) return;
-    slide.querySelectorAll('canvas[id]').forEach(c => {
-        if (!rendered.has(c.id)) {
-            rendered.add(c.id);
-            buildCharts();
-        }
-    });
-}
-
-Reveal.on('ready',        e => tryRender(e.currentSlide));
-Reveal.on('slidechanged', e => tryRender(e.currentSlide));
-
 // ─── Live "Image Size vs CVE Count" / "Image Size vs Package Count" charts ──
 //
-// Three groups — generic OS base images, Java JRE/JDK/GraalVM base images,
-// and hello-conference app images — mirroring images.conf's own
-// BASE_IMAGES_GENERIC / BASE_IMAGES_JAVA / APP_IMAGES split (the single
-// source of truth every report in this repo already reads from).
+// Two groups — generic OS base images and Java JRE/JDK/GraalVM base images —
+// mirroring images.conf's own BASE_IMAGES_GENERIC / BASE_IMAGES_JAVA split
+// (the single source of truth every report in this repo already reads from).
 //
 // Data comes from two GitHub Actions workflows that publish JSON to the same
 // gh-pages chart-data/ folder (see .github/workflows/measure-images.yml and
@@ -428,7 +361,7 @@ Reveal.on('slidechanged', e => tryRender(e.currentSlide));
 //                        directly during that workflow's build/measure step,
 //                        never hardcoded here)
 //   cve-counts.json   — Compare Security Scans/scripts/generate-html-report.py
-// Both are already grouped generic/java/app AND already ordered the same way
+// Both are already grouped generic/java AND already ordered the same way
 // as images.conf's arrays (the Python that produces them reads that order
 // directly) — so merging is a simple by-name lookup, not a re-sort.
 //
@@ -445,21 +378,18 @@ Reveal.on('slidechanged', e => tryRender(e.currentSlide));
 // loaded (or a group is empty), the canvas is hidden and replaced with a
 // short message rather than ever showing fabricated numbers.
 const CHART_DATA_BASE_URL = 'https://johanjanssen.github.io/Keep-Up-To-Date/chart-data/';
-let liveChartData = null;   // { generic:[...], java:[...], app:[...] } once loaded
+let liveChartData = null;   // { generic:[...], java:[...] } once loaded
 let liveChartFailed = false;
 
 const GROUP_CHART_SPECS = [
-    { key: 'generic', countEl: 'baseImageCount',
+    { key: 'generic',
       cveChartId: 'chartBaseImages', cveTitle: 'Base OS images: size (MB) vs CVE count (Grype), live data',
       pkgChartId: 'chartBasePackages', pkgTitle: 'Base OS images: size (MB) vs package count, live data',
       nameFontSize: 18 },
-    { key: 'java', countEl: 'javaImageCount',
+    { key: 'java',
       cveChartId: 'chartJavaImages', cveTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs CVE count (Grype), live data',
       pkgChartId: 'chartJavaPackages', pkgTitle: 'Java runtime images (JDK/JRE/GraalVM): size (MB) vs package count, live data',
       nameFontSize: 18 },
-    { key: 'app', countEl: 'appImageCount',
-      cveChartId: 'chartAppImages', cveTitle: 'hello-conference app images: size (MB) vs CVE count (Grype), live data',
-      pkgChartId: 'chartAppPackages', pkgTitle: 'hello-conference app images: size (MB) vs package count, live data' },
 ];
 
 // sizeRows already carry "packages" straight from image-sizes.json — no
@@ -475,9 +405,8 @@ function mergeSizeAndCveGroup(sizeRows, cveRows) {
     }));
 }
 
-// Bars are colored by that image's own CVE count (not by size) — same
-// good/warn/bad severity read as the tag-good/tag-warn/tag-bad table cells
-// earlier in this chapter, just applied per-bar instead of per-row.
+// Bars are colored by that image's own CVE count (not by size): green for
+// none, then yellow → orange → red as the count grows.
 function sizeBarColor(cves) {
     if (cves === null || cves === undefined) return C.purple; // unknown — no matching scan yet
     if (cves === 0)   return C.green;
@@ -615,62 +544,9 @@ function renderGroupCharts() {
     if (!liveChartData && !liveChartFailed) return; // fetch still in flight
     GROUP_CHART_SPECS.forEach(spec => {
         const rows = liveChartData && liveChartData[spec.key];
-        const countEl = document.getElementById(spec.countEl);
-        if (countEl && rows && rows.length) countEl.textContent = rows.length;
-
         renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle, spec.nameFontSize));
         renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle, spec.nameFontSize));
     });
-    renderMinimalImagesTable();
-}
-
-// ─── "Reduce Attack Surface with Minimal Images" hierarchy table ───────────
-//
-// This table used to hardcode CVE/size numbers for a handful of hand-picked
-// hello-conference images. Those numbers drift every time the "Measure
-// Docker Images" / "Compare Security Scans" workflows re-run, so instead it
-// reads the same liveChartData.app rows the charts further down this chapter
-// already fetch (see loadLiveChartData above) — one shared fetch, no
-// hardcoded numbers here.
-//
-// GraalVM native-image images are deliberately left out of this list: they
-// get their own comparison in Chapter 07 ("Native Images"),
-// so this table only walks the non-native JRE → jlink progression.
-const MINIMAL_IMAGES_TABLE_ROWS = [
-    { image: 'hello-conference:jre-temurin',                      strategy: 'Full JRE',              base: 'eclipse-temurin:25-jre' },
-    { image: 'hello-conference:jre-temurin-alpine',                strategy: 'Full JRE (Alpine)',      base: 'eclipse-temurin:25-jre-alpine' },
-    { image: 'hello-conference:jlink-full-distroless-base-debian', strategy: 'jlink (full modules)',   base: 'distroless/base-debian13' },
-    { image: 'hello-conference:jlink-distroless-base-debian',      strategy: 'jlink (minimal modules)',base: 'distroless/base-debian13' },
-    { image: 'hello-conference:jlink-netty-distroless-base-debian',strategy: 'jlink + Netty',          base: 'distroless/base-debian13' },
-    { image: 'hello-conference:jlink-cds-distroless-base-debian',  strategy: 'jlink + CDS',            base: 'distroless/base-debian13' },
-];
-
-function cveTagClass(cves) {
-    if (cves === null || cves === undefined) return '';
-    if (cves === 0)  return 'tag-good';
-    if (cves < 80)   return 'tag-warn';
-    return 'tag-bad';
-}
-
-function renderMinimalImagesTable() {
-    const tbody = document.getElementById('minimalImagesTableBody');
-    if (!tbody) return; // not on this slide
-    if (!liveChartData && !liveChartFailed) return; // fetch still in flight, leave the "Loading…" row
-
-    const appByName = new Map((liveChartData && liveChartData.app || []).map(r => [r.name, r]));
-    if (!appByName.size) {
-        tbody.innerHTML = '<tr><td colspan="4" class="small">⚠ Live scan data isn’t available right now; see the latest workflow runs for current numbers.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = MINIMAL_IMAGES_TABLE_ROWS.map(row => {
-        const data = appByName.get(row.image);
-        const cves = data ? data.cves : null;
-        const size = data ? data.size_mb : null;
-        const cveText  = (cves === null || cves === undefined) ? '—' : cves;
-        const sizeText = (size === null || size === undefined) ? '—' : `${size} MB`;
-        return `<tr><td>${row.strategy}</td><td>${row.base}</td><td class="${cveTagClass(cves)}">${cveText}</td><td>${sizeText}</td></tr>`;
-    }).join('');
 }
 
 async function loadLiveChartData() {
@@ -683,8 +559,7 @@ async function loadLiveChartData() {
         const [sizes, cves] = await Promise.all([sizesRes.json(), cvesRes.json()]);
         liveChartData = {
             generic: mergeSizeAndCveGroup(sizes.generic, cves.generic),
-            java:    mergeSizeAndCveGroup(sizes.java,    cves.java),
-            app:     mergeSizeAndCveGroup(sizes.app,     cves.app)
+            java:    mergeSizeAndCveGroup(sizes.java,    cves.java)
         };
     } catch (e) {
         console.error('Live chart data unavailable:', e);

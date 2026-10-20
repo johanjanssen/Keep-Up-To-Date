@@ -3,7 +3,7 @@
 #
 # Requires: Docker running locally.
 # On first run, Docker will pull:
-#   postgres:16-alpine     (~80 MB)
+#   postgres:18-alpine     (~110 MB)
 #
 # Usage (run from the Testcontainers/ directory):
 #   bash scripts/run-tests.sh

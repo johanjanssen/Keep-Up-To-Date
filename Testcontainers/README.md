@@ -24,7 +24,7 @@ bash scripts/run-tests.sh
 ../mvnw -f pom.xml test
 ```
 
-Testcontainers automatically pulls `postgres:16-alpine` on first run (~10 s).
+Testcontainers automatically pulls `postgres:18-alpine` on first run (~10 s).
 Subsequent runs use the Docker layer cache.
 
 ---
@@ -50,8 +50,8 @@ curl -X DELETE http://localhost:8080/users/1
 ```java
 @Container
 @ServiceConnection                     // ← Spring Boot reads host/port/credentials
-static PostgreSQLContainer<?> postgres  //   and auto-configures the DataSource
-    = new PostgreSQLContainer<>("postgres:16-alpine");
+static PostgreSQLContainer postgres     //   and auto-configures the DataSource
+    = new PostgreSQLContainer("postgres:18-alpine");
 ```
 
 Before Spring Boot 3.1, you needed:
@@ -90,5 +90,5 @@ src/
 | `spring-boot-starter-data-jpa` | JPA / Hibernate |
 | `postgresql` (runtime) | JDBC driver |
 | `spring-boot-testcontainers` | `@ServiceConnection` support |
-| `testcontainers:postgresql` | PostgreSQL Testcontainer |
+| `testcontainers-postgresql` | PostgreSQL Testcontainer |
 
