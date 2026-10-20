@@ -16,7 +16,7 @@
     </section>
 
     <section>
-        <h2>Base Images: Size vs Packages &amp; CVE Count</h2>
+        <h2>Base Images: Size vs. Packages &amp; CVE Count</h2>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
@@ -24,7 +24,7 @@
     </section>
 
     <section>
-        <h2>Java Runtime Images: Size vs Packages &amp; CVE Count</h2>
+        <h2>Java Runtime Images: Size vs. Packages &amp; CVE Count</h2>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartJavaPackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartJavaImages" height="460"></canvas></div>
@@ -48,7 +48,6 @@
             <li><span class="ic">🔒</span><span>Less access: no SSH, run as a non-root user</span></li>
             <li><span class="ic">🧱</span><span>Start from <code>scratch</code> or distroless and add only what you need</span></li>
             <li><span class="ic">🏗️</span><span>Multi-stage builds: compilers and build tools never reach prod</span></li>
-            <li><span class="ic">📉</span><span>Fewer packages, fewer CVEs to triage and patch</span></li>
         </ul>
         <p class="small" style="margin-top:0.5em;">⚠ Choosing a base image is a <strong>security decision</strong>.</p>
     </section>
@@ -74,7 +73,6 @@
             <li><span class="ic">✂️</span><span>Strip what your app never touches</span></li>
             <li><span class="ic">☕</span><span>Java: <code>jlink</code> builds a JRE with only the modules you use</span></li>
             <li><span class="ic">🟣</span><span>.NET: trimming drops unused assemblies from self-contained apps</span></li>
-            <li><span class="ic">🟢</span><span>Node.js: <code>npm ci --omit=dev</code> skips dev dependencies</span></li>
         </ul>
     </section>
 

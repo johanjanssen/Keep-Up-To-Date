@@ -69,7 +69,7 @@
 
                 <rect x="248" y="158" width="244" height="62" rx="7" fill="rgba(203,75,22,0.12)" stroke="#cb4b16" stroke-width="1.25" stroke-dasharray="4 3"/>
                 <text x="370" y="182" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="12.5" fill="#586e75">JaCoCo Agent</text>
-                <text x="370" y="199" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">-javaagent:jacoco.jar</text>
+                <text x="370" y="199" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">-javaagent:jacocoagent.jar</text>
                 <text x="370" y="212" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#657b83">records every call, in memory</text>
 
                 <!-- Traffic -> App -->
@@ -98,25 +98,22 @@
         <p class="small" style="margin-top:0.4em;color:#657b83;">Nothing in the application code changes:<br>the agent instruments bytecode as the JVM loads it.</p>
     </section>
 
-
     <section>
-        <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
+        <h2>☕ Retrieve Coverage via TCP (1/2)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
             <pre class="code-lg"><code class="language-bash"># 1: Build the JAR (once per code change)
+./mvnw package
 
 # 2: Terminal 1: start the app WITH the agent (keep it running)
 AGENT="output=tcpserver,port=6300,includes=com.example.*"
-java "-javaagent:agent.jar=$AGENT" \
+java "-javaagent:jacocoagent.jar=$AGENT" \
      -jar target/jacoco-demo-0.0.1-SNAPSHOT.jar</code></pre>
         </div>
-        <p class="small" style="margin-top:0.4em;">
-            <code>--reset</code>: repeat steps 3–5 for fresh snapshots, no restart
-        </p>
     </section>
 
     <section>
-        <h2>☕ Retrieve Coverage: via Port (TCP Agent)</h2>
+        <h2>☕ Retrieve Coverage via TCP (2/2)</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ JaCoCo TCP agent (Java): the app keeps running</span>
             <pre class="code-lg"><code class="language-bash"># 3: Terminal 2: call the REST endpoints
