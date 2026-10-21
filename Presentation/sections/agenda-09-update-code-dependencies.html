@@ -59,6 +59,35 @@
     </section>
 
     <section>
+        <h2>When a Dependency Gets a New Name</h2>
+        <p class="subtitle">The old coordinates stop getting releases, so "latest version" checks stay silent</p>
+        <div class="two-col medium" style="margin-top:0.5em;">
+            <div class="box box-red">
+                <h3>🪦 Java EE (old)</h3>
+                <pre style="font-size:0.55em;"><code class="language-xml">&lt;groupId&gt;javax.servlet&lt;/groupId&gt;
+&lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;
+&lt;version&gt;4.0.1&lt;/version&gt;</code></pre>
+                <pre style="font-size:0.55em;"><code class="language-java">import javax.servlet.http.HttpServlet;</code></pre>
+            </div>
+            <div class="box box-green">
+                <h3>🌱 Jakarta EE (new)</h3>
+                <pre style="font-size:0.55em;"><code class="language-xml">&lt;groupId&gt;jakarta.servlet&lt;/groupId&gt;
+&lt;artifactId&gt;jakarta.servlet-api&lt;/artifactId&gt;
+&lt;version&gt;6.1.0&lt;/version&gt;</code></pre>
+                <pre style="font-size:0.55em;"><code class="language-java">import jakarta.servlet.http.HttpServlet;</code></pre>
+            </div>
+        </div>
+        <p class="small" style="margin-top:0.5em;">
+            Coordinates <strong>and</strong> Java package changed: update the build file and the imports
+        </p>
+        <aside class="notes">
+            Oracle handed Java EE to the Eclipse Foundation, which could not keep the javax namespace.
+            Jakarta EE 9 renamed everything to jakarta.*. javax.servlet-api 4.0.1 is the final release,
+            so version-update tools report it as up to date. You need tools that know about renames.
+        </aside>
+    </section>
+
+    <section>
         <h2>Catch Deprecated &amp; Renamed Packages</h2>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">🌐 Renovate <code>replacements</code> presets (generic)</span>
