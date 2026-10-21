@@ -7,27 +7,14 @@
     </section>
 
     <section>
-        <h2>AI Training Data Has a Cutoff Date</h2>
-        <p class="subtitle">Anything released after the cutoff is unknown to the model</p>
+        <h2>AI Drifts Toward Old Versions</h2>
+        <p class="subtitle">📅 Training data has a cutoff &nbsp;·&nbsp; 🚧 Stuck? It takes a detour</p>
         <div class="card-grid medium">
-            <div class="card" style="--c:#268bd2;"><span class="card-ic">🔌</span><strong>APIs</strong><span class="card-txt">Suggests deprecated or removed calls</span></div>
-            <div class="card" style="--c:#6c71c4;"><span class="card-ic">📚</span><strong>Libraries</strong><span class="card-txt">Suggests the versions it was trained on</span></div>
-            <div class="card" style="--c:#2aa198;"><span class="card-ic">🐳</span><strong>Docker images</strong><span class="card-txt">Suggests old tags and base images</span></div>
-            <div class="card" style="--c:#cb4b16;"><span class="card-ic">➕</span><strong>And more</strong><span class="card-txt">Tools, config formats, best practices</span></div>
+            <div class="card" style="--c:#268bd2;"><span class="card-ic">🔌</span><strong>APIs</strong><span class="card-txt">📅 Suggests deprecated calls</span><span class="card-txt">🚧 Falls back to them when stuck</span></div>
+            <div class="card" style="--c:#6c71c4;"><span class="card-ic">📚</span><strong>Libraries</strong><span class="card-txt">📅 Suggests versions it knows</span><span class="card-txt">🚧 Downgrades on conflicts</span></div>
+            <div class="card" style="--c:#2aa198;"><span class="card-ic">🐳</span><strong>Docker images</strong><span class="card-txt">📅 Suggests old tags</span><span class="card-txt">🚧 Picks a bigger image</span></div>
+            <div class="card" style="--c:#cb4b16;"><span class="card-ic">🧰</span><strong>Tools</strong><span class="card-txt">📅 Suggests old tools &amp; formats</span><span class="card-txt">🚧 Installs whole toolchains</span></div>
         </div>
-    </section>
-
-    <section>
-        <h2>🚧 Detours</h2>
-        <table class="medium" style="margin-top:0.6em;">
-            <thead><tr><th>AI hits a problem</th><th>AI takes the shortcut</th></tr></thead>
-            <tbody>
-                <tr><td>Package missing on a small image</td><td>Use a bigger Docker image</td></tr>
-                <tr><td>Dependency version conflict</td><td>Use an old version</td></tr>
-                <tr><td>One missing binary</td><td>Install a whole toolchain</td></tr>
-                <tr><td>Issue with a newer API</td><td>Use an old (deprecated/removed) API</td></tr>
-            </tbody>
-        </table>
     </section>
 
     <section>
