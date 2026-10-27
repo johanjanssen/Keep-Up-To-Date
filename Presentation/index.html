@@ -126,12 +126,18 @@
             margin-left:calc((100% - var(--wide-w)) / 2);
             margin-right:calc((100% - var(--wide-w)) / 2);
         }
-        /* Live PlantUML embeds: the <img> src is built at load time from the
-           *current* contents of the referenced .puml file (see the
-           renderPuml script below), so editing the diagram source and
-           reloading the deck is enough to update the slide. */
-        .puml-wrap { margin:0.6em auto 0; text-align:center; }
-        .puml-wrap img { max-width:100%; max-height:56vh; width:auto; height:auto; }
+        /* Nested "layers of dependencies" diagram, drawn in plain HTML/CSS so
+           it renders instantly (it used to be a PlantUML diagram fetched from
+           the public render server, which made the slide pop in late). */
+        .layers { margin:0.6em auto 0; max-width:820px; font-size:0.62em; text-align:center; }
+        .layer { border:2px solid #586e75; border-radius:12px; padding:0.5em 0.9em 0.9em; color:#073642; }
+        .layer .layer { margin-top:0.5em; }
+        .layer-title { display:block; font-weight:700; }
+        .layer-example { display:block; font-size:0.78em; font-style:italic; color:#586e75; }
+        .layer-vm   { background:#ECE8F7; }
+        .layer-os   { background:#FDEBD9; }
+        .layer-app  { background:#DCEEFB; }
+        .layer-deps { background:#E6F4D9; padding-bottom:1.6em; }
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; text-align:left; }
         /* Three-across variant for slides with exactly three tool/item boxes —
            .two-col wraps a 3rd child onto its own half-width row, which looks
@@ -291,7 +297,6 @@
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako_deflate.min.js"></script>
 
 <script>
 // ─── Colour palette ───────────────────────────────────────────────────────────
@@ -581,77 +586,6 @@ loadLiveChartData();
 
 Reveal.on('ready',        renderGroupCharts);
 Reveal.on('slidechanged', renderGroupCharts);
-
-// ─── Live PlantUML rendering ────────────────────────────────────────────────
-//
-// <img data-puml-src="architecture.puml"> is rendered from the *current*
-// contents of that .puml file, not a pre-exported image: on first view we
-// fetch the source, deflate it and encode it with PlantUML's own base64
-// variant (the same scheme plantuml.com/plantuml-server use), then point
-// the <img> at the public PlantUML render server. Editing the .puml file
-// and reloading the deck is enough to update the slide — no export step.
-function pumlEncode6bit(b) {
-    if (b < 10) return String.fromCharCode(48 + b);
-    b -= 10;
-    if (b < 26) return String.fromCharCode(65 + b);
-    b -= 26;
-    if (b < 26) return String.fromCharCode(97 + b);
-    b -= 26;
-    if (b === 0) return '-';
-    if (b === 1) return '_';
-    return '?';
-}
-function pumlAppend3Bytes(b1, b2, b3) {
-    const c1 = b1 >> 2;
-    const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
-    const c3 = ((b2 & 0xF) << 2) | (b3 >> 6);
-    const c4 = b3 & 0x3F;
-    return pumlEncode6bit(c1 & 0x3F) + pumlEncode6bit(c2 & 0x3F) +
-           pumlEncode6bit(c3 & 0x3F) + pumlEncode6bit(c4 & 0x3F);
-}
-function pumlEncode64(data) {
-    let r = '';
-    for (let i = 0; i < data.length; i += 3) {
-        if (i + 2 === data.length)      r += pumlAppend3Bytes(data[i], data[i + 1], 0);
-        else if (i + 1 === data.length) r += pumlAppend3Bytes(data[i], 0, 0);
-        else                            r += pumlAppend3Bytes(data[i], data[i + 1], data[i + 2]);
-    }
-    return r;
-}
-
-const pumlEncodedCache = new Map(); // .puml path -> encoded string, so each file is fetched once
-async function renderPuml(img) {
-    const src = img.dataset.pumlSrc;
-    if (!src || img.dataset.pumlDone) return;
-    img.dataset.pumlDone = '1';
-    try {
-        let encoded = pumlEncodedCache.get(src);
-        if (!encoded) {
-            const res = await fetch(src, { cache: 'no-store' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const text       = await res.text();
-            const compressed = pako.deflateRaw(new TextEncoder().encode(text), { level: 9 });
-            encoded = pumlEncode64(compressed);
-            pumlEncodedCache.set(src, encoded);
-        }
-        img.src = `https://www.plantuml.com/plantuml/svg/${encoded}`;
-        // The <img> has no dimensions until this load fires, so Reveal's
-        // layout (computed when the slide became current) used the box's
-        // smaller, image-less height. Re-run it now the image has its real
-        // size, or the slide stays positioned for that stale, shorter box.
-        img.addEventListener('load', () => Reveal.layout(), { once: true });
-    } catch (e) {
-        console.error('PlantUML render failed for', src, e);
-        img.alt = `Could not render ${src}: ${e.message}`;
-        img.dataset.pumlDone = ''; // allow a retry next time the slide is shown
-    }
-}
-function tryRenderPuml(slide) {
-    if (!slide) return;
-    slide.querySelectorAll('img[data-puml-src]').forEach(renderPuml);
-}
-Reveal.on('ready',        e => tryRenderPuml(e.currentSlide));
-Reveal.on('slidechanged', e => tryRenderPuml(e.currentSlide));
 
 // ─── Load external slide section files, then initialize Reveal exactly once ───
 //
