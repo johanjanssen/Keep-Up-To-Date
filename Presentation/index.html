@@ -32,7 +32,17 @@
            (e.g. "# 1: Build the JAR") as part of the narration. Lightened
            to clear 4.5:1 while staying visibly muted. */
         .hljs-comment { color: #9099a6; }
-        :root { --r-heading-font:'Inter','Segoe UI',sans-serif; --r-main-font:'Inter','Segoe UI',sans-serif; }
+        /* Windows ships no flag emoji, so Chrome/Edge there render e.g. 🇦🇺 as
+           the letters "AU". This bundled Twemoji flags font (fonts/LICENSE.md)
+           only covers the regional-indicator range, so all other emoji keep
+           using the native emoji font. */
+        @font-face {
+            font-family:'Twemoji Country Flags';
+            unicode-range:U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067, U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+            src:url('fonts/TwemojiCountryFlags.woff2') format('woff2');
+            font-display:swap;
+        }
+        :root { --r-heading-font:'Twemoji Country Flags','Inter','Segoe UI',sans-serif; --r-main-font:'Twemoji Country Flags','Inter','Segoe UI',sans-serif; }
         /* Slide-in transitions animate `transform` on each <section> (and the
            `.slides` wrapper carries `perspective`), which puts the entering
            slide into its own GPU compositing layer for the duration of the
