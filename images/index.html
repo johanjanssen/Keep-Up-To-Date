@@ -49,12 +49,22 @@
   a { color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+  /* Embed mode for the presentation's iframes: linking to a section by its
+     id (e.g. /custom-images/#size) shows only that section's table, edge to
+     edge and in a large font, so it stays readable on a projector. */
+  body:has(section:target) { font-size: 21px; }
+  main:has(section:target) { max-width: none; padding: 0; }
+  main:has(section:target) > :not(section:target),
+  section:target > :not(.table-scroll) { display: none; }
+  section:target { margin: 0; }
+  section:target .table-scroll { border-radius: 0; border: 0; }
+  section:target th, section:target td { padding: 0.5rem 0.8rem; }
 </style>
 </head>
 <body>
 <main>
   <h1>Docker Image Size &amp; Performance Comparison</h1>
-  <p class="subtitle">Generated 2026-10-20 21:59 UTC &middot; base images measured from <strong>Build Docker Images</strong> &middot; see also <a href="../custom-images/">hello-conference images &amp; performance</a></p>
+  <p class="subtitle">Generated 2026-10-27 18:06 UTC &middot; base images measured from <strong>Build Docker Images</strong> &middot; see also <a href="../custom-images/">hello-conference images &amp; performance</a></p>
 
   <section>
     <h2>Image Size &amp; Package Comparison</h2>
@@ -73,7 +83,7 @@
           
         <tr>
           <td class="image-name">ubuntu:26.04</td>
-          <td>101MB</td>
+          <td>102MB</td>
           <td>87</td>
         </tr>
 
@@ -109,13 +119,13 @@
 
         <tr>
           <td class="image-name">almalinux/10-base</td>
-          <td>194MB</td>
+          <td>195MB</td>
           <td>147</td>
         </tr>
 
         <tr class="size-under-100">
           <td class="image-name">almalinux:10-minimal</td>
-          <td>74.2MB</td>
+          <td>74.1MB</td>
           <td>84</td>
         </tr>
 
@@ -190,31 +200,31 @@
 
         <tr>
           <td class="image-name">azul/zulu-openjdk:25-jre</td>
-          <td>365MB</td>
+          <td>364MB</td>
           <td>132</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk:25-jre-headless</td>
-          <td>359MB</td>
+          <td>358MB</td>
           <td>116</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk-alpine:25-jre</td>
-          <td>272MB</td>
+          <td>267MB</td>
           <td>33</td>
         </tr>
 
         <tr>
           <td class="image-name">azul/zulu-openjdk-alpine:25-jre-headless</td>
-          <td>265MB</td>
+          <td>259MB</td>
           <td>20</td>
         </tr>
 
         <tr>
           <td class="image-name">gcr.io/distroless/java25-debian13</td>
-          <td>226MB</td>
+          <td>227MB</td>
           <td>25</td>
         </tr>
 
@@ -226,7 +236,7 @@
 
         <tr>
           <td class="image-name">amazoncorretto:25</td>
-          <td>532MB</td>
+          <td>533MB</td>
           <td>144</td>
         </tr>
 
@@ -244,20 +254,20 @@
 
         <tr>
           <td class="image-name">registry.access.redhat.com/ubi9/openjdk-25-runtime:latest</td>
-          <td>430MB</td>
+          <td>434MB</td>
           <td>131</td>
         </tr>
 
         <tr>
           <td class="image-name">cgr.dev/chainguard/jdk:latest</td>
-          <td>388MB</td>
-          <td>43</td>
+          <td>325MB</td>
+          <td>46</td>
         </tr>
 
         <tr>
           <td class="image-name">cgr.dev/chainguard/jre:latest</td>
-          <td>323MB</td>
-          <td>39</td>
+          <td>260MB</td>
+          <td>42</td>
         </tr>
 
         <tr>
