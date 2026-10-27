@@ -1,9 +1,9 @@
 {
-  "generated": "2026-10-20T21:59:59Z",
+  "generated": "2026-10-27T18:06:44Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
-      "size_mb": 101.0,
+      "size_mb": 102.0,
       "packages": 87
     },
     {
@@ -33,12 +33,12 @@
     },
     {
       "name": "almalinux/10-base",
-      "size_mb": 194.0,
+      "size_mb": 195.0,
       "packages": 147
     },
     {
       "name": "almalinux:10-minimal",
-      "size_mb": 74.2,
+      "size_mb": 74.1,
       "packages": 84
     },
     {
@@ -90,27 +90,27 @@
     },
     {
       "name": "azul/zulu-openjdk:25-jre",
-      "size_mb": 365.0,
+      "size_mb": 364.0,
       "packages": 132
     },
     {
       "name": "azul/zulu-openjdk:25-jre-headless",
-      "size_mb": 359.0,
+      "size_mb": 358.0,
       "packages": 116
     },
     {
       "name": "azul/zulu-openjdk-alpine:25-jre",
-      "size_mb": 272.0,
+      "size_mb": 267.0,
       "packages": 33
     },
     {
       "name": "azul/zulu-openjdk-alpine:25-jre-headless",
-      "size_mb": 265.0,
+      "size_mb": 259.0,
       "packages": 20
     },
     {
       "name": "gcr.io/distroless/java25-debian13",
-      "size_mb": 226.0,
+      "size_mb": 227.0,
       "packages": 25
     },
     {
@@ -120,7 +120,7 @@
     },
     {
       "name": "amazoncorretto:25",
-      "size_mb": 532.0,
+      "size_mb": 533.0,
       "packages": 144
     },
     {
@@ -135,18 +135,18 @@
     },
     {
       "name": "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest",
-      "size_mb": 430.0,
+      "size_mb": 434.0,
       "packages": 131
     },
     {
       "name": "cgr.dev/chainguard/jdk:latest",
-      "size_mb": 388.0,
-      "packages": 43
+      "size_mb": 325.0,
+      "packages": 46
     },
     {
       "name": "cgr.dev/chainguard/jre:latest",
-      "size_mb": 323.0,
-      "packages": 39
+      "size_mb": 260.0,
+      "packages": 42
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-musl",
