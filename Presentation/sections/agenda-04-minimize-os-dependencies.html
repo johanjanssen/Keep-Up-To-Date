@@ -8,11 +8,11 @@
 
     <section>
         <h2>Why a Small Docker Image?</h2>
-        <ul class="icon-list medium">
-            <li><span class="ic">🛡️</span><span>Smaller attack surface</span></li>
-            <li><span class="ic">⬇️</span><span>Faster pulls</span></li>
-            <li><span class="ic">🚀</span><span>Faster deploys</span></li>
-        </ul>
+        <div class="card-grid medium" style="--cols:3;">
+            <div class="card" style="--c:#dc322f;"><span class="card-ic">🛡️</span><strong>Smaller attack surface</strong><span class="card-txt">Fewer packages, fewer CVEs</span></div>
+            <div class="card" style="--c:#268bd2;"><span class="card-ic">⬇️</span><strong>Faster pulls</strong><span class="card-txt">Less to download on every node</span></div>
+            <div class="card" style="--c:#859900;"><span class="card-ic">🚀</span><strong>Faster deploys</strong><span class="card-txt">Quicker scaling and rollbacks</span></div>
+        </div>
     </section>
 
     <section>
@@ -25,7 +25,7 @@
     </section>
 
     <section>
-        <h2>Base Images: Size vs. Packages &amp; CVE Count</h2>
+        <h2>Base Images: Size, Packages and CVEs</h2>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chartBasePackages" height="460"></canvas></div>
             <div class="chart-wrap"><canvas id="chartBaseImages" height="460"></canvas></div>
