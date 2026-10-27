@@ -249,6 +249,16 @@ PAGE_STYLE = """
   a { color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   footer { color: var(--muted); font-size: 0.8rem; margin-top: 3rem; }
+  /* Embed mode for the presentation's iframes: linking to a section by its
+     id (e.g. /custom-images/#size) shows only that section's table, edge to
+     edge and in a large font, so it stays readable on a projector. */
+  body:has(section:target) { font-size: 21px; }
+  main:has(section:target) { max-width: none; padding: 0; }
+  main:has(section:target) > :not(section:target),
+  section:target > :not(.table-scroll) { display: none; }
+  section:target { margin: 0; }
+  section:target .table-scroll { border-radius: 0; border: 0; }
+  section:target th, section:target td { padding: 0.5rem 0.8rem; }
 """
 
 PAGE_HEAD = """<!doctype html>
@@ -315,7 +325,7 @@ BASE_IMAGES_SECTION = """
 # Published at /custom-images — the hello-conference-specific comparison:
 # the app images themselves, plus their startup/memory numbers.
 CUSTOM_IMAGES_SECTION = """
-  <section>
+  <section id="size">
     <h2>Image Size &amp; Package Comparison</h2>
 
     <h3>hello-conference Images</h3>
@@ -335,7 +345,7 @@ CUSTOM_IMAGES_SECTION = """
     </div>
   </section>
 
-  <section>
+  <section id="performance">
     <h2>Startup &amp; Memory Performance</h2>
     <p class="hint">STARTUP(log) = Spring Boot's own "Started in X seconds" measurement. STARTUP(wall) = wall-clock time from "docker run" to the first healthy HTTP response.</p>
     <div class="table-scroll">
