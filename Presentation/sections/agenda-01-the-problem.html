@@ -125,8 +125,14 @@
     <section>
         <h2>Layers of Dependencies</h2>
         <div class="box box-blue medium" style="margin-top:0.8em;">
-            <div class="puml-wrap">
-                <img data-puml-src="architecture.puml" alt="Nested layers: a Docker image or virtual machine contains OS packages including the runtime, which run the application, which bundles its dependencies.">
+            <div class="layers" role="img" aria-label="Nested layers: a Docker image or virtual machine contains OS packages including the runtime, which run the application, which bundles its dependencies.">
+                <div class="layer layer-vm"><span class="layer-title">Docker Image / Virtual machine</span>
+                    <div class="layer layer-os"><span class="layer-title">OS packages including runtime</span>
+                        <div class="layer layer-app"><span class="layer-title">Application</span>
+                            <div class="layer layer-deps"><span class="layer-title">Application dependencies</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -135,8 +141,14 @@
         <h2>Dependencies Example</h2>
         <div class="box box-blue medium" style="margin-top:0.8em;">
             <span class="java-pill">☕ Java example</span>
-            <div class="puml-wrap">
-                <img data-puml-src="architecture-example.puml" alt="Same nested layers, each annotated with a concrete example: the Docker image tag, the OS distribution, the JVM runtime, the compiled jar, and its bundled dependencies.">
+            <div class="layers" role="img" aria-label="Same nested layers, each annotated with a concrete example: debian as the image, openssl and the Eclipse Temurin JVM as OS packages, and Spring Boot and Log4j as application dependencies.">
+                <div class="layer layer-vm"><span class="layer-title">Docker Image / Virtual machine</span><span class="layer-example">debian</span>
+                    <div class="layer layer-os"><span class="layer-title">OS packages including runtime</span><span class="layer-example">openssl, JVM (Eclipse Temurin)</span>
+                        <div class="layer layer-app"><span class="layer-title">Application</span>
+                            <div class="layer layer-deps"><span class="layer-title">Application dependencies</span><span class="layer-example">Spring Boot, Log4j</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
