@@ -48,15 +48,17 @@
     </section>
 
     <section>
-        <h2>🛠️ Fast Startup Tools per Language</h2>
+        <h2>🛠️ Native Image Tools per Language</h2>
         <table class="small" style="margin-top:0.5em;">
-            <thead><tr><th>Tool / Lever</th><th>Language / Ecosystem</th></tr></thead>
+            <thead><tr><th>Tool</th><th>Language / Ecosystem</th></tr></thead>
             <tbody>
-                <tr><td>GraalVM native-image</td><td>Java (+ JS, Python, Ruby)</td></tr>
-                <tr><td>JDK AOT cache (Project Leyden)</td><td>Java 24+</td></tr>
-                <tr><td>Native AOT / ReadyToRun</td><td>.NET</td></tr>
-                <tr><td>Static binaries</td><td>Go, Rust</td></tr>
-                <tr><td>V8 startup snapshots</td><td>Node.js</td></tr>
+                <tr><td>GraalVM Native Image</td><td>Java, Kotlin, Scala (JVM)</td></tr>
+                <tr><td>Native AOT (<code>PublishAot</code>)</td><td>.NET</td></tr>
+                <tr><td>Kotlin/Native</td><td>Kotlin</td></tr>
+                <tr><td><code>dart compile exe</code></td><td>Dart</td></tr>
+                <tr><td>Nuitka (compiles to C)</td><td>Python</td></tr>
+                <tr><td>Built in: <code>go build</code>, <code>cargo build</code></td><td>Go, Rust</td></tr>
+                <tr><td>Node.js SEA, <code>bun build --compile</code>, <code>deno compile</code></td><td>Node.js / TypeScript (bundles the runtime, no AOT)</td></tr>
             </tbody>
         </table>
     </section>
