@@ -126,6 +126,10 @@
             margin-left:calc((100% - var(--wide-w)) / 2);
             margin-right:calc((100% - var(--wide-w)) / 2);
         }
+        /* .tall gives the iframe nearly the full slide height (700px minus the
+           heading) for a single-table report like /custom-images/#size, so
+           every row fits without scrolling at a projector-readable size. */
+        .iframe-wrap.tall iframe { height:580px; }
         /* Nested "layers of dependencies" diagram, drawn in plain HTML/CSS so
            it renders instantly (it used to be a PlantUML diagram fetched from
            the public render server, which made the slide pop in late). */
