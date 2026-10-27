@@ -133,7 +133,7 @@
         .layer { border:2px solid #586e75; border-radius:12px; padding:0.5em 0.9em 0.9em; color:#073642; }
         .layer .layer { margin-top:0.5em; }
         .layer-title { display:block; font-weight:700; }
-        .layer-example { display:block; font-size:0.78em; font-style:italic; color:#586e75; }
+        .layer-example { display:block; font-size:0.92em; font-style:italic; color:#586e75; }
         .layer-vm   { background:#ECE8F7; }
         .layer-os   { background:#FDEBD9; }
         .layer-app  { background:#DCEEFB; }
@@ -257,7 +257,7 @@
         .stat-row { display:flex; flex-wrap:wrap; gap:0.8em; justify-content:center; margin:0.7em 0; }
         .stat-tile { flex:1 1 150px; max-width:210px; background:rgba(220,50,47,0.08); border:1px solid rgba(220,50,47,0.32); border-radius:10px; padding:0.7em 0.6em; text-align:center; }
         .stat-tile .num { display:block; font-size:1.7em; font-weight:800; color:#dc322f; line-height:1.15; }
-        .stat-tile .lbl { display:block; font-size:0.48em; color:#657b83; margin-top:0.35em; line-height:1.3; }
+        .stat-tile .lbl { display:block; font-size:0.58em; color:#657b83; margin-top:0.35em; line-height:1.3; }
         .stat-row.good .stat-tile { background:rgba(133,153,0,0.08); border-color:rgba(133,153,0,0.35); }
         .stat-row.good .stat-tile .num { color:#859900; }
         /* Card grid — icon + title (+ optional line) tiles for slides that
@@ -336,7 +336,12 @@ function makeChart(id, cfg) {
     const revealScale = Reveal.getScale()        || 1;
     const totalScale  = dpr * revealScale;
 
-    const w = canvas.offsetWidth  || canvas.parentElement.offsetWidth  || 700;
+    // An unstyled <canvas> reports its default 300px width attribute as
+    // offsetWidth, so a chart inside a wider .chart-wrap would be drawn
+    // at 300px and leave the rest of its half of the slide empty. Size
+    // from the wrapper instead; the height attribute stays the source of
+    // truth for height.
+    const w = canvas.parentElement.offsetWidth  || canvas.offsetWidth  || 700;
     const h = canvas.offsetHeight || canvas.parentElement.offsetHeight || 300;
 
     canvas.width  = Math.round(w * totalScale);
@@ -445,6 +450,15 @@ function packageBarColor(packages) {
 // so ticks are rotated at a fixed angle and never auto-skipped — every
 // image gets a label instead of Chart.js thinning them out to fit.
 // The base OS and Java runtime groups pass a bigger font size.
+// Registry hosts ("registry.access.redhat.com/", "gcr.io/", …) add a lot of
+// label length without telling the audience much, so they're dropped from
+// the x-axis labels; "gcr.io/distroless/static-debian13" becomes
+// "distroless/static-debian13".
+function shortImageName(name) {
+    const slash = name.indexOf('/');
+    return slash > 0 && name.slice(0, slash).includes('.') ? name.slice(slash + 1) : name;
+}
+
 function nameAxis(fontSize = 12) {
     return axis({ font: { size: fontSize }, autoSkip: false, maxRotation: 55, minRotation: 55 });
 }
@@ -453,7 +467,7 @@ function buildGroupChartConfig(rows, titleText, nameFontSize) {
     return {
         type: 'bar',
         data: {
-            labels: rows.map(r => r.name),
+            labels: rows.map(r => shortImageName(r.name)),
             datasets: [
                 {
                     label: 'Image Size (MB)',
@@ -477,14 +491,18 @@ function buildGroupChartConfig(rows, titleText, nameFontSize) {
             ]
         },
         options: {
+            // Rotated x-axis labels hang down-left from their tick, so the
+            // first few long image names would otherwise be clipped at the
+            // canvas's left edge.
+            layout: { padding: { left: 40 } },
             plugins: {
-                legend: { display: true, labels: { color: C.fg, font: { size: 14 } } },
-                title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
+                legend: { display: true, labels: { color: C.fg, font: { size: 17 } } },
+                title:  { display: true, text: titleText, color: C.fg, font: { size: 17 } }
             },
             scales: {
                 x:     { ...nameAxis(nameFontSize), grid: { display: false } },
-                ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',  color: C.fg, font: { size: 13 } } },
-                yCves: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'CVEs', color: C.fg, font: { size: 13 } }, grid: { display: false } }
+                ySize: { ...axis({ font: { size: 16 } }), position: 'left',  title: { display: true, text: 'MB',  color: C.fg, font: { size: 16 } } },
+                yCves: { ...axis({ font: { size: 16 } }), position: 'right', title: { display: true, text: 'CVEs', color: C.fg, font: { size: 16 } }, grid: { display: false } }
             }
         }
     };
@@ -494,7 +512,7 @@ function buildPackagesChartConfig(rows, titleText, nameFontSize) {
     return {
         type: 'bar',
         data: {
-            labels: rows.map(r => r.name),
+            labels: rows.map(r => shortImageName(r.name)),
             datasets: [
                 {
                     label: 'Image Size (MB)',
@@ -518,14 +536,18 @@ function buildPackagesChartConfig(rows, titleText, nameFontSize) {
             ]
         },
         options: {
+            // Rotated x-axis labels hang down-left from their tick, so the
+            // first few long image names would otherwise be clipped at the
+            // canvas's left edge.
+            layout: { padding: { left: 40 } },
             plugins: {
-                legend: { display: true, labels: { color: C.fg, font: { size: 14 } } },
-                title:  { display: true, text: titleText, color: C.fg, font: { size: 14 } }
+                legend: { display: true, labels: { color: C.fg, font: { size: 17 } } },
+                title:  { display: true, text: titleText, color: C.fg, font: { size: 17 } }
             },
             scales: {
                 x:     { ...nameAxis(nameFontSize), grid: { display: false } },
-                ySize: { ...axis({ font: { size: 13 } }), position: 'left',  title: { display: true, text: 'MB',       color: C.fg, font: { size: 13 } } },
-                yPkgs: { ...axis({ font: { size: 13 } }), position: 'right', title: { display: true, text: 'Packages', color: C.fg, font: { size: 13 } }, grid: { display: false } }
+                ySize: { ...axis({ font: { size: 16 } }), position: 'left',  title: { display: true, text: 'MB',       color: C.fg, font: { size: 16 } } },
+                yPkgs: { ...axis({ font: { size: 16 } }), position: 'right', title: { display: true, text: 'Packages', color: C.fg, font: { size: 16 } }, grid: { display: false } }
             }
         }
     };
