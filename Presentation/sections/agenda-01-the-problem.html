@@ -98,17 +98,8 @@
     </section>
 
     <section>
-        <h2>What Is a CVE?</h2>
-        <ul class="icon-list medium">
-            <li><span class="ic">🏷️</span><span><strong>Common Vulnerabilities and Exposures:</strong> a public catalog of known security vulnerabilities</span></li>
-            <li><span class="ic">🔢</span><span>Each one gets a unique ID, e.g. <strong>CVE-2021-44228</strong> (Log4Shell)</span></li>
-            <li><span class="ic">🔍</span><span>Scanners match the packages in your image against these IDs</span></li>
-        </ul>
-    </section>
-
-    <section>
         <h2>🔥 Log4Shell: The Fix Was Never the Problem</h2>
-        <p class="subtitle">Log4j: the most popular Java logging library. Every ecosystem has its own Log4j.</p>
+        <p class="subtitle">CVE-2021-44228 in Log4j, the most popular Java logging library. Every ecosystem has its own Log4j.</p>
         <div class="stat-row medium">
             <div class="stat-tile"><span class="num">10.0</span><span class="lbl">CVSS score: the maximum possible</span></div>
             <div class="stat-tile"><span class="num">93%</span><span class="lbl">of cloud environments exposed</span></div>
@@ -121,30 +112,13 @@
     </section>
 
     <section>
-        <h2>What Would Have Limited the Damage?</h2>
-        <ul class="icon-list">
-            <li><span class="ic">🔒</span><span>No root access</span></li>
-            <li><span class="ic">🐳</span><span>A minimal, up-to-date base image</span></li>
-            <li><span class="ic">📦</span><span>No unneeded OS tools: curl, wget, gcc, pkexec</span></li>
-            <li><span class="ic">📚</span><span>Up-to-date application dependencies</span></li>
-        </ul>
-    </section>
-
-    <section>
         <img src="pictures/Sculpture.jpg" class="r-stretch">
     </section>
 
     <section>
-        <h2>Layers of Dependencies</h2>
-        <div class="layers" role="img" aria-label="Nested layers: a Docker image or virtual machine contains OS packages including the runtime, which run the application, which bundles its dependencies.">
-            <div class="layer layer-vm"><div class="layer-head"><span class="layer-ic">🐳</span><span class="layer-title">Docker Image / Virtual machine</span></div><div class="layer layer-os"><div class="layer-head"><span class="layer-ic">⚙️</span><span class="layer-title">OS packages including runtime</span></div><div class="layer layer-app"><div class="layer-head"><span class="layer-ic">🧑‍💻</span><span class="layer-title">Application</span></div><div class="layer layer-deps"><div class="layer-head"><span class="layer-ic">📦</span><span class="layer-title">Application dependencies</span></div></div></div></div></div>
-        </div>
-    </section>
-
-    <section>
-        <h2>Dependencies Example <span class="java-pill">☕ Java example</span></h2>
-        <div class="layers" role="img" aria-label="Same nested layers, each annotated with a concrete example: debian as the image, openssl and the Eclipse Temurin JVM as OS packages, and Spring Boot and Log4j as application dependencies.">
-            <div class="layer layer-vm"><div class="layer-head"><span class="layer-ic">🐳</span><span class="layer-title">Docker Image / Virtual machine</span></div><div class="layer-examples"><span class="layer-example">debian</span></div><div class="layer layer-os"><div class="layer-head"><span class="layer-ic">⚙️</span><span class="layer-title">OS packages including runtime</span></div><div class="layer-examples"><span class="layer-example">openssl</span><span class="layer-example">JVM (Eclipse Temurin)</span></div><div class="layer layer-app"><div class="layer-head"><span class="layer-ic">🧑‍💻</span><span class="layer-title">Application</span></div><div class="layer layer-deps"><div class="layer-head"><span class="layer-ic">📦</span><span class="layer-title">Application dependencies</span></div><div class="layer-examples"><span class="layer-example">Spring Boot</span><span class="layer-example">Log4j</span></div></div></div></div></div>
+        <h2>Layers of Dependencies <span class="java-pill fragment" data-fragment-index="1">☕ Java example</span></h2>
+        <div class="layers" role="img" aria-label="Nested layers: a Docker image or virtual machine contains OS packages including the runtime, which run the application, which bundles its dependencies. On the next step each layer is annotated with a concrete example: debian as the image, openssl and the Eclipse Temurin JVM as OS packages, and Spring Boot and Log4j as application dependencies.">
+            <div class="layer layer-vm"><div class="layer-head"><span class="layer-ic">🐳</span><span class="layer-title">Docker Image / Virtual machine</span></div><div class="layer-examples fragment" data-fragment-index="1"><span class="layer-example">debian</span></div><div class="layer layer-os"><div class="layer-head"><span class="layer-ic">⚙️</span><span class="layer-title">OS packages including runtime</span></div><div class="layer-examples fragment" data-fragment-index="1"><span class="layer-example">openssl</span><span class="layer-example">JVM (Eclipse Temurin)</span></div><div class="layer layer-app"><div class="layer-head"><span class="layer-ic">🧑‍💻</span><span class="layer-title">Application</span></div><div class="layer layer-deps"><div class="layer-head"><span class="layer-ic">📦</span><span class="layer-title">Application dependencies</span></div><div class="layer-examples fragment" data-fragment-index="1"><span class="layer-example">Spring Boot</span><span class="layer-example">Log4j</span></div></div></div></div></div>
         </div>
     </section>
 
@@ -165,7 +139,7 @@
             <ul class="icon-list">
                 <li><span class="ic">🔐</span><span><strong>Security:</strong> when a vulnerability forces your hand, you jump five versions under pressure instead of one</span></li>
                 <li><span class="ic">⚡</span><span><strong>Performance:</strong> every release you skip is free speed you don't get</span></li>
-                <li><span class="ic">🧗</span><span><strong>Migration effort:</strong> ten small hops are cheaper than one big leap</span></li>
+                <li><span class="ic">⚖️</span><span><strong>Compliance:</strong> keeping your software secure is becoming a legal obligation</span></li>
             </ul>
         </div>
     </section>
@@ -189,16 +163,6 @@
             <div class="stat-tile"><span class="num">17%</span><span class="lbl">less memory allocated by a stream pipeline</span></div>
         </div>
         <p class="medium" style="margin-top:0.8em;">Java 17 &rarr; 25, zero code changes, measured with JMH</p>
-    </section>
-
-    <section>
-        <h2>🔍 Performance Benchmarks: Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" loading="lazy" title="Java performance benchmark report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/Benchmarks/" target="_blank">↗ Open in new tab</a>
-        </p>
     </section>
 
     <section>
@@ -245,5 +209,15 @@
                 <li><span class="ic">😒</span><span>Even developers complain about automated upgrade PRs</span></li>
             </ul>
         </div>
+    </section>
+
+    <section>
+        <h2>What Would Have Limited the Damage?</h2>
+        <ul class="icon-list">
+            <li><span class="ic">🔒</span><span>No root access</span></li>
+            <li><span class="ic">🐳</span><span>A minimal, up-to-date base image</span></li>
+            <li><span class="ic">📦</span><span>No unneeded OS tools: curl, wget, gcc, pkexec</span></li>
+            <li><span class="ic">📚</span><span>Up-to-date application dependencies</span></li>
+        </ul>
     </section>
 </section>
