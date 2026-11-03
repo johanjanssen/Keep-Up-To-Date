@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-27T18:06:44Z",
+  "generated": "2026-11-03T14:22:31Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
@@ -13,7 +13,7 @@
     },
     {
       "name": "debian:13-slim",
-      "size_mb": 78.8,
+      "size_mb": 78.9,
       "packages": 78
     },
     {
@@ -135,18 +135,18 @@
     },
     {
       "name": "registry.access.redhat.com/ubi9/openjdk-25-runtime:latest",
-      "size_mb": 434.0,
+      "size_mb": 430.0,
       "packages": 131
     },
     {
       "name": "cgr.dev/chainguard/jdk:latest",
-      "size_mb": 325.0,
-      "packages": 46
+      "size_mb": 324.0,
+      "packages": 47
     },
     {
       "name": "cgr.dev/chainguard/jre:latest",
-      "size_mb": 260.0,
-      "packages": 42
+      "size_mb": 259.0,
+      "packages": 43
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-musl",
@@ -155,7 +155,7 @@
     },
     {
       "name": "bellsoft/liberica-runtime-container:jre-25-slim-glibc",
-      "size_mb": 153.0,
+      "size_mb": 154.0,
       "packages": 16
     }
   ],
@@ -167,7 +167,7 @@
     },
     {
       "name": "hello-conference:jre-temurin-alpine",
-      "size_mb": 249.0,
+      "size_mb": 250.0,
       "packages": 44
     },
     {
@@ -182,7 +182,7 @@
     },
     {
       "name": "hello-conference:jlink-netty-distroless-base-debian",
-      "size_mb": 132.0,
+      "size_mb": 131.0,
       "packages": 10
     },
     {
