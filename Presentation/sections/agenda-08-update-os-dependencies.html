@@ -17,15 +17,15 @@
     </section>
 
     <section>
-        <h2>Update FROM in Dockerfiles</h2>
+        <h2>Bump the Base Image</h2>
         <ul class="icon-list medium">
-            <li><span class="ic">📅</span><span>Treat the base image like any dependency: bump it on a schedule</span></li>
+            <li><span class="ic">📅</span><span>Treat it like any other dependency: update it on a schedule</span></li>
         </ul>
         <div class="box box-blue medium" style="margin-top:0.5em;">
             <span class="java-pill">☕ Java example</span>
             <pre class="code-lg"><code class="language-dockerfile">- FROM eclipse-temurin:21-jre
 + FROM eclipse-temurin:25-jre</code></pre>
-            One line: new JVM, security patches and OS packages.
+            One line: a newer JVM, security patches and updated OS packages.
         </div>
     </section>
 
@@ -40,7 +40,7 @@
     </section>
 
     <section>
-        <h2>Docker Tags Aren't Truly Immutable</h2>
+        <h2>Docker Tags Aren't Immutable</h2>
         <div class="two-col medium">
             <div class="box box-green">
                 <strong class="tag-good">✅ Package registries: release = immutable</strong>
