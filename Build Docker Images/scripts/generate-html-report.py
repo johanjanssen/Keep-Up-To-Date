@@ -423,7 +423,7 @@ def main():
     parser.add_argument("measure_performance_txt")
     parser.add_argument("base_output_html", help="Output path for the base-images report (published at /images)")
     parser.add_argument("custom_output_html", help="Output path for the hello-conference report (published at /custom-images)")
-    parser.add_argument("--title", default="Docker Image Size &amp; Performance Comparison",
+    parser.add_argument("--title", default="Docker Image Size &amp; Package Comparison",
                          help="Title for the base-images report")
     parser.add_argument("--custom-title", default="hello-conference Image &amp; Performance Comparison",
                          help="Title for the hello-conference report")

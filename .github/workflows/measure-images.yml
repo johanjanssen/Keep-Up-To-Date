@@ -68,7 +68,7 @@ jobs:
             /tmp/measure-performance-output.txt \
             "Build Docker Images/target/results/html/index.html" \
             "Build Docker Images/target/results/html-custom/index.html" \
-            --title "Docker Image Size & Performance Comparison" \
+            --title "Docker Image Size & Package Comparison" \
             --custom-title "hello-conference Image & Performance Comparison" \
             --json-out "Build Docker Images/target/results/image-sizes.json"
 
