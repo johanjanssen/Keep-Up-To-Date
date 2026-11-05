@@ -24,16 +24,6 @@
     </section>
 
     <section>
-        <h2>🔍 Build Docker Images: Full Report</h2>
-        <div class="iframe-wrap">
-            <iframe src="https://johanjanssen.github.io/Keep-Up-To-Date/images/" loading="lazy" title="Docker image size & package report"></iframe>
-        </div>
-        <p class="small" style="margin-top:0.4em;">
-            <a class="go-btn" href="https://johanjanssen.github.io/Keep-Up-To-Date/images/" target="_blank">↗ Open in new tab</a>
-        </p>
-    </section>
-
-    <section>
         <h2>Reduce Attack Surface with Minimal Images</h2>
         <ul class="icon-list medium">
             <li><span class="ic">🧹</span><span>Fewer packages: no shell, no package manager, no extra tools</span></li>
@@ -50,7 +40,7 @@
         <table class="small" style="margin-top:0.5em;">
             <thead><tr><th>Language</th><th>Dev toolchain</th><th>Ships to prod</th></tr></thead>
             <tbody>
-                <tr><td>Java</td><td>JDK</td><td>JRE, custom <code>jlink</code> JRE or distroless</td></tr>
+                <tr><td>Java</td><td>JDK</td><td>JRE, custom <code>jlink</code> JRE</td></tr>
                 <tr><td>.NET</td><td>SDK</td><td>Runtime, or trimmed self-contained app</td></tr>
                 <tr><td>Go / Rust</td><td>Compiler toolchain</td><td>Static binary on <code>scratch</code></td></tr>
                 <tr><td>Python / Node.js</td><td>Interpreter + dev packages</td><td><code>-slim</code> / <code>-alpine</code> + multi-stage build</td></tr>
