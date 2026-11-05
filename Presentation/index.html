@@ -574,9 +574,10 @@ function showChartFallback(canvas) {
 // Renders one canvas from one (spec, cfgBuilder) pair — shared by both the
 // CVE chart and the packages chart in each group, since they only differ in
 // which canvas id / config builder they use.
-function renderOneGroupChart(canvasId, rows, cfgBuilder) {
+function renderOneGroupChart(canvasId, rows, cfgBuilder, scope) {
     const canvas = document.getElementById(canvasId);
     if (!canvas || canvas._chart || !canvas.offsetWidth) return; // not on this slide, not visible, or already built
+    if (scope && !scope.contains(canvas)) return;                 // outside the slide we're limited to
     if (!rows || !rows.length) {
         showChartFallback(canvas);
         return;
@@ -584,12 +585,14 @@ function renderOneGroupChart(canvasId, rows, cfgBuilder) {
     makeChart(canvasId, cfgBuilder(rows));
 }
 
-function renderGroupCharts() {
+// scope (optional) limits building to charts inside that element — see the
+// slidechanged/slidetransitionend listeners below for why.
+function renderGroupCharts(scope) {
     if (!liveChartData && !liveChartFailed) return; // fetch still in flight
     GROUP_CHART_SPECS.forEach(spec => {
         const rows = liveChartData && liveChartData[spec.key];
-        renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle, spec.nameFontSize));
-        renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle, spec.nameFontSize));
+        renderOneGroupChart(spec.cveChartId, rows, r => buildGroupChartConfig(r, spec.cveTitle, spec.nameFontSize), scope);
+        renderOneGroupChart(spec.pkgChartId, rows, r => buildPackagesChartConfig(r, spec.pkgTitle, spec.nameFontSize), scope);
     });
 }
 
@@ -613,8 +616,16 @@ async function loadLiveChartData() {
 }
 loadLiveChartData();
 
-Reveal.on('ready',        renderGroupCharts);
-Reveal.on('slidechanged', renderGroupCharts);
+// Reveal makes slides up to viewDistance ahead visible, so a chart's canvas
+// gets a width (and would be built) while the audience is still a few slides
+// before it. Building a Chart.js chart blocks the main thread for ~60-80ms,
+// which stutters the slide-in animation the first time through. So on
+// slidechanged only the CURRENT slide's charts are built (needed right away),
+// and look-ahead charts are built on slidetransitionend, once the slide has
+// stopped moving.
+Reveal.on('ready',              () => renderGroupCharts());
+Reveal.on('slidechanged',       e  => renderGroupCharts(e.currentSlide));
+Reveal.on('slidetransitionend', () => renderGroupCharts());
 
 // ─── Load external slide section files, then initialize Reveal exactly once ───
 //
