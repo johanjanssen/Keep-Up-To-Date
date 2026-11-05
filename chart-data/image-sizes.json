@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-03T14:22:31Z",
+  "generated": "2026-11-05T14:23:22Z",
   "generic": [
     {
       "name": "ubuntu:26.04",
@@ -90,12 +90,12 @@
     },
     {
       "name": "azul/zulu-openjdk:25-jre",
-      "size_mb": 364.0,
+      "size_mb": 368.0,
       "packages": 132
     },
     {
       "name": "azul/zulu-openjdk:25-jre-headless",
-      "size_mb": 358.0,
+      "size_mb": 363.0,
       "packages": 116
     },
     {
@@ -130,7 +130,7 @@
     },
     {
       "name": "ibm-semeru-runtimes:open-25-jre",
-      "size_mb": 345.0,
+      "size_mb": 346.0,
       "packages": 123
     },
     {
