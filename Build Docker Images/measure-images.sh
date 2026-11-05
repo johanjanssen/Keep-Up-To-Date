@@ -123,13 +123,13 @@ except Exception:
 # exact text) to tell where one field ends and the next begins. The "|"
 # delimiter marks that boundary unambiguously regardless of field length —
 # only that row's alignment looks ragged, nothing downstream misparses.
-printf "%-50s | %-12s | %-12s | %-18s | %s\n" "IMAGE" "IMAGE SIZE" "APP SIZE" "APP+RUNTIME SIZE" "PACKAGES"
-printf "%-50s | %-12s | %-12s | %-18s | %s\n" \
-    "--------------------------------------------------" "------------" "------------" "------------------" "--------"
+printf "%-50s | %-16s | %-12s | %-18s | %s\n" "IMAGE" "TOTAL IMAGE SIZE" "APP SIZE" "APP+RUNTIME SIZE" "PACKAGES"
+printf "%-50s | %-16s | %-12s | %-18s | %s\n" \
+    "--------------------------------------------------" "----------------" "------------" "------------------" "--------"
 for IMG in "${IMAGES[@]}"; do
     SIZE=$(docker images "${IMG}" --format "{{.Size}}")
     if [[ -z "${SIZE}" ]]; then
-        printf "%-50s | %-12s | %-12s | %-18s | %s\n" "${IMG}" "NOT BUILT" "" "" "N/A"
+        printf "%-50s | %-16s | %-12s | %-18s | %s\n" "${IMG}" "NOT BUILT" "" "" "N/A"
         continue
     fi
 
@@ -150,7 +150,7 @@ for IMG in "${IMAGES[@]}"; do
         [[ "${APP_BYTES}" =~ ^[0-9]+$ ]] || APP_BYTES=0
         [[ "${BASE_BYTES}" =~ ^[0-9]+$ ]] || BASE_BYTES=0
         if [[ "${APP_BYTES}" -gt 0 ]]; then
-            OVERHEAD=$(awk "BEGIN { printf \"+%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
+            OVERHEAD=$(awk "BEGIN { printf \"%.1f MB\", (${APP_BYTES}-${BASE_BYTES})/1048576 }")
             if [[ "${IMG}" == "hello-conference:jre-temurin" || "${IMG}" == "hello-conference:jre-temurin-alpine" ]]; then
                 APP_SIZE="${OVERHEAD}"
             else
@@ -160,7 +160,7 @@ for IMG in "${IMAGES[@]}"; do
     fi
 
     PKGS=$(count_packages "${IMG}")
-    printf "%-50s | %-12s | %-12s | %-18s | %s\n" "${IMG}" "${SIZE}" "${APP_SIZE}" "${APP_RUNTIME_SIZE}" "${PKGS}"
+    printf "%-50s | %-16s | %-12s | %-18s | %s\n" "${IMG}" "${SIZE}" "${APP_SIZE}" "${APP_RUNTIME_SIZE}" "${PKGS}"
 done
 echo ""
 

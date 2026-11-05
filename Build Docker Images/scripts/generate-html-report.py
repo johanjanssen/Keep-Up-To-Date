@@ -39,7 +39,7 @@ REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 # ── Field layouts (must mirror the printf field ORDER in the two shell
 # scripts — widths don't need to match since fields are "|"-delimited, not
 # sliced by position) ────────────────────────────────────────────────────
-# measure-images.sh:      printf "%-50s | %-12s | %-12s | %-18s | %s\n"
+# measure-images.sh:      printf "%-50s | %-16s | %-12s | %-18s | %s\n"
 IMAGES_FIELDS = ["image", "image_size", "app_size", "app_runtime_size", "packages"]
 # measure-performance.sh: printf "%-52s | %-20s | %-8s | %-14s | %s\n"
 PERF_FIELDS = ["image", "memory", "warmup", "startup_log", "startup_wall"]
@@ -329,13 +329,13 @@ CUSTOM_IMAGES_SECTION = """
     <h2>Image Size &amp; Package Comparison</h2>
 
     <h3>hello-conference Images</h3>
-    <p class="hint">APP SIZE / APP+RUNTIME SIZE = overhead over the runtime base image. Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
+    <p class="hint">Total Image Size = the complete image, base included. App Size / App+Runtime Size = the part of that total added on top of the runtime base image (already included in the total, not extra). Packages = installed OS packages inside the image. Rows are highlighted when the image size is under 100 MB.</p>
     <div class="table-scroll">
       <table>
         <thead>
           <tr>
             <th class="image-col">Image</th>
-            <th>Image Size</th><th>App Size</th><th>App+Runtime Size</th><th>Packages</th>
+            <th>Total Image Size</th><th>App Size</th><th>App+Runtime Size</th><th>Packages</th>
           </tr>
         </thead>
         <tbody>
